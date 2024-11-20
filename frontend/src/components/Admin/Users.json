@@ -1,0 +1,179 @@
+{
+  "users": [
+    {
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "987-654-3210",
+      "doj": "2023-01-15",
+      "status": "Active"
+    },
+    {
+      "name": "Alice Smith",
+      "email": "alice.smith@example.com",
+      "phone": "876-543-2109",
+      "doj": "2023-02-20",
+      "status": "Active"
+    },
+    {
+      "name": "Bob Johnson",
+      "email": "bob.johnson@example.com",
+      "phone": "765-432-1098",
+      "doj": "2023-03-10",
+      "status": "Inactive"
+    },
+    {
+      "name": "Emma Wilson",
+      "email": "emma.wilson@example.com",
+      "phone": "654-321-0987",
+      "doj": "2023-04-05",
+      "status": "Active"
+    },
+    {
+      "name": "Michael Brown",
+      "email": "michael.brown@example.com",
+      "phone": "543-210-9876",
+      "doj": "2023-05-12",
+      "status": "Active"
+    },
+    {
+      "name": "Sarah Davis",
+      "email": "sarah.davis@example.com",
+      "phone": "432-109-8765",
+      "doj": "2023-06-18",
+      "status": "Active"
+    },
+    {
+      "name": "James Miller",
+      "email": "james.miller@example.com",
+      "phone": "321-098-7654",
+      "doj": "2023-07-22",
+      "status": "Inactive"
+    },
+    {
+      "name": "Emily Taylor",
+      "email": "emily.taylor@example.com",
+      "phone": "210-987-6543",
+      "doj": "2023-08-30",
+      "status": "Active"
+    },
+    {
+      "name": "William Anderson",
+      "email": "william.anderson@example.com",
+      "phone": "109-876-5432",
+      "doj": "2023-09-14",
+      "status": "Active"
+    },
+    {
+      "name": "Olivia Thomas",
+      "email": "olivia.thomas@example.com",
+      "phone": "098-765-4321",
+      "doj": "2023-10-05",
+      "status": "Active"
+    },
+    {
+      "name": "Daniel White",
+      "email": "daniel.white@example.com",
+      "phone": "987-654-3211",
+      "doj": "2023-11-08",
+      "status": "Inactive"
+    },
+    {
+      "name": "Sophia Martinez",
+      "email": "sophia.martinez@example.com",
+      "phone": "876-543-2108",
+      "doj": "2023-12-01",
+      "status": "Active"
+    },
+    {
+      "name": "David Garcia",
+      "email": "david.garcia@example.com",
+      "phone": "765-432-1097",
+      "doj": "2024-01-03",
+      "status": "Active"
+    },
+    {
+      "name": "Isabella Rodriguez",
+      "email": "isabella.rodriguez@example.com",
+      "phone": "654-321-0986",
+      "doj": "2024-01-15",
+      "status": "Active"
+    },
+    {
+      "name": "Joseph Lee",
+      "email": "joseph.lee@example.com",
+      "phone": "543-210-9875",
+      "doj": "2024-01-20",
+      "status": "Inactive"
+    },
+    {
+      "name": "Mia Hernandez",
+      "email": "mia.hernandez@example.com",
+      "phone": "432-109-8764",
+      "doj": "2024-01-25",
+      "status": "Active"
+    },
+    {
+      "name": "Alexander King",
+      "email": "alexander.king@example.com",
+      "phone": "321-098-7653",
+      "doj": "2024-01-28",
+      "status": "Active"
+    },
+    {
+      "name": "Charlotte Wright",
+      "email": "charlotte.wright@example.com",
+      "phone": "210-987-6542",
+      "doj": "2024-02-01",
+      "status": "Active"
+    },
+    {
+      "name": "Benjamin Lopez",
+      "email": "benjamin.lopez@example.com",
+      "phone": "109-876-5431",
+      "doj": "2024-02-05",
+      "status": "Inactive"
+    },
+    {
+      "name": "Amelia Hill",
+      "email": "amelia.hill@example.com",
+      "phone": "098-765-4320",
+      "doj": "2024-02-08",
+      "status": "Active"
+    },
+    {
+      "name": "Henry Scott",
+      "email": "henry.scott@example.com",
+      "phone": "987-654-3212",
+      "doj": "2024-02-10",
+      "status": "Active"
+    },
+    {
+      "name": "Victoria Green",
+      "email": "victoria.green@example.com",
+      "phone": "876-543-2107",
+      "doj": "2024-02-12",
+      "status": "Active"
+    },
+    {
+      "name": "Sebastian Adams",
+      "email": "sebastian.adams@example.com",
+      "phone": "765-432-1096",
+      "doj": "2024-02-15",
+      "status": "Inactive"
+    },
+    {
+      "name": "Lucy Baker",
+      "email": "lucy.baker@example.com",
+      "phone": "654-321-0985",
+      "doj": "2024-02-18",
+      "status": "Active"
+    },
+    {
+      "name": "Jack Nelson",
+      "email": "jack.nelson@example.com",
+      "phone": "543-210-9874",
+      "doj": "2024-02-20",
+      "status": "Active"
+    }
+  ]
+}
