@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import CustomInput from "../CustomInput";
-import CustomButton from "../CustomButton";
+import CustomInput from "../Users/CustomInput";
+import CustomButton from "../Users/CustomButton";
 import googleIcon from "../../assets/google.png";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
@@ -34,11 +34,10 @@ const CompleteProfile = () => {
         email,
         phone: data.phone
       }).unwrap();
-
-      if (response.token) {
-        // Store token in localStorage or Redux state
-        localStorage.setItem('token', response.token);
-        navigate('/user/home'); 
+      if (response.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/user/home");
       }
     } catch (error) {
       console.error('Error completing profile:', error);

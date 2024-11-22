@@ -1,8 +1,29 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../Logo';
+import { logout } from "../../../App/features/slices/authSlice";
+import { useLogOutMutation } from "../../../App/features/rtkApis/authApi";
+import { persistor } from "../../../App/store";
+import { useDispatch, useSelector } from 'react-redux';
 
 function AdminNavbar() {
+  const [logOut] = useLogOutMutation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      await logOut().unwrap();
+      await persistor.purge(); // Purge the persisted state
+      dispatch(logout());
+      // Navigate based on user role
+      const userRole = user?.role;
+      navigate(userRole === 'admin' ? '/admin/dashboard' : '/user/deals');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   return (
     <div className="flex items-center justify-between py-3 px-4 shadow-lg w-full">
       {/* Left Section: Logo and Search Bar */}
@@ -29,9 +50,9 @@ function AdminNavbar() {
         </div>
         
         {/* Signout Link */}
-        <Link 
-          to="#" 
+        <Link  
           className="text-sm text-gray-600 hover:underline"
+          onClick={handleLogout}
         >
           Signout
         </Link>

@@ -3,7 +3,7 @@ import ForgotPwEmailVerification from "../../components/Auth/ForgotPwEmailVerifi
 import Logo from "../../components/Logo";
 import { useSelector } from "react-redux";
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 
 const ForgotPwEmailVerificationPage = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);

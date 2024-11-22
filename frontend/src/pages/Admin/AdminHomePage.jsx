@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Sidebar } from "../../components/Admin/Material/SideBar";
+import { Sidebar } from "../../components/Admin/SideBar";
 import { FiMenu, FiX } from "react-icons/fi";
 import AdminNavbar from "../../components/Admin/AdminNavbar";
 

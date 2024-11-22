@@ -3,7 +3,7 @@ import EmailVerification from "../../components/Auth/EmailVerification";
 import Logo from "../../components/Logo";
 import { useSelector } from "react-redux";
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 
 const EmailVerificationPage = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);

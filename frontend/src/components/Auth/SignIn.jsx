@@ -1,14 +1,17 @@
 import React from "react";
-import CustomInput from "../CustomInput";
-import CustomButton from "../CustomButton";
+import CustomInput from "../Users/CustomInput.jsx";
+import CustomButton from "../Users/CustomButton.jsx";
 import googleIcon from "../../assets/google.png";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useSignInMutation } from '../../../App/features/rtkApis/authApi';
+import { useSignInMutation, useSignUpGoogleMutation } from '../../../App/features/rtkApis/authApi';
 import { useSelector } from 'react-redux';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase/config.js';
 
 const SignIn = () => {
   const [signIn, { isLoading }] = useSignInMutation();
+  const [signUpGoogle] = useSignUpGoogleMutation();
   const [generalError, setGeneralError] = React.useState('');
   const navigate = useNavigate();
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
@@ -22,6 +25,47 @@ const SignIn = () => {
     clearErrors,
     formState: { errors },
   } = useForm();
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const { user } = result;
+      
+      try {
+        // Try to sign in or sign up with Google
+        const response = await signUpGoogle({
+          email: user.email,
+          name: user.displayName,
+        }).unwrap();
+        
+        if (response.message === 'New user created' && response.isNewUser) {
+          // New user - redirect to complete profile
+          navigate('/user/complete-signup', { 
+            state: { email: user.email }
+          });
+        } else {
+          // Existing user - navigate based on role
+          if (response.user.role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/user/home");
+          }
+        }
+      } catch (error) {
+        console.error('Server error:', error);
+        setError('general', { 
+          type: 'server', 
+          message: error.data?.error || 'An error occurred during Google sign in' 
+        });
+      }
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      setError('general', { 
+        type: 'server', 
+        message: 'Could not sign in with Google' 
+      });
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -125,10 +169,12 @@ const SignIn = () => {
 
         <div className="mt-8 space-y-5">
           <CustomButton
-           onClick={handleSubmit(onSubmit)}
-            text={isLoading ? "Signing In..." : "SIGN IN"}
+            text="Sign In"
+            variant="outlined"
+            type="submit"
             width="w-full"
             height="h-12"
+            onClick={handleSubmit(onSubmit)}
             disabled={isLoading}
             className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
@@ -145,8 +191,10 @@ const SignIn = () => {
             text="Sign in with Google"
             variant="outlined"
             icon={googleIcon}
+            type="button"
             width="w-full"
             height="h-12"
+            onClick={handleGoogleSignIn}
             className={`border-2 border-gray-300 hover:border-gray-400 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />

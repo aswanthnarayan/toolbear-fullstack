@@ -13,11 +13,13 @@ import AuthLayout from "./components/utils/AuthLayout";
 import { ProtectedRoute } from "./components/utils/ProtectedRoute";
 import ProductsPage from "./pages/User/ProductsPage";
 import AdminHomePage from "./pages/Admin/AdminHomePage";
-import Dashboard from "./pages/Admin/DashboardPage";
-import UsersPage from "./pages/Admin/UsersPage";
+import Dashboard from "./pages/Admin/AdminDashboardPage";
+import AdminUsersPage from "./pages/Admin/AdminUsersPage";
 import { useSelector } from "react-redux";
 import CategoriesPage from "./pages/User/CategoriesPage";
 import BrandsPage from "./pages/User/BrandsPage";
+import AdminCategoriesPage from "./pages/Admin/AdminCategoriesPage";
+import AddCategoryPage from "./pages/Admin/AddCategoryPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -31,24 +33,23 @@ function App() {
   return (
     <Routes>
       {/* Public and User Routes with Navbar */}
-      <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to={getHomeRoute()} />} />
-        <Route path="/user/home" element={<Navigate to="/user/deals" />} />
-        
-        {/* These routes should only be accessible to non-admin users */}
-        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to={getHomeRoute()} />} />
+          <Route path="/user/home" element={<Navigate to="/user/deals" />} />
           <Route path="/user/deals" element={<DealsPage />} />
           <Route path="/user/products" element={<ProductsPage />} />
           <Route path="/user/categories" element={<CategoriesPage />} />
           <Route path="/user/brands" element={<BrandsPage />} />
         </Route>
-      </Route>
+
 
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path="/admin" element={<AdminHomePage />}>
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<UsersPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="categories/new" element={<AddCategoryPage />} />
         </Route>
       </Route>
 
@@ -64,7 +65,7 @@ function App() {
       </Route>
 
       <Route path="/no-access" element={<NoAccessPage />} />
-      <Route path="*" element={<Navigate to="/no-access" replace />} />
+      {/* <Route path="*" element={<Navigate to="/no-access" replace />} /> */}
     </Routes>
   );
 }

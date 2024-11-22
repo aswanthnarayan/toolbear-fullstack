@@ -3,7 +3,7 @@ import SignUp from "../../components/Auth/SignUp";
 import Logo from "../../components/Logo";
 import { useSelector } from "react-redux";
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 
 const SignUpPage = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);

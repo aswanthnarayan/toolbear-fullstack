@@ -2,7 +2,7 @@ import React from "react";
 import Logo from "../../components/Logo";
 import { useSelector } from "react-redux";
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 import ChangePassword from "../../components/Auth/ChangePassword";
 
 const CreateNewPwPage = () => {

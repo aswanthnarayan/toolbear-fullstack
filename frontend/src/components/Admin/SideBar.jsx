@@ -7,7 +7,7 @@ export function Sidebar() {
     <React.Fragment>
       <div className="">
         <List>
-          <ListItem>
+          <ListItem >
             <NavLink to="/admin/dashboard" className="flex items-center p-2 w-full">
               <ListItemPrefix>
                 {/* Dashboard Icon */}
@@ -21,6 +21,14 @@ export function Sidebar() {
                 {/* Users Icon */}
               </ListItemPrefix>
               Users
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/admin/categories" className="flex items-center p-2 w-full">
+              <ListItemPrefix>
+                {/* Users Icon */}
+              </ListItemPrefix>
+              Categories
             </NavLink>
           </ListItem>
           <ListItem>

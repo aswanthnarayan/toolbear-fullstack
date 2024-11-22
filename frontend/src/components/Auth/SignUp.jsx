@@ -2,8 +2,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from 'react-redux';
-import CustomInput from "../CustomInput";
-import CustomButton from "../CustomButton";
+import CustomInput from "../Users/CustomInput.jsx";
+import CustomButton from "../Users/CustomButton.jsx";
 import googleIcon from '../../assets/google.png';
 import { useSignUpGoogleMutation, useVerifyEmailMutation } from '../../../App/features/rtkApis/authApi';
 import { signInWithPopup } from 'firebase/auth';
@@ -11,7 +11,7 @@ import { auth, googleProvider } from '../../firebase/config.js';
 
 
 const SignUp = () => {
-  const [sendOtp, { isLoading: isOtpLoading }] = useVerifyEmailMutation();
+  const [sendOtp, { isLoading: isOtpLoading },] = useVerifyEmailMutation();
   const navigate = useNavigate();
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const theme = useSelector((state) => state.theme.theme);
@@ -61,18 +61,46 @@ const SignUp = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const { user } = result;
       
-      const response = await signUpGoogle({
-        email: user.email,
-        name: user.displayName,
-      }).unwrap();
-      
-      if (response.message === 'New user created' && response.isNewUser) {
-        navigate('/user/complete-signup', { 
-          state: { email: user.email }
-        });
+      try {
+        const response = await signUpGoogle({
+          email: user.email,
+          name: user.displayName,
+        }).unwrap();
+        
+        if (response.message === 'New user created' && response.isNewUser) {
+          navigate('/user/complete-signup', { 
+            state: { email: user.email }
+          });
+        } else {
+          // If user exists and is verified, directly navigate based on role
+          if (response.user.role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/user/home");
+          }
+        }
+      } catch (error) {
+        console.error('Server error:', error);
+        if (error.data?.error?.includes('Email is already in use')) {
+          setError('general', { 
+            type: 'server', 
+            message: 'Something went wrong. Please try signing in instead.' 
+          });
+        } else {
+          setError('general', { 
+            type: 'server', 
+            message: error.data?.error || 'An error occurred during Google sign up' 
+          });
+        }
       }
     } catch (error) {
-      console.error('Google sign-up error:', error);
+      if (error.code !== 'auth/cancelled-popup-request') {
+        console.error('Google sign-up error:', error);
+        setError('general', { 
+          type: 'server', 
+          message: 'Could not sign up with Google' 
+        });
+      }
     }
   };
 

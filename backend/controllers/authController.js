@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import User from "../models/UserSchema.js";
 import { OTP } from "../models/OtpSchema.js";
 import nodemailer from "nodemailer";
@@ -90,6 +89,7 @@ export const verifyOtpAndSignUp = async (req, res) => {
       email,
       phone,
       password,
+      isVerified: true,
     });
 
     await newUser.save();
@@ -152,25 +152,53 @@ export const signUpGoogle = async (req,res)=>{
   try {
     const { email, name } = req.body;
     const existingUser = await User.findOne({ email });
+    
     if (existingUser) {
-      return res.status(400).json({ error: "Email is already in use Try different one" });
-    }
-    if (!existingUser) {
-      // Create a new user
-      const newUser = new User({
-        email,
-        name,
-        provider: 'google',
-        role: 'user',
+      // User exists - check if verified
+      if (!existingUser.isVerified) {
+        return res.status(200).json({ message: 'New user created', isNewUser: true });
+      }
+      
+      // User exists and is verified - generate token and send user data
+      const token = jwt.sign(
+        { id: existingUser._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        maxAge: 24 * 60 * 60 * 1000,
       });
-      await newUser.save();
-      return res.status(201).json({ message: 'New user created', isNewUser: true });
+      
+      return res.status(200).json({
+        user: {
+          _id: existingUser._id,
+          name: existingUser.name,
+          email: existingUser.email,
+          phone: existingUser.phone,
+          role: existingUser.role,
+        }
+      });
     }
+    
+    // Create a new user
+    const newUser = new User({
+      email,
+      name,
+      provider: 'google',
+      role: 'user',
+    });
+    await newUser.save();
+    return res.status(201).json({ message: 'New user created', isNewUser: true });
+    
   } catch (error) {
     console.error('Google Signup Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
 
 export const completeGoogleSignup = async (req, res) => {
   try {
@@ -184,23 +212,30 @@ export const completeGoogleSignup = async (req, res) => {
 
     // Update user's phone number
     user.phone = phone;
+    user.isVerified = true;
     await user.save();
-
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id, email: user.email, role: user.role },
+      { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
-    );
+    )
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       message: "Profile completed successfully",
-      token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        phone: user.phone,
+        role: user.role,
+        isVerified: user.isVerified
       }
     });
   } catch (error) {
@@ -208,6 +243,48 @@ export const completeGoogleSignup = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const handleGoogleSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const { user } = result;
+    
+    try {
+      // Try to sign in or sign up with Google
+      const response = await signUpGoogle({
+        email: user.email,
+        name: user.displayName,
+      }).unwrap();
+      
+      if (response.message === 'New user created' && response.isNewUser) {
+        // New user - redirect to complete profile
+        navigate('/user/complete-signup', { 
+          state: { email: user.email }
+        });
+      } else {
+        // Existing user - navigate based on role
+        if (response.user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/home");
+        }
+      }
+    } catch (error) {
+      console.error('Server error:', error);
+      setError('general', { 
+        type: 'server', 
+        message: error.data?.error || 'An error occurred during Google sign in' 
+      });
+    }
+  } catch (error) {
+    console.error('Google sign-in error:', error);
+    setError('general', { 
+      type: 'server', 
+      message: 'Could not sign in with Google' 
+    });
+  }
+};
+
 
 export const sendOtpForgotPassword = async (req, res) => {
   try {
@@ -316,3 +393,51 @@ export const logout = async (req, res) => {
     res.status(500).json({ error: 'Server error during logout' });
   }
 };        
+
+export const resendOtp = async(req,res)=>{
+  try {
+    const {email} = req.body
+    const prevOtp = await OTP.findOne({email});;
+    if(prevOtp){
+      await OTP.deleteOne({email})
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    // Store OTP temporarily in the database (with expiration time)
+    const otpData = new OTP({
+      email,
+      otp,
+      type: 'password-reset'
+    });
+    await otpData.save();
+
+    // Set up Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.NODE_MAILER_EMAIL,
+        pass: process.env.NODE_MAILER_PASSWORD,
+      },
+    });
+
+    // Send OTP to the user's email
+    const mailOptions = {
+      from: "toolbear@gmail.com",
+      to: email,
+      subject: "Your OTP for Reset Password ",
+      text: `Your OTP for reset password is: ${otp}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // Return success response
+    res 
+      .status(200)
+      .json({
+        message: "OTP sent to your email. Please verify to complete sign up.",
+        
+      });
+  } catch (error) {
+    console.error("Error in sending OTP:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+}

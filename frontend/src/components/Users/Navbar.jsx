@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { toggleTheme } from "../../App/features/slices/themeSlice";
-import { logout } from "../../App/features/slices/authSlice";
-import { useLogOutMutation } from "../../App/features/rtkApis/authApi";
-import { persistor } from "../../App/store";
-import Logo from "./Logo";
+import { toggleTheme } from "../../../App/features/slices/themeSlice";
+import { logout } from "../../../App/features/slices/authSlice";
+import { useLogOutMutation } from "../../../App/features/rtkApis/authApi";
+import { persistor } from "../../../App/store";
+import Logo from "../Logo";
 import {
   IconButton,
   Menu,

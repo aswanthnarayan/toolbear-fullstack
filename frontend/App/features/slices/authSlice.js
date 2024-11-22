@@ -13,13 +13,28 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(
-      authApi.endpoints.signIn.matchFulfilled,
-      (state, { payload }) => {
-        state.user = payload.user;
-        state.token = payload.token;
-      }
-    );
+    builder
+      .addMatcher(
+        authApi.endpoints.signIn.matchFulfilled,
+        (state, { payload }) => {
+          state.user = payload.user;
+        }
+      )
+      .addMatcher(
+        authApi.endpoints.completeGoogleSignup.matchFulfilled,
+        (state, { payload }) => {
+          state.user = payload.user;
+        }
+      )
+      .addMatcher(
+        authApi.endpoints.signUpGoogle.matchFulfilled,
+        (state, { payload }) => {
+          // Only update state if user exists in payload (for existing verified users)
+          if (payload.user) {
+            state.user = payload.user;
+          }
+        }
+      );
   },
 });
 

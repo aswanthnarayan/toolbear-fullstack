@@ -3,7 +3,7 @@ import ForgotPwOtpVerification from "../../components/Auth/ForgotPwOtpVerificati
 import Logo from "../../components/Logo";
 import { useSelector } from "react-redux";
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 import { useLocation } from "react-router-dom";
 
 const ForgotPwOtpConfirmPage = () => {

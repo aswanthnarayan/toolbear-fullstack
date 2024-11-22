@@ -1,6 +1,6 @@
 import React from 'react';
 import CompleteProfile from '../../components/Auth/CompleteProfile';
-import SecondaryFooter from "../../components/SecondaryFooter";
+import SecondaryFooter from "../../components/Users/SecondaryFooter";
 import Logo from '../../components/Logo';
 import { useSelector } from 'react-redux';
 import ToolThemeBackground from "../../components/Auth/ToolThemeBackground";

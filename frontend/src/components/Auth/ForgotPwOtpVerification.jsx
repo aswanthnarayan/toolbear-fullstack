@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import CustomInput from '../CustomInput';
-import CustomButton from '../CustomButton';
+import CustomInput from '../Users/CustomInput';
+import CustomButton from '../Users/CustomButton';
 import { useForgotPwOtpConfirmMutation, useForgotPwemailVerificationMutation } from '../../../App/features/rtkApis/authApi';
 
 const ForgotPwOtpVerification = () => {
