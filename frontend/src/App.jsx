@@ -20,6 +20,11 @@ import CategoriesPage from "./pages/User/CategoriesPage";
 import BrandsPage from "./pages/User/BrandsPage";
 import AdminCategoriesPage from "./pages/Admin/AdminCategoriesPage";
 import AddCategoryPage from "./pages/Admin/AddCategoryPage";
+import EditCategoryPage from "./pages/Admin/EditCategoryPage";
+import AdminProductsPage from "./pages/Admin/AdminProductsPage";
+import AdminBrandsPage from "./pages/Admin/AdminBrandsPage";
+import AddBrandPage from "./pages/Admin/AddBrandPage";
+import EditBrandPage from "./pages/Admin/EditBrandPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -50,6 +55,11 @@ function App() {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="categories/new" element={<AddCategoryPage />} />
+          <Route path="categories/edit/:id" element={<EditCategoryPage />} />
+          <Route path="brands" element={<AdminBrandsPage/>} />
+          <Route path="brands/new" element={<AddBrandPage />} />
+          <Route path="brands/edit/:id" element={<EditBrandPage />} />
+          <Route path="products" element={<AdminProductsPage/>} />
         </Route>
       </Route>
 

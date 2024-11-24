@@ -13,7 +13,7 @@ const ASPECT_RATIOS = {
   'Free': NaN,
 };
 
-const EasyCropperModal = ({ open, onClose, image, onCropComplete }) => {
+const EasyCropperModal = ({ image, onClose, onCropComplete }) => {
   const cropperRef = useRef(null);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [zoom, setZoom] = useState(1);
@@ -22,139 +22,148 @@ const EasyCropperModal = ({ open, onClose, image, onCropComplete }) => {
   const handleSave = () => {
     const cropper = cropperRef.current?.cropper;
     if (cropper) {
-      const croppedCanvas = cropper.getCroppedCanvas();
-      croppedCanvas.toBlob((blob) => {
-        if (blob) {
-          onCropComplete(URL.createObjectURL(blob));
-          onClose();
-        }
+      const croppedCanvas = cropper.getCroppedCanvas({
+        width: 1200,  // Max width
+        height: 1200, // Max height
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
       });
+      
+      croppedCanvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const croppedImage = URL.createObjectURL(blob);
+            onCropComplete(croppedImage);
+            onClose();
+          }
+        },
+        'image/jpeg',
+        0.8  // Quality
+      );
     }
   };
 
   const handleZoomChange = (value) => {
     const cropper = cropperRef.current?.cropper;
     if (cropper) {
-      cropper.zoomTo(value);
-      setZoom(value);
+      cropper.zoomTo(parseFloat(value));
+      setZoom(parseFloat(value));
     }
   };
 
   const handleRotationChange = (value) => {
     const cropper = cropperRef.current?.cropper;
     if (cropper) {
-      cropper.rotateTo(value);
-      setRotation(value);
+      cropper.rotateTo(parseInt(value));
+      setRotation(parseInt(value));
     }
   };
 
   const handleAspectRatioChange = (value) => {
-    setAspectRatio(value);
     const cropper = cropperRef.current?.cropper;
     if (cropper) {
       cropper.setAspectRatio(ASPECT_RATIOS[value]);
+      setAspectRatio(value);
     }
   };
 
   return (
     <Dialog
       size="xl"
-      open={open}
+      open={true}
       handler={onClose}
-      className="bg-transparent shadow-none"
+      className="bg-white p-4"
     >
-      <div className="relative h-[600px] w-full rounded-lg bg-white">
-        <div className="flex items-center justify-between bg-blue-gray-50 px-4 py-2 rounded-t-lg">
-          <h3 className="text-lg font-semibold text-blue-gray-900">
-            Crop Image
-          </h3>
-          <IconButton
-            variant="text"
-            color="blue-gray"
-            onClick={onClose}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Crop Image</h3>
+        <IconButton
+          variant="text"
+          color="blue-gray"
+          onClick={onClose}
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </IconButton>
+      </div>
+
+      <div className="relative h-[60vh]">
+        <Cropper
+          ref={cropperRef}
+          src={image}
+          style={{ height: '100%', width: '100%' }}
+          aspectRatio={ASPECT_RATIOS[aspectRatio]}
+          guides={true}
+          viewMode={1}
+          dragMode="move"
+          scalable={true}
+          cropBoxMovable={true}
+          cropBoxResizable={true}
+          minCropBoxHeight={10}
+          minCropBoxWidth={10}
+          background={false}
+          responsive={true}
+          autoCropArea={1}
+          checkOrientation={false}
+          zoomTo={zoom}
+          rotateTo={rotation}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-4 mt-4">
+        <div className="w-full sm:w-auto">
+          <Select 
+            label="Aspect Ratio" 
+            value={aspectRatio}
+            onChange={handleAspectRatioChange}
           >
-            <XMarkIcon strokeWidth={2} className="h-5 w-5" />
-          </IconButton>
+            {Object.keys(ASPECT_RATIOS).map((ratio) => (
+              <Option key={ratio} value={ratio}>
+                {ratio}
+              </Option>
+            ))}
+          </Select>
         </div>
-        
-        <div className="relative h-[300px] lg:h-[450px] w-full">
-          <Cropper
-            ref={cropperRef}
-            src={image}
-            style={{ height: '100%', width: '100%' }}
-            aspectRatio={ASPECT_RATIOS[aspectRatio]}
-            guides={true}
-            viewMode={1}
-            dragMode="crop"
-            background={false}
-            responsive={true}
-            autoCropArea={1}
-            checkOrientation={false}
+
+        <div className="w-full sm:w-auto flex items-center gap-2">
+          <span className="text-sm">Zoom:</span>
+          <input
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.1"
+            value={zoom}
+            onChange={(e) => handleZoomChange(e.target.value)}
+            className="w-32"
           />
         </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row justify-between items-center p-4 lg:p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className=" ">
-              <Select 
-                label="Aspect Ratio" 
-                value={aspectRatio}
-                onChange={handleAspectRatioChange}
-                className="bg-white"
-                labelProps={{
-                  className: "text-sm"
-                }}
-              >
-                {Object.keys(ASPECT_RATIOS).map((ratio) => (
-                  <Option key={ratio} value={ratio}>
-                    {ratio}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-            <div className="flex lg:flex-col gap-2">
-              <label className="text-sm">Zoom: {zoom.toFixed(2)}x</label>
-              <input
-                type="range"
-                value={zoom}
-                min={0}
-                max={3}
-                step={0.1}
-                onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
-                className="w-32"
-              />
-            </div>
-            <div className="flex lg:flex-col gap-2">
-              <label className="text-sm">Rotation: {rotation}°</label>
-              <input
-                type="range"
-                value={rotation}
-                min={0}
-                max={360}
-                step={1}
-                onChange={(e) => handleRotationChange(parseInt(e.target.value))}
-                className="w-32"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outlined"
-              color="red"
-              onClick={onClose}
-              className="mr-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="gradient"
-              color="blue"
-              onClick={handleSave}
-            >
-              Crop & Save
-            </Button>
-          </div>
+        <div className="w-full sm:w-auto flex items-center gap-2">
+          <span className="text-sm">Rotate:</span>
+          <input
+            type="range"
+            min="-180"
+            max="180"
+            value={rotation}
+            onChange={(e) => handleRotationChange(e.target.value)}
+            className="w-32"
+          />
         </div>
+      </div>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <Button 
+          variant="outlined"
+          color="red"
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button 
+          variant="filled"
+          color="blue"
+          onClick={handleSave}
+        >
+          Save
+        </Button>
       </div>
     </Dialog>
   );

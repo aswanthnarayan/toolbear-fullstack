@@ -25,7 +25,7 @@ function AdminNavbar() {
     }
   };
   return (
-    <div className="flex items-center justify-between py-3 px-4 shadow-lg w-full">
+    <div className="flex items-center justify-between py-3 px-4 shadow-lg w-full sticky top-0 z-20 bg-white">
       {/* Left Section: Logo and Search Bar */}
       <div className="flex items-center w-full sm:w-auto">
         {/* Logo */}

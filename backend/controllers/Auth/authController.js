@@ -1,5 +1,5 @@
-import User from "../models/UserSchema.js";
-import { OTP } from "../models/OtpSchema.js";
+import User from "../../models/UserSchema.js";
+import { OTP } from "../../models/OtpSchema.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";

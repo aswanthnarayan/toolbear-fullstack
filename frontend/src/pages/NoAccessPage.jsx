@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import CustomButton from '../components/Users/CustomButton';
+import CustomButton from '../components/CustomButton';
 import { FaTools, FaLock } from 'react-icons/fa';
 
 const NoAccessPage = () => {

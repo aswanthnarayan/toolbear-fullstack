@@ -14,6 +14,7 @@ import { SwitchButton } from "../SwitchButton";
 import { useGetUsersQuery, useToggleBlockUserMutation } from "../../../../App/features/rtkApis/adminApi"; 
 import { AlertModal } from "../../AlertModal";
 import { FaUserLock, FaUserCheck } from "react-icons/fa";
+import CustomInput from "../../CustomInput";
 
 const TABLE_HEAD = ["Name & Email", "Phone", "DOJ", "provider", "Block/Unblock"];
 
@@ -81,14 +82,17 @@ export function UserTable() {
         </div>
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="w-full md:w-72 ml-auto">
-            <Input
-              label="Search by Name or Email"
-              icon={<FaMagnifyingGlass className="h-5 w-5" />}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-              }}
-            />
+            <div className="relative">
+              <CustomInput
+                label=""
+                type="text"
+                placeholder="Search by Name or Email"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="focus:ring-0 focus:border-gray-300 hover:border-gray-400 transition-colors"
+              />
+              <FaMagnifyingGlass className="absolute right-3 top-[35%] text-gray-400" />
+            </div>
           </div>
          
         </div>

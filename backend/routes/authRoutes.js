@@ -9,7 +9,7 @@ import {
     verifyOtpForgotPassword,
     changePassword,
     logout
-} from '../controllers/authController.js'
+} from '../controllers/Auth/authController.js'
 
 const router = express.Router();
 

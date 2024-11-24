@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import CustomInput from "../Users/CustomInput";
-import CustomButton from "../Users/CustomButton";
+import CustomInput from "../CustomInput";
+import CustomButton from "../CustomButton";
 import googleIcon from "../../assets/google.png";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";

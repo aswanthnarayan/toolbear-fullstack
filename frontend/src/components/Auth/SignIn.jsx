@@ -1,6 +1,6 @@
 import React from "react";
-import CustomInput from "../Users/CustomInput.jsx";
-import CustomButton from "../Users/CustomButton.jsx";
+import CustomInput from "../CustomInput.jsx";
+import CustomButton from "../CustomButton.jsx";
 import googleIcon from "../../assets/google.png";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";

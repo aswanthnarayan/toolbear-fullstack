@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import CustomInput from '../Users/CustomInput';
-import CustomButton from '../Users/CustomButton';
+import CustomInput from '../CustomInput';
+import CustomButton from '../CustomButton';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useCreateUserMutation } from '../../../App/features/rtkApis/authApi';
 

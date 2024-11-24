@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useForgotPwemailVerificationMutation } from '../../../App/features/rtkApis/authApi';
-import CustomInput from '../Users/CustomInput';
-import CustomButton from '../Users/CustomButton';
+import CustomInput from '../CustomInput';
+import CustomButton from '../CustomButton';
 
 const ForgotPwEmailVerification = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);

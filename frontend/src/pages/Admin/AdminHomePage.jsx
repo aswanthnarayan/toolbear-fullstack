@@ -27,7 +27,7 @@ const AdminHomePage = () => {
         {/* Drawer Toggle */}
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="md:hidden absolute top-2 left-0 p-2 text-2xl text-black rounded"
+          className="md:hidden absolute top-2 left-0 p-2 text-2xl text-black rounded z-50 "
         >
           <FiMenu />
         </button>

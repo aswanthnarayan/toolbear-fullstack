@@ -22,8 +22,9 @@ const CustomInput = forwardRef(({
     const focusClasses = error 
       ? 'border-red-500 focus:ring-red-500' 
       : `focus:${currentTheme.search.ring} focus:${currentTheme.search.focusBg}`;
+    const textareaClasses = type === 'textarea' ? 'h-32 resize-none' : '';
     
-    return `${baseClasses} ${themeClasses} ${focusClasses} ${className}`;
+    return `${baseClasses} ${themeClasses} ${focusClasses} ${textareaClasses} ${className}`;
   };
 
   return (
@@ -34,24 +35,35 @@ const CustomInput = forwardRef(({
       >
         {label}
       </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        ref={ref}
-        className={getInputClasses()}
-        {...rest}
-      />
+      {type === 'textarea' ? (
+        <textarea
+          id={id}
+          name={name}
+          placeholder={placeholder}
+          ref={ref}
+          className={getInputClasses()}
+          {...rest}
+        />
+      ) : (
+        <input
+          id={id}
+          name={name}
+          type={type}
+          placeholder={placeholder}
+          ref={ref}
+          className={getInputClasses()}
+          {...rest}
+        />
+      )}
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
   );
 });
 
 CustomInput.propTypes = {
-  label: PropTypes.string, 
+  label: PropTypes.string,
   placeholder: PropTypes.string,
-  type: PropTypes.oneOf(["text", "password", "email", "number", "search"]),
+  type: PropTypes.string,
   className: PropTypes.string,
   name: PropTypes.string,
   id: PropTypes.string,

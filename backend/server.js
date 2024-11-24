@@ -14,7 +14,7 @@ app.use(json())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use('/api/user/', authRoutes);
-app.use('/api/admin/', adminRoutes);
+app.use('/api/admin/', adminRoutes);``
 
 
 app.listen(port,(req,res)=>{
