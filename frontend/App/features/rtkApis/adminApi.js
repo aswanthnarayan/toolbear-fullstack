@@ -13,7 +13,7 @@ export const adminApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ['Users', 'Categories', 'Brands'],
+    tagTypes: ['Users', 'Categories', 'Brands', 'Products'],
     endpoints: (builder) => ({
         //User management
         getUsers: builder.query({
@@ -134,6 +134,52 @@ export const adminApi = createApi({
             query: (brandId) => `/brands/${brandId}`,
             providesTags: ['Brands'],
         }),
+        //Product management
+        createProduct: builder.mutation({
+            query: (formData) => ({
+                url: '/products/new',
+                method: 'POST',
+                body: formData,
+                formData: true,
+                timeout: 10000,
+            }),
+            invalidatesTags: ['Products'],
+        }),
+        getAllProducts: builder.query({
+            query: ({ page = 1, limit = 10, search = '' }) => ({
+                url: '/products',
+                params: { page, limit, search }
+            }),
+            providesTags: ['Products'],
+            transformResponse: (response) => ({
+                products: response.products,
+                currentPage: response.currentPage,
+                totalPages: response.totalPages,
+                totalCount: response.totalCount,
+                hasMore: response.hasMore
+            })
+        }),
+        updateProduct: builder.mutation({
+            query: ({ productId, formData }) => ({
+                url: `/products/${productId}/update`,
+                method: 'PATCH',
+                body: formData,
+                formData: true,
+                timeout: 10000,
+            }),
+            invalidatesTags: ['Products'],
+        }),
+        toggleListProduct: builder.mutation({
+            query: (productId) => ({
+                url: `/products/${productId}/toggle-list`,
+                method: 'PATCH',
+            }),
+            invalidatesTags: ['Products'],
+        }),
+        getProductById: builder.query({
+            query: (productId) => `/products/${productId}`,
+            providesTags: ['Products'],
+        }),
     })
 });
 
@@ -150,4 +196,9 @@ export const {
     useUpdateBrandMutation,
     useToggleListBrandMutation,
     useGetBrandByIdQuery,
+    useCreateProductMutation,
+    useGetAllProductsQuery,
+    useUpdateProductMutation,
+    useToggleListProductMutation,
+    useGetProductByIdQuery,
 } = adminApi;

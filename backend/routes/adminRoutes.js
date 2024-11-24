@@ -1,8 +1,9 @@
 import express from 'express';
 import { getAllUsers, toggleBlockUser } from '../controllers/Admin/userController.js';
 import { createCategory, getAllCategories, updateCategory, toggleListCategory, getCategoryById } from '../controllers/Admin/categoryController.js';
-import { createBrand, getAllBrands, updateBrand, toggleListBrand, getBrandById } from '../controllers/Admin/brandController.js'
-import { handleSingleUpload, handleBrandUpload } from '../middleware/multerMiddleWare.js';
+import { createBrand, getAllBrands, updateBrand, toggleListBrand, getBrandById } from '../controllers/Admin/brandController.js';
+import { createProduct, getAllProducts, updateProduct, toggleListProduct, getProductById } from '../controllers/Admin/productController.js';
+import { handleSingleUpload, handleBrandUpload, handleProductUpload } from '../middleware/multerMiddleWare.js';
 
 const router = express.Router();
 
@@ -23,5 +24,12 @@ router.get("/brands", getAllBrands);
 router.patch("/brands/:brandId/update", handleBrandUpload, updateBrand);
 router.patch("/brands/:brandId/toggle-list", toggleListBrand);
 router.get("/brands/:brandId", getBrandById);
+
+//Products
+router.post("/products/new", handleProductUpload, createProduct);
+router.get("/products", getAllProducts);
+router.get("/products/:productId", getProductById);
+router.patch("/products/:productId/update", handleProductUpload, updateProduct);
+router.patch("/products/:productId/toggle-list", toggleListProduct);
 
 export default router;

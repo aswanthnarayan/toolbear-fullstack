@@ -12,31 +12,29 @@ import {
 } from "@material-tailwind/react";
 import { FaMagnifyingGlass, FaPencil } from "react-icons/fa6";
 import { SwitchButton } from "../SwitchButton";
-import { useGetAllCategoriesQuery, useToggleListCategoryMutation } from "../../../../App/features/rtkApis/adminApi";
+import { useGetAllProductsQuery, useToggleListProductMutation } from "../../../../App/features/rtkApis/adminApi";
 import { AlertModal } from "../../AlertModal";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import CustomInput from "../../CustomInput";
 
-const TABLE_HEAD = ["Image", "Category Name", "Description", "Created At", "Offer %", "List/UnList", "Edit"];
+const TABLE_HEAD = ["Image", "Product Name", "Category", "Brand", "Price", "Stock", "Offer %", "Listed/Unlisted", "Edit"];
 
 export function ProductsTable() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   // RTK Query hooks
-  const { data, isLoading, isFetching, error } = useGetAllCategoriesQuery({
+  const { data, isLoading, isFetching, error } = useGetAllProductsQuery({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
     search: searchQuery
   });
 
-  
-
-  const [toggleList, { isLoading: isToggling }] = useToggleListCategoryMutation();
+  const [toggleList, { isLoading: isToggling }] = useToggleListProductMutation();
 
   const handleModalOpen = () => setModalOpen(!modalOpen);
 
@@ -44,14 +42,14 @@ export function ProductsTable() {
     try {
       await toggleList(id).unwrap();
       handleModalOpen();
-      setSelectedCategory(null);
+      setSelectedProduct(null);
     } catch (error) {
-      console.error('Failed to toggle category list status:', error);
+      console.error('Failed to toggle product list status:', error);
     }
   };
 
-  const handleSwitchClick = (category) => {
-    setSelectedCategory(category);
+  const handleSwitchClick = (product) => {
+    setSelectedProduct(product);
     handleModalOpen();
   };
 
@@ -72,6 +70,10 @@ export function ProductsTable() {
     setCurrentPage((prev) => Math.min(prev + 1, data?.totalPages || prev));
   };
 
+  if (error) {
+    return <div>Error loading products</div>;
+  }
+
   return (
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
@@ -88,7 +90,7 @@ export function ProductsTable() {
               <CustomInput
                 label=""
                 type="text"
-                placeholder="Search Products..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="focus:ring-0 focus:border-gray-300 hover:border-gray-400 transition-colors"
@@ -99,118 +101,127 @@ export function ProductsTable() {
           <Button
             variant="filled"
             size="md"
-            onClick={() => navigate("/admin/products/new")}
+            onClick={() => navigate('/admin/products/new')}
           >
             Add Product
           </Button>
         </div>
       </CardHeader>
-
-      <CardBody className="overflow-y-auto px-0 pt-0 h-[calc(100vh-290px)] mt-4">
-        {isLoading || isFetching ? (
-          <div className="flex justify-center items-center h-full">
-            <Spinner className="h-8 w-8" />
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-500 py-4">
-            {error?.data?.message || 'Failed to fetch categories'}
-          </div>
-        ) : (
-          <table className="w-full min-w-max table-auto text-left">
-            <thead className="sticky top-0 bg-gray-50 z-10">
+      <CardBody className="overflow-scroll px-0">
+        <table className="w-full min-w-max table-auto text-left">
+          <thead>
+            <tr>
+              {TABLE_HEAD.map((head) => (
+                <th
+                  key={head}
+                  className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
+                >
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className="font-normal leading-none"
+                  >
+                    {head}
+                  </Typography>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
               <tr>
-                {TABLE_HEAD.map((head) => (
-                  <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="font-normal leading-none opacity-70"
-                    >
-                      {head}
-                    </Typography>
-                  </th>
-                ))}
+                <td colSpan={TABLE_HEAD.length} className="text-center py-4">
+                  <Spinner className="h-6 w-6 mx-auto" />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {data?.categories.map((category) => {
-                
+            ) : data?.products?.length === 0 ? (
+              <tr>
+                <td colSpan={TABLE_HEAD.length} className="text-center py-4">
+                  <Typography variant="small" color="blue-gray">
+                    No products found
+                  </Typography>
+                </td>
+              </tr>
+            ) : (
+              data?.products?.map((product, index) => {
+                const isLast = index === data.products.length - 1;
+                const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+
                 return (
-                  <tr key={category._id} className="even:bg-blue-gray-50/50">
-                    <td className="p-4">
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="h-12 w-12 object-cover rounded"
-                      />
+                  <tr key={product._id}>
+                    <td className={classes}>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.mainImage?.imageUrl || product.mainImage}
+                          alt={product.name}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                      </div>
                     </td>
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {category.name}
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        {product.name}
                       </Typography>
                     </td>
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal max-w-xs truncate">
-                        {category.desc} 
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        {product.category}
                       </Typography>
                     </td>
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                   {new Date(category.createdAt).toLocaleDateString()}
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        {product.brand}
                       </Typography>
                     </td>
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {category.offerPercentage}%
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        ₹{product.price}
                       </Typography>
                     </td>
-                    <td className="p-4">
-                      <SwitchButton
-                        id={category._id}
-                        checked={!category.isListed}
-                        onChange={() => handleSwitchClick(category)}
-                        activeText="Unlisted"
-                        inactiveText="Listed"
-                        disabled={isLoading || isToggling}
-                      />
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        {product.stock}
+                      </Typography>
                     </td>
-                    <td className="p-4">
+                    <td className={classes}>
+                      <Typography variant="small" color="blue-gray">
+                        {product.offerPercentage ? `${product.offerPercentage}%` : '-'}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <div className="w-max">
+                        <SwitchButton
+                          checked={product.isListed}
+                          onChange={() => handleSwitchClick(product)}
+                          icon={product.isListed ? <FaEyeSlash /> : <FaEye />}
+                          activeText="Unlisted"
+                          inactiveText="Listed"
+                        />
+                      </div>
+                    </td>
+                    <td className={classes}>
                       <IconButton
                         variant="text"
-                        color="blue"
-                        onClick={() => navigate(`/admin/categories/edit/${category._id}`)}
+                        color="blue-gray"
+                        onClick={() => navigate(`/admin/products/edit/${product._id}`)}
                       >
-                        <FaPencil color="black" className="h-4 w-4" />
+                        <FaPencil className="h-4 w-4" />
                       </IconButton>
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        )}
+              })
+            )}
+          </tbody>
+        </table>
       </CardBody>
-
-      {/* Confirmation Modal */}
-      <AlertModal
-        open={modalOpen}
-        handleOpen={handleModalOpen}
-        heading={selectedCategory?.isListed ? "Unlist Category" : "List Category"}
-        message={`Are you sure you want to ${selectedCategory?.isListed ? 'unlist' : 'list'} ${selectedCategory?.name}?`}
-        confirmText={selectedCategory?.isListed ? "Unlist" : "List"}
-        confirmColor={selectedCategory?.isListed ? "red" : "green"}
-        onConfirm={() => handleListToggle(selectedCategory?._id)}
-        loading={isToggling}
-        icon={selectedCategory?.isListed ? <FaEyeSlash className="text-red-500" /> : <FaEye className="text-green-500" />}
-      />
-
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
         <div className="flex items-center gap-2">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {data?.currentPage} of {data?.totalPages}
+            Page {currentPage} of {data?.totalPages}
           </Typography>
           <Typography variant="small" color="blue-gray" className="font-normal">
-            ({data?.totalCategories} total categories)
+            ({data?.totalProducts} total products)
           </Typography>
         </div>
         <div className="flex gap-2">
@@ -232,6 +243,17 @@ export function ProductsTable() {
           </Button>
         </div>
       </CardFooter>
+      <AlertModal
+        open={modalOpen}
+        handleOpen={handleModalOpen}
+        heading={selectedProduct?.isListed ? "Unlist Product" : "List Product"}
+        message={`Are you sure you want to ${selectedProduct?.isListed ? 'unlist' : 'list'} ${selectedProduct?.name}?`}
+        confirmText={selectedProduct?.isListed ? "Unlist" : "List"}
+        confirmColor={selectedProduct?.isListed ? "red" : "green"}
+        onConfirm={() => handleListToggle(selectedProduct?._id)}
+        loading={isToggling}
+        icon={selectedProduct?.isListed ? <FaEyeSlash className="text-red-500" /> : <FaEye className="text-green-500" />}
+      />
     </Card>
   );
 }

@@ -25,6 +25,8 @@ import AdminProductsPage from "./pages/Admin/AdminProductsPage";
 import AdminBrandsPage from "./pages/Admin/AdminBrandsPage";
 import AddBrandPage from "./pages/Admin/AddBrandPage";
 import EditBrandPage from "./pages/Admin/EditBrandPage";
+import AddProductPage from "./pages/Admin/AddProductPage";
+import EditProductPage from "./pages/Admin/EditProductPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -60,6 +62,9 @@ function App() {
           <Route path="brands/new" element={<AddBrandPage />} />
           <Route path="brands/edit/:id" element={<EditBrandPage />} />
           <Route path="products" element={<AdminProductsPage/>} />
+          <Route path="products/new" element={<AddProductPage/>} />
+          <Route path="products/edit/:id" element={<EditProductPage />} />
+
         </Route>
       </Route>
 
