@@ -123,7 +123,6 @@ const SignIn = () => {
       
       <form className="space-y-5" >
         <div className="space-y-5">
-          {/* Input fields with industrial-themed animation */}
           <div className="transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
               label="Email"

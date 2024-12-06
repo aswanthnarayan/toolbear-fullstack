@@ -177,7 +177,6 @@ export function UserTable() {
         )}
       </CardBody>
 
-      {/* Confirmation Modal */}
       <AlertModal
         open={modalOpen}
         handleOpen={handleModalOpen}

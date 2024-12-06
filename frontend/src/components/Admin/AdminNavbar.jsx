@@ -26,7 +26,6 @@ function AdminNavbar() {
   };
   return (
     <div className="flex items-center justify-between py-3 px-4 shadow-lg w-full sticky top-0 z-20 bg-white">
-      {/* Left Section: Logo and Search Bar */}
       <div className="flex items-center w-full sm:w-auto">
         {/* Logo */}
         <div className="hidden md:block">
@@ -34,22 +33,18 @@ function AdminNavbar() {
         </div>
       </div>
        
-      {/* Right Section: User Info */}
       <div className="flex items-center space-x-4 ml-auto ">
-        {/* User Avatar */}
         <img 
           src="https://placehold.co/40x40" 
           alt="User avatar" 
           className="h-10 w-10 rounded-full hidden sm:flex"
         />
         
-        {/* User Details */}
         <div className="text-right">
           <div className="text-xs font-semibold">Aswanth</div>
           <div className="text-xs text-gray-400">Admin</div>
         </div>
         
-        {/* Signout Link */}
         <Link  
           className="text-sm text-gray-600 hover:underline"
           onClick={handleLogout}

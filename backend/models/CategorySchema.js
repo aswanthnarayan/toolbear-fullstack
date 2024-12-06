@@ -13,6 +13,8 @@ const categorySchema = new mongoose.Schema({
   offerPercentage: {
     type: Number,
     required: true,
+    min: 0,
+    max: 100
   },
   isListed: {
     type: Boolean,

@@ -58,7 +58,7 @@ function Navbar() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full fixed top-0 z-50">
       {/* Main Navbar */}
       <nav className={`w-full ${currentTheme.text} ${
         isDarkMode 
@@ -293,7 +293,7 @@ function Navbar() {
         <div className="w-full max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-8 h-12 text-sm font-medium overflow-x-auto">
             <Link
-              to="user/products"
+              to="user/all-products"
               className="hover:text-blue-400 transition-colors duration-200 whitespace-nowrap"
             >
               ALL PRODUCTS

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
+        unique: true,
         required: true,
         minlength: 3
     },
@@ -30,11 +31,10 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true,
         min: 0,
-        default: 0
     },
     offerPercentage: {
         type: Number,
-        default: 0,
+        required: true,
         min: 0,
         max: 100
     },

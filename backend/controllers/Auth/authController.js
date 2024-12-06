@@ -21,7 +21,7 @@ export const verifyEmail = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     // Delete any existing signup OTPs for this email
     await OTP.deleteMany({ email, type: 'signup' });
-    // Store OTP temporarily in the database (with expiration time)
+    // Store OTP temporarily in the database 
     const otpData = new OTP({
       email,
       otp,
@@ -53,7 +53,6 @@ export const verifyEmail = async (req, res) => {
       .status(200)
       .json({
         message: "OTP sent to your email. Please verify to complete sign up.",
-        
       });
       
   } catch (error) {
@@ -66,21 +65,14 @@ export const verifyOtpAndSignUp = async (req, res) => {
   try {
     const { email, otp, name, phone, password } = req.body;
 
-    // Retrieve the OTP data for the given email
     const otpData = await OTP.findOne({ email, type: 'signup' });
 
-    // Check if OTP data exists and if the OTP matches
     if (!otpData) {
       return res.status(400).json({ error: "OTP not found or expired. Please request a new one." });
     }
 
     if (otpData.otp !== otp) {
       return res.status(400).json({ error: "Invalid OTP" });
-    }
-
-    // Optional: Check for OTP expiry (if applicable)
-    if (otpData.expiry && Date.now() > otpData.expiry) {
-      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
     }
 
     // Create the new user since OTP is valid
@@ -94,7 +86,6 @@ export const verifyOtpAndSignUp = async (req, res) => {
 
     await newUser.save();
 
-    // Delete the OTP entry after successful verification
     await OTP.deleteOne({ email, type: 'signup' });
 
     // Return success message
@@ -113,16 +104,17 @@ export const postSignIn = async (req, res) => {
     if (!user) {
       return res.status(400).json({ field: "email", message: "User does not exist" });
     }
-    
+    if (user.isBlocked) {
+      return res.status(403).json({ field: "email", message: "Your account has been blocked" });
+    }
   
-    // Validate password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ field: "password", message: "Password does not match" });
     }
 
 
-    // Generate JWT token
+    // JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -139,7 +131,9 @@ export const postSignIn = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        isVerified: user.isVerified,
         role: user.role,
+        isBlocked: user.isBlocked
       },
     });
   } catch (error) {
@@ -154,6 +148,11 @@ export const signUpGoogle = async (req,res)=>{
     const existingUser = await User.findOne({ email });
     
     if (existingUser) {
+
+      if (existingUser.isBlocked) {
+        return res.status(403).json({ error: "Your account has been blocked" });
+      }
+
       // User exists - check if verified
       if (!existingUser.isVerified) {
         return res.status(200).json({ message: 'New user created', isNewUser: true });
@@ -180,6 +179,8 @@ export const signUpGoogle = async (req,res)=>{
           email: existingUser.email,
           phone: existingUser.phone,
           role: existingUser.role,
+          isVerified: existingUser.isVerified,
+          isBlocked: existingUser.isBlocked
         }
       });
     }
@@ -235,7 +236,8 @@ export const completeGoogleSignup = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        isBlocked: user.isBlocked,
       }
     });
   } catch (error) {
@@ -244,46 +246,46 @@ export const completeGoogleSignup = async (req, res) => {
   }
 };
 
-export const handleGoogleSignIn = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const { user } = result;
+// export const handleGoogleSignIn = async () => {
+//   try {
+//     const result = await signInWithPopup(auth, googleProvider);
+//     const { user } = result;
     
-    try {
-      // Try to sign in or sign up with Google
-      const response = await signUpGoogle({
-        email: user.email,
-        name: user.displayName,
-      }).unwrap();
+//     try {
+//       // Try to sign in or sign up with Google
+//       const response = await signUpGoogle({
+//         email: user.email,
+//         name: user.displayName,
+//       }).unwrap();
       
-      if (response.message === 'New user created' && response.isNewUser) {
-        // New user - redirect to complete profile
-        navigate('/user/complete-signup', { 
-          state: { email: user.email }
-        });
-      } else {
-        // Existing user - navigate based on role
-        if (response.user.role === "admin") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/user/home");
-        }
-      }
-    } catch (error) {
-      console.error('Server error:', error);
-      setError('general', { 
-        type: 'server', 
-        message: error.data?.error || 'An error occurred during Google sign in' 
-      });
-    }
-  } catch (error) {
-    console.error('Google sign-in error:', error);
-    setError('general', { 
-      type: 'server', 
-      message: 'Could not sign in with Google' 
-    });
-  }
-};
+//       if (response.message === 'New user created' && response.isNewUser) {
+//         // New user - redirect to complete profile
+//         navigate('/user/complete-signup', { 
+//           state: { email: user.email }
+//         });
+//       } else {
+//         // Existing user - navigate based on role
+//         if (response.user.role === "admin") {
+//           navigate("/admin/dashboard");
+//         } else {
+//           navigate("/user/home");
+//         }
+//       }
+//     } catch (error) {
+//       console.error('Server error:', error);
+//       setError('general', { 
+//         type: 'server', 
+//         message: error.data?.error || 'An error occurred during Google sign in' 
+//       });
+//     }
+//   } catch (error) {
+//     console.error('Google sign-in error:', error);
+//     setError('general', { 
+//       type: 'server', 
+//       message: 'Could not sign in with Google' 
+//     });
+//   }
+// };
 
 
 export const sendOtpForgotPassword = async (req, res) => {
@@ -396,17 +398,17 @@ export const logout = async (req, res) => {
 
 export const resendOtp = async(req,res)=>{
   try {
-    const {email} = req.body
-    const prevOtp = await OTP.findOne({email});;
+    const {email, type = 'signup'} = req.body
+    const prevOtp = await OTP.findOne({email, type});
     if(prevOtp){
-      await OTP.deleteOne({email})
+      await OTP.deleteOne({email, type})
     }
     const otp = Math.floor(100000 + Math.random() * 900000);
     // Store OTP temporarily in the database (with expiration time)
     const otpData = new OTP({
       email,
       otp,
-      type: 'password-reset'
+      type
     });
     await otpData.save();
 
@@ -423,8 +425,8 @@ export const resendOtp = async(req,res)=>{
     const mailOptions = {
       from: "toolbear@gmail.com",
       to: email,
-      subject: "Your OTP for Reset Password ",
-      text: `Your OTP for reset password is: ${otp}`,
+      subject: type === 'signup' ? "Your OTP for Account Creation" : "Your OTP for Reset Password",
+      text: `Your OTP for ${type === 'signup' ? 'account creation' : 'reset password'} is: ${otp}`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -433,8 +435,8 @@ export const resendOtp = async(req,res)=>{
     res 
       .status(200)
       .json({
-        message: "OTP sent to your email. Please verify to complete sign up.",
-        
+        success: true,
+        message: `OTP sent to your email for ${type === 'signup' ? 'account creation' : 'password reset'}.`,
       });
   } catch (error) {
     console.error("Error in sending OTP:", error);

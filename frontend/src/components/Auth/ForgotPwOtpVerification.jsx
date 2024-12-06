@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
-import { useForgotPwOtpConfirmMutation, useForgotPwemailVerificationMutation } from '../../../App/features/rtkApis/authApi';
+import { useForgotPwOtpConfirmMutation, useForgotPwemailVerificationMutation, useResendOtpMutation } from '../../../App/features/rtkApis/authApi';
 
 const ForgotPwOtpVerification = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
@@ -13,12 +13,29 @@ const ForgotPwOtpVerification = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
+  const [timer, setTimer] = useState(30);
+  const [resendDisabled, setResendDisabled] = useState(true);
   
   if (!email) {
     return <Navigate to="/no-access" replace />;
   }
+
   const [forgotPwOtpConfirm, { isLoading: isVerifying }] = useForgotPwOtpConfirmMutation();
-  const [forgotPwemailVerification, { isLoading: isResending }] = useForgotPwemailVerificationMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+
+  useEffect(() => {
+    let interval = null;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    } else {
+      setResendDisabled(false);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
 
   const {
     register,
@@ -55,26 +72,31 @@ const ForgotPwOtpVerification = () => {
   };
 
   const handleResendOTP = async () => {
+    if (resendDisabled) return;
+    
+    setResendDisabled(true);
     try {
-      await forgotPwemailVerification({ email }).unwrap();
+      const response = await resendOtp({
+        email,
+        type: 'password-reset'
+      }).unwrap();
+      
+      if (response.success) {
+        setTimer(30); // Reset timer to 30 seconds
+      }
     } catch (err) {
+      console.error('Failed to resend OTP:', err);
       setError('general', { 
         type: 'server', 
-        message: 'Failed to resend OTP. Please try again.' 
+        message: 'Failed to resend OTP' 
       });
     }
   };
-
-  if (!email) {
-    navigate('/user/forgot-password/verify-email');
-    return null;
-  }
 
   return (
     <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
       p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
       <div className="mb-8 text-center relative">
-        {/* Tool-themed decorative elements */}
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
         <div className="absolute -bottom-4 -left-4 w-8 h-8 border-b-4 border-l-4 border-yellow-500"></div>
@@ -131,12 +153,12 @@ const ForgotPwOtpVerification = () => {
             <button
               type="button"
               onClick={handleResendOTP}
-              disabled={isResending}
+              disabled={resendDisabled || isResending}
               className="text-yellow-600 hover:text-yellow-700 text-sm font-semibold 
                 transition-all duration-300 border-b-2 border-transparent hover:border-yellow-600
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isResending ? "Resending..." : "Resend OTP"}
+              {isResending ? "Resending..." : `Resend OTP ${timer > 0 ? `(${timer}s)` : ''}`}
             </button>
           </div>
         </div>

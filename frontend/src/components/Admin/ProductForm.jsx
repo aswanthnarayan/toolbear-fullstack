@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import CustomInput from "../../components/CustomInput";
+import CustomSelect from "../../components/CustomSelect";
 import EasyCropperModal from "../../components/EasyCropperModal";
 import {
   Card,
   Typography,
   Button,
-  Select,
-  Option,
 } from "@material-tailwind/react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
-const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData, categories, brands }) => {
+const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData, categories, brands, error }) => {
+ 
   const navigate = useNavigate();
   const [mainImageFile, setMainImageFile] = useState(null);
   const [mainImagePreview, setMainImagePreview] = useState(
@@ -56,11 +56,38 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
         countryOfOrigin: "",
         warranty: "",
         includedItems: "",
-      }
+      },
+      isListed: false
     }
   });
 
-  // Initialize form with data when available
+  useEffect(() => {
+    // Register mainImage field for validation
+    register("mainImage", {
+      validate: () => {
+        if (mode === 'add' && !mainImageFile) {
+          return "Main product image is required";
+        }
+        return true;
+      }
+    });
+  }, [register, mode, mainImageFile]);
+  useEffect(() => {
+    if (error) {
+      if (error.field === 'name') {
+        setError('name', {
+          type: 'manual',
+          message: error.message
+        });
+      } else {
+        setError('general', {
+          type: 'manual',
+          message: error.message || 'Failed to update category'
+        });
+      }
+    }
+  }, [error, setError]);
+
   useEffect(() => {
     if (mode === 'edit' && initialData && categories?.length && brands?.length) {
       const categoryId = categories.find(cat => cat.name === initialData.category)?._id;
@@ -74,12 +101,12 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
         price: initialData.price,
         stock: initialData.stock,
         offerPercentage: initialData.offerPercentage,
-        specifications: initialData.specifications
+        specifications: initialData.specifications,
+        isListed: initialData.isListed
       });
     }
   }, [mode, initialData, categories, brands, reset]);
 
-  // Watch values for category and brand
   const selectedCategory = watch("category");
   const selectedBrand = watch("brand");
 
@@ -113,6 +140,7 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       }
     },
     offerPercentage: {
+      required: "Offer percentage is required",
       validate: {
         isNumber: value => {
           if (value === "" || value === null) return true;
@@ -150,6 +178,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
     },
     "specifications.includedItems": { 
       required: "Included items are required"
+    },
+    isListed: {
+      required: "Please select a listing status"
     }
   };
 
@@ -162,16 +193,14 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
 
   useEffect(() => {
     if (initialData && mode === 'edit') {
-      // Set main image preview if exists
+      // image preview 
       setMainImagePreview(initialData.mainImage?.imageUrl || initialData.mainImage);
       
-      // Set additional images previews if they exist
       const additionalPreviews = initialData.additionalImages?.map(img => img.imageUrl || img) || [null, null, null];
       setAdditionalImagePreviews(additionalPreviews);
     }
   }, [initialData, mode]);
 
-  // Custom select handler
   const handleSelectChange = async (fieldName, value) => {
     setValue(fieldName, value, {
       shouldValidate: true,
@@ -179,23 +208,23 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       shouldTouch: true
     });
     
-    // Trigger validation immediately
     await trigger(fieldName);
   };
 
   const handleImageSelect = (e, type, index = null) => {
-    clearErrors("image");
+    clearErrors("mainImage");
+    clearErrors("additionalImages");
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("image", {
+        setError(type === 'main' ? "mainImage" : "additionalImages", {
           type: "manual",
           message: "Image size should be less than 5MB"
         });
         return;
       }
       if (!file.type.startsWith("image/")) {
-        setError("image", {
+        setError(type === 'main' ? "mainImage" : "additionalImages", {
           type: "manual",
           message: "Please select an image file"
         });
@@ -243,48 +272,58 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
   };
 
   const onSubmit = async (data) => {
-    if (!mainImageFile && mode === 'add') {
-      setError("image", {
-        type: "manual",
-        message: "Main product image is required"
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    
-    // Add text fields
-    formData.append('name', data.name);
-    formData.append('desc', data.desc);
-    formData.append('category', data.category);
-    formData.append('brand', data.brand);
-    formData.append('price', data.price);
-    formData.append('stock', data.stock);
-    // Handle offer percentage - ensure it's a number or null
-    const offerPercentage = data.offerPercentage === '' ? null : Number(data.offerPercentage);
-    formData.append('offerPercentage', offerPercentage === null ? '' : offerPercentage.toString());
-    formData.append('specifications', JSON.stringify(data.specifications));
-
-    // Add main image only if changed
-    if (mainImageFile) {
-      formData.append('mainImage', mainImageFile);
-    }
-
-    // Add additional images that have been changed
-    additionalImages.forEach((image, index) => {
-      if (image) {
-        formData.append('additionalImages', image);
-      } else if (mode === 'edit' && additionalImagePreviews[index]) {
-        // Keep existing image URL for unchanged images in edit mode
-        formData.append('additionalImageUrls', additionalImagePreviews[index]);
-      }
-    });
-
     try {
-      await submitForm(formData);
-      navigate('/admin/products');
+      if (!mainImageFile && mode === 'add') {
+        setError("image", {
+          type: "manual",
+          message: "Main product image is required"
+        });
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("desc", data.desc);
+      formData.append("category", data.category);
+      formData.append("brand", data.brand);
+      formData.append("price", data.price);
+      formData.append("stock", data.stock);
+      
+      // Handle offer percentage
+      const offerPercentage = data.offerPercentage === '' ? null : Number(data.offerPercentage);
+      formData.append('offerPercentage', offerPercentage === null ? '' : offerPercentage.toString());
+      
+      // Add specifications
+      formData.append('specifications', JSON.stringify(data.specifications));
+      formData.append("isListed", data.isListed);
+
+      // Handle main image
+      if (mainImageFile) {
+        formData.append('mainImage', mainImageFile);
+      }
+
+      // Handle additional images
+      additionalImages.forEach((image, index) => {
+        if (image) {
+          formData.append('additionalImages', image);
+        } else if (mode === 'edit' && additionalImagePreviews[index]) {
+          formData.append('additionalImageUrls', additionalImagePreviews[index]);
+        }
+      });
+
+      const result = await submitForm(formData);
+      if (result?.error) {
+        // Handle the error returned from parent component
+        if (result.error.field === 'name') {
+          setError('name', {
+            type: 'manual',
+            message: result.error.message
+          });
+          return;
+        }
+      }
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error('Error in form submission:', error);
     }
   };
 
@@ -319,54 +358,32 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
             </div>
 
             <div className="mt-4 relative">
-                <Select
-                  label="Select Category"
-                  value={selectedCategory || ""}
-                  onChange={(value) => {
-                    handleSelectChange("category", value);
-                  }}
-                  error={Boolean(errors.category)}
-                  selected={(element) => 
-                    element && 
-                    categories?.find(cat => cat._id === selectedCategory)?.name
-                  }
-                >
-                  <Option value="">Select a category</Option>
-                  {categories?.map((category) => (
-                    <Option key={category._id} value={category._id}>
-                      {category.name}
-                    </Option>
-                  ))}
-                </Select>
-                {errors.category && (
-                  <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
-                )}
-              </div>
+              <CustomSelect
+                label="Select Category"
+                value={watch("category") || ""}
+                onChange={(e) => handleSelectChange("category", e.target.value)}
+                error={errors.category?.message}
+                options={categories?.map(category => ({
+                  value: category._id,
+                  label: category.name
+                })) || []}
+                placeholder="Select a category"
+              />
+            </div>
 
             <div className="mt-4 relative">
-                <Select
-                  label="Select Brand"
-                  value={selectedBrand || ""}
-                  onChange={(value) => {
-                    handleSelectChange("brand", value);
-                  }}
-                  error={Boolean(errors.brand)}
-                  selected={(element) => 
-                    element && 
-                    brands?.find(brand => brand._id === selectedBrand)?.name
-                  }
-                >
-                  <Option value="">Select a brand</Option>
-                  {brands?.map((brand) => (
-                    <Option key={brand._id} value={brand._id}>
-                      {brand.name}
-                    </Option>
-                  ))}
-                </Select>
-                {errors.brand && (
-                  <p className="text-red-500 text-sm mt-1">{errors.brand.message}</p>
-                )}
-              </div>
+              <CustomSelect
+                label="Select Brand"
+                value={watch("brand") || ""}
+                onChange={(e) => handleSelectChange("brand", e.target.value)}
+                error={errors.brand?.message}
+                options={brands?.map(brand => ({
+                  value: brand._id,
+                  label: brand.name
+                })) || []}
+                placeholder="Select a brand"
+              />
+            </div>
           </div>
 
           <div>
@@ -454,7 +471,6 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               )}
             </div>
 
-            {/* Additional Images Section */}
             <div className="mb-6">
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Additional Images (Max 3)
@@ -520,37 +536,58 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               />
 
               <div className="relative">
-                <Select
+                <CustomSelect
                   label="Condition"
                   value={watch("specifications.condition") || ""}
-                  onChange={(value) => handleSelectChange("specifications.condition", value)}
-                  error={Boolean(errors.specifications?.condition)}
-                >
-                  <Option value="">Select a condition</Option>
-                  <Option value="New">New</Option>
-                  <Option value="Refurbished">Refurbished</Option>
-                  <Option value="Used">Used</Option>
-                </Select>
-                {errors.specifications?.condition && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.specifications.condition.message}
-                  </p>
-                )}
+                  onChange={(e) => handleSelectChange("specifications.condition", e.target.value)}
+                  error={errors.specifications?.condition?.message}
+                  options={[
+                    { value: "New", label: "New" },
+                    { value: "Used", label: "Used" },
+                    { value: "Refurbished", label: "Refurbished" }
+                  ]}
+                  placeholder="Select a condition"
+                />
               </div>
 
-              <CustomInput
-                label="Country of Origin"
-                type="text"
-                {...register("specifications.countryOfOrigin")}
-                error={errors.specifications?.countryOfOrigin?.message}
-              />
+              <div className="relative">
+                <CustomSelect
+                  label="Country of Origin"
+                  value={watch("specifications.countryOfOrigin") || ""}
+                  onChange={(e) => handleSelectChange("specifications.countryOfOrigin", e.target.value)}
+                  error={errors.specifications?.countryOfOrigin?.message}
+                  options={[
+                    { value: "China", label: "China" },
+                    { value: "India", label: "India" },
+                    { value: "USA", label: "USA" },
+                    { value: "Germany", label: "Germany" },
+                    { value: "Japan", label: "Japan" },
+                    { value: "South Korea", label: "South Korea" },
+                    { value: "Taiwan", label: "Taiwan" },
+                    { value: "Other", label: "Other" }
+                  ]}
+                  placeholder="Select country of origin"
+                />
+              </div>
 
-              <CustomInput
-                label="Warranty"
-                type="text"
-                {...register("specifications.warranty")}
-                error={errors.specifications?.warranty?.message}
-              />
+              <div className="relative">
+                <CustomSelect
+                  label="Warranty"
+                  value={watch("specifications.warranty") || ""}
+                  onChange={(e) => handleSelectChange("specifications.warranty", e.target.value)}
+                  error={errors.specifications?.warranty?.message}
+                  options={[
+                    { value: "No Warranty", label: "No Warranty" },
+                    { value: "6 Months", label: "6 Months" },
+                    { value: "1 Year", label: "1 Year" },
+                    { value: "2 Years", label: "2 Years" },
+                    { value: "3 Years", label: "3 Years" },
+                    { value: "5 Years", label: "5 Years" },
+                    { value: "Lifetime", label: "Lifetime" }
+                  ]}
+                  placeholder="Select warranty period"
+                />
+              </div>
 
               <CustomInput
                 label="Included Items"
@@ -558,6 +595,29 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 {...register("specifications.includedItems")}
                 error={errors.specifications?.includedItems?.message}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="col-span-2">
+            <Typography variant="h5" color="blue-gray" className="mb-4">
+              Product Status
+            </Typography>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative">
+                <CustomSelect
+                  label="Listing Status"
+                  value={watch("isListed") || ""}
+                  onChange={(e) => handleSelectChange("isListed", e.target.value)}
+                  error={errors.isListed?.message}
+                  options={[
+                    { value: true, label: "Listed" },
+                    { value: false, label: "Not Listed" }
+                  ]}
+                  placeholder="Select listing status"
+                />
+              </div>
             </div>
           </div>
         </div>

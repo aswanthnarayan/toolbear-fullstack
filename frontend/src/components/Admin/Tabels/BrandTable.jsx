@@ -186,7 +186,6 @@ export function BrandTable() {
         )}
       </CardBody>
 
-      {/* Confirmation Modal */}
       <AlertModal
         open={modalOpen}
         handleOpen={handleModalOpen}

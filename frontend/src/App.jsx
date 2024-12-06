@@ -11,7 +11,7 @@ import DealsPage from "./pages/User/DealsPage";
 import Layout from "./components/utils/Layout";
 import AuthLayout from "./components/utils/AuthLayout";
 import { ProtectedRoute } from "./components/utils/ProtectedRoute";
-import ProductsPage from "./pages/User/ProductsPage";
+import AllProductsPage from "./pages/User/AllProductsPage";
 import AdminHomePage from "./pages/Admin/AdminHomePage";
 import Dashboard from "./pages/Admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
@@ -27,6 +27,7 @@ import AddBrandPage from "./pages/Admin/AddBrandPage";
 import EditBrandPage from "./pages/Admin/EditBrandPage";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import EditProductPage from "./pages/Admin/EditProductPage";
+import SingleProductPage from "./pages/User/SingleProductPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -44,9 +45,10 @@ function App() {
           <Route path="/" element={<Navigate to={getHomeRoute()} />} />
           <Route path="/user/home" element={<Navigate to="/user/deals" />} />
           <Route path="/user/deals" element={<DealsPage />} />
-          <Route path="/user/products" element={<ProductsPage />} />
+          <Route path="/user/all-products" element={<AllProductsPage />} />
           <Route path="/user/categories" element={<CategoriesPage />} />
           <Route path="/user/brands" element={<BrandsPage />} />
+          <Route path="/user/products/:id" element={<SingleProductPage />} />
         </Route>
 
 

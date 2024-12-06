@@ -15,6 +15,17 @@ export const createProduct = async (req, res) => {
             isListed
         } = req.body;
 
+
+        const existingProduct = await Product.findOne({ 
+            name: { $regex: new RegExp(`^${name}$`, 'i') }
+          });
+          if (existingProduct) {
+            return res.status(409).json({ 
+              field: 'name',
+              message: "Product with this name already exists" 
+            });
+          }
+
         // Basic validation
         if (!name || !desc || !category || !brand || !price || stock === undefined) {
             return res.status(400).json({
@@ -185,8 +196,8 @@ export const getAllProducts = async (req, res) => {
         const [products, totalCount] = await Promise.all([
             Product.find(query)
                 .select('name desc mainImage additionalImages price stock offerPercentage isListed createdAt category brand specifications')
-                .populate('category', 'name')
-                .populate('brand', 'name')
+                .populate('category', 'name isListed')
+                .populate('brand', 'name isListed')
                 .lean()
                 .sort({ createdAt: -1 })
                 .skip(skip)
@@ -194,12 +205,17 @@ export const getAllProducts = async (req, res) => {
             Product.countDocuments(query)
         ]);
 
-        // Map products to include only the specific product offer
+        // Map products to include brand and category data with listing status
         const mappedProducts = products.map(product => ({
             ...product,
-            category: product.category.name,
-            brand: product.brand.name,
-            // Keep only the product's specific offer percentage
+            category: {
+                name: product.category.name,
+                isListed: product.category.isListed
+            },
+            brand: {
+                name: product.brand.name,
+                isListed: product.brand.isListed
+            },
             offerPercentage: product.offerPercentage || 0
         }));
 
@@ -232,6 +248,18 @@ export const updateProduct = async (req, res) => {
             specifications,
             additionalImageUrls = []
         } = req.body;
+
+
+        const existingProduct = await Product.findOne({ 
+            name: { $regex: new RegExp(`^${name}$`, 'i') },
+            _id: { $ne: productId } 
+          });
+          if (existingProduct) {
+            return res.status(409).json({ 
+              field: 'name',
+              message: "Product with this name already exists" 
+            });
+          }
 
         // Find existing product
         const product = await Product.findById(productId);

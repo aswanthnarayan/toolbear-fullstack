@@ -50,10 +50,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
         section2: {
           title: initialData?.about?.section2?.title || "",
           desc: initialData?.about?.section2?.desc || ""
-        },
-        section3: {
-          title: initialData?.about?.section3?.title || "",
-          desc: initialData?.about?.section3?.desc || ""
         }
       }
     }
@@ -163,22 +159,30 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
 
   const onSubmit = async (data) => {
     try {
-      if (mode === "add" && !logoFile) {
-        setError("logo", {
-          type: "manual",
-          message: "Logo is required"
-        });
-        return;
+      if (mode === "add") {
+        if (!logoFile) {
+          setError("logo", {
+            type: "manual",
+            message: "Logo is required"
+          });
+          return;
+        }
+        
+        if (!bannerImages.some(banner => banner)) {
+          setError("banners", {
+            type: "manual",
+            message: "At least one banner image is required"
+          });
+          return;
+        }
       }
 
       const formData = new FormData();
       
-      // Append files only if they've been changed
       if (logoFile) {
         formData.append("logo", logoFile);
       }
 
-      // Append banners with their positions
       bannerImages.forEach((banner, index) => {
         if (banner && banner instanceof File) {  // Only append new/changed banners
           formData.append("banners", banner);
@@ -186,7 +190,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
         }
       });
       
-      // Append existing banner URLs that weren't changed
       formData.append("existingBanners", JSON.stringify(
         bannerPreviews.map((preview, index) => ({
           position: index,
@@ -195,7 +198,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
         }))
       ));
 
-      // Append other form data as strings
       formData.append("name", data.name);
       formData.append("desc", data.desc);
       formData.append("offerPercentage", data.offerPercentage);
@@ -210,14 +212,20 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           title: data.about.section2.title,
           desc: data.about.section2.desc
         },
-        section3: {
-          title: data.about.section3.title,
-          desc: data.about.section3.desc
-        }
       }));
 
-      await submitForm(formData);
-      navigate(-1);
+      const result = await submitForm(formData);
+      if (result && result.field) {
+        setError(result.field, {
+          type: "manual",
+          message: result.message
+        });
+        return;
+      }
+      
+      // Navigate to brands list after successful submission
+      navigate('/admin/brands');
+      
     } catch (error) {
       console.error("Error submitting brand form:", error);
       
@@ -229,12 +237,25 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           message: error.data.message
         });
       } 
-      // Handle duplicate name error
       else if (error.data?.message?.includes("already exists")) {
         setError("name", {
           type: "manual",
           message: "A brand with this name already exists"
         });
+      }
+      else if (error.data?.message?.includes("Logo and at least one banner image")) {
+        if (!logoFile) {
+          setError("logo", {
+            type: "manual",
+            message: "Logo is required"
+          });
+        }
+        if (!bannerImages.some(banner => banner)) {
+          setError("banners", {
+            type: "manual",
+            message: "At least one banner image is required"
+          });
+        }
       }
     }
   };
@@ -243,13 +264,11 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
 
   return (
     <form className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
-      {/* Form Heading */}
       <Typography variant="h4" color="blue-gray" className="mb-6">
         {mode === "add" ? "Add New Brand" : "Edit Brand"}
       </Typography>
       
       <div className="grid grid-cols-1 gap-6">
-        {/* General Information */}
         <div className="space-y-4">
           <Typography variant="h6" color="blue-gray" className="mb-3">
             General Information
@@ -319,12 +338,11 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           </div>
         </div>
 
-        {/* Logo Section */}
         <div className="mb-6">
           <Typography variant="h6" color="blue-gray" className="mb-3">
             Brand Logo
           </Typography>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             <div className="w-40 h-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative">
               {logoPreview ? (
                 <img
@@ -348,7 +366,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           </div>
         </div>
 
-        {/* Banner Images Section */}
         <div className="mb-6">
           <Typography variant="h6" color="blue-gray" className="mb-3">
             Banner Images (Max 3)
@@ -383,7 +400,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           )}
         </div>
 
-        {/* About Section 1 */}
         <div className="space-y-4">
           <Typography variant="h6" color="blue-gray" className="mb-3">
             About Section 1
@@ -413,7 +429,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           />
         </div>
 
-        {/* About Section 2 */}
         <div className="space-y-4">
           <Typography variant="h6" color="blue-gray" className="mb-3">
             About Section 2
@@ -443,7 +458,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
           />
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-end gap-4">
           <Button
             variant="outlined"
@@ -472,7 +486,6 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
         </div>
       </div>
 
-      {/* Image Cropper Modal */}
       {showCropper && currentImage && (
         <EasyCropperModal
           image={currentImage}

@@ -11,6 +11,17 @@ export const createBrand = async (req, res) => {
             isListed
         } = req.body;
 
+        const existingBrand = await Brand.findOne({ 
+          name: { $regex: new RegExp(`^${name}$`, 'i') }
+        });
+        
+        if (existingBrand) {
+          return res.status(409).json({ 
+            field: 'name',
+            message: "A brand with this name already exists" 
+          });
+        }
+
         // Basic validation
         if (!name || !desc || !offerPercentage) {
             return res.status(400).json({
@@ -194,6 +205,18 @@ export const updateBrand = async (req, res) => {
   try {
     const { brandId } = req.params;
     const updateData = { ...req.body };
+    
+    const existingBrand = await Brand.findOne({ 
+      name: { $regex: new RegExp(`^${updateData.name}$`, 'i') }, 
+      _id: { $ne: brandId } 
+    });
+    
+    if (existingBrand) {
+      return res.status(409).json({ 
+        field: 'name',
+        message: "A brand with this name already exists" 
+      });
+    }
 
     // Handle file uploads if present
     if (req.files) {

@@ -53,7 +53,6 @@ const ChangePassword = () => {
     <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
       p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
       <div className="mb-8 text-center relative">
-        {/* Tool-themed decorative elements */}
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
         <div className="absolute -bottom-4 -left-4 w-8 h-8 border-b-4 border-l-4 border-yellow-500"></div>

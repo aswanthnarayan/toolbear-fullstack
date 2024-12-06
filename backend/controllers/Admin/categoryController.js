@@ -5,6 +5,17 @@ import { cloudinary, bufferToDataURI } from '../../utils/cloudinaryConfig.js';
 export const createCategory = async (req, res) => {
   try {
     const { name, desc, offerPercentage, isListed } = req.body;
+
+    const existingCategory = await Category.findOne({ 
+      name: { $regex: new RegExp(`^${name}$`, 'i') }
+    });
+    
+    if (existingCategory) {
+      return res.status(409).json({ 
+        field: 'name',
+        message: "Category with this name already exists" 
+      });
+    }
     
     if (!req.file) {
       return res.status(400).json({ message: "Image is required" });
@@ -80,6 +91,19 @@ export const updateCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
     const { name, desc, offerPercentage, isListed } = req.body;
+    
+    // Check if another category with the same name exists (excluding current category)
+    const existingCategory = await Category.findOne({ 
+      name: { $regex: new RegExp(`^${name}$`, 'i') }, 
+      _id: { $ne: categoryId } 
+    });
+    
+    if (existingCategory) {
+      return res.status(409).json({ 
+        field: 'name',
+        message: "Category with this name already exists" 
+      });
+    }
     const category = await Category.findById(categoryId);
     
     if (!category) {
@@ -111,7 +135,7 @@ export const updateCategory = async (req, res) => {
     // Update other fields
     category.name = name || category.name;
     category.desc = desc || category.desc;
-    category.offerPercentage = Number(offerPercentage) || category.offerPercentage;
+    category.offerPercentage = offerPercentage !== undefined ? Number(offerPercentage) : category.offerPercentage;
     category.isListed = isListed === 'true';
 
     await category.save();

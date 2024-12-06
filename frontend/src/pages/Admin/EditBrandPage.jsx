@@ -1,18 +1,29 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetBrandByIdQuery, useUpdateBrandMutation } from "../../../App/features/rtkApis/adminApi";
 import BrandForm from "../../components/Admin/BrandForm";
 import { Spinner } from "@material-tailwind/react";
 
+
 const EditBrandPage = () => {
+  const navigate = useNavigate();
 
   const { id } = useParams();
   const { data: brand, isLoading: isFetching } = useGetBrandByIdQuery(id);
-  const [updateBrand, { isLoading: isUpdating }] = useUpdateBrandMutation();
+  const [updateBrand, { isLoading: isUpdating, error: updateError }] = useUpdateBrandMutation();
   
   const handleSubmit = async (formData) => {
-    await updateBrand({ brandId: id, formData });
-  };;
+    try {
+      await updateBrand({ brandId: id, formData }).unwrap();
+      navigate('/admin/brands');  
+    } catch (error) {
+      console.error('Failed to update brand:', error);
+      if (error.data?.field === 'name') {
+        return { field: 'name', message: error.data.message };
+      }
+      return false; // Prevent form reset
+    }
+  };
 
   if (isFetching) {
     return (
@@ -24,10 +35,11 @@ const EditBrandPage = () => {
 
   return (
     <BrandForm
-    mode="edit"
+      mode="edit"
       onSubmit={handleSubmit}
       isLoading={isUpdating}
       initialData={brand}
+      error={updateError?.data} 
     />
   );
 };

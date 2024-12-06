@@ -7,6 +7,7 @@ export const authApi = createApi({
     verifyEmail: builder.mutation({
       query: (data) => ({
         url: 'user/verify-email',
+        
         method: 'POST',
         body: data,
       }),
@@ -54,8 +55,14 @@ export const authApi = createApi({
         method:'POST',
         body:data,
       })
-    })
-    ,
+    }),
+    resendOtp: builder.mutation({
+      query: (data) => ({
+        url: 'user/resend-otp',
+        method: 'POST',
+        body: data,
+      }),
+    }),
     createNewPw:builder.mutation({
       query:(data)=>({
         url:'user/forgot-password/change-password',
@@ -83,5 +90,6 @@ export const {
   useCompleteGoogleSignupMutation,
   useForgotPwemailVerificationMutation,
   useForgotPwOtpConfirmMutation,
+  useResendOtpMutation,
   useCreateNewPwMutation
 } = authApi;

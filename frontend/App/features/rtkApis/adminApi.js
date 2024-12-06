@@ -5,8 +5,6 @@ export const adminApi = createApi({
     baseQuery: fetchBaseQuery({ 
         baseUrl: '/api/admin',
         prepareHeaders: (headers) => {
-            // Remove Content-Type header for FormData
-            // Let the browser set it automatically with the correct boundary
             if (headers.get('Content-Type')?.includes('multipart/form-data')) {
                 headers.delete('Content-Type');
             }
@@ -44,10 +42,8 @@ export const adminApi = createApi({
                 url: '/categories/new',
                 method: 'POST',
                 body: formData,
-                // Don't set Content-Type header, let browser handle it
                 formData: true,
-                // Increase timeout for large uploads
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Categories'],
         }),
@@ -72,7 +68,7 @@ export const adminApi = createApi({
                 method: 'PATCH',
                 body: formData,
                 formData: true,
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Categories'],
         }),
@@ -95,7 +91,7 @@ export const adminApi = createApi({
                 method: 'POST',
                 body: formData,
                 formData: true,
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Brands'],
         }),
@@ -119,7 +115,7 @@ export const adminApi = createApi({
                 method: 'PATCH',
                 body: formData,
                 formData: true,
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Brands'],
         }),

@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useCreateUserMutation } from '../../../App/features/rtkApis/authApi';
+import { useCreateUserMutation, useResendOtpMutation } from '../../../App/features/rtkApis/authApi';
 
 const EmailVerification = () => {
   const { state } = useLocation();
   const [otp, setOtp] = useState('');
   const [createUser, { isLoading, error }] = useCreateUserMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
   const navigate = useNavigate();
+  const [timer, setTimer] = useState(30);
+  const [resendDisabled, setResendDisabled] = useState(true);
+
+  useEffect(() => {
+    let interval = null;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    } else {
+      setResendDisabled(false);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
 
   if (!state?.email) {
     return <Navigate to="/no-access" replace />;
@@ -18,7 +35,6 @@ const EmailVerification = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const theme = useSelector((state) => state.theme.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
-  const [isResending, setIsResending] = useState(false);
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -40,12 +56,20 @@ const EmailVerification = () => {
   };
 
   const handleResendOTP = async () => {
-    setIsResending(true);
+    if (resendDisabled) return;
+    
+    setResendDisabled(true);
     try {
-      // Your resend OTP logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
-    } finally {
-      setIsResending(false);
+      const response = await resendOtp({
+        email: state.email,
+        type: 'signup'
+      }).unwrap();
+      
+      if (response.success) {
+        setTimer(30); // Reset timer to 30 seconds
+      }
+    } catch (err) {
+      console.error('Failed to resend OTP:', err);
     }
   };
 
@@ -53,7 +77,6 @@ const EmailVerification = () => {
     <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
       p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
       <div className="mb-8 text-center relative">
-        {/* Tool-themed decorative elements */}
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
         <div className="absolute -bottom-4 -left-4 w-8 h-8 border-b-4 border-l-4 border-yellow-500"></div>
@@ -71,7 +94,6 @@ const EmailVerification = () => {
       </div>
       
       <form className="space-y-6" >
-        {/* Input field with industrial-themed animation */}
         <div className="transform transition-all duration-300 hover:translate-x-1">
           <CustomInput
             label="OTP"
@@ -106,12 +128,12 @@ const EmailVerification = () => {
             <button
               type="button"
               onClick={handleResendOTP}
-              disabled={isResending}
+              disabled={resendDisabled || isResending}
               className="text-yellow-600 hover:text-yellow-700 text-sm font-semibold 
                 transition-all duration-300 border-b-2 border-transparent hover:border-yellow-600
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isResending ? "Resending..." : "Resend OTP"}
+              {isResending ? "Resending..." : `Resend OTP ${timer > 0 ? `(${timer}s)` : ''}`}
             </button>
           </div>
         </div>

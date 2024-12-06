@@ -7,16 +7,28 @@ import {
   useGetAllCategoriesQuery, 
   useGetAllBrandsQuery 
 } from '../../../App/features/rtkApis/adminApi';
+import { useNavigate } from "react-router-dom";
+
 
 const EditProductPage = () => {
   const { id } = useParams();
-  const [updateProduct, { isLoading }] = useUpdateProductMutation();
+  const [updateProduct, { isLoading, error: updateError }] = useUpdateProductMutation();
   const { data: productData, isLoading: isProductLoading } = useGetProductByIdQuery(id);
   const { data: categoriesData } = useGetAllCategoriesQuery({ page: 1, limit: 100 });
   const { data: brandsData } = useGetAllBrandsQuery({ page: 1, limit: 100 });
+  const navigate = useNavigate();
 
   const handleSubmit = async (formData) => {
-    await updateProduct({ productId: id, formData });
+    try {
+      const result = await updateProduct({ productId: id, formData }).unwrap();
+      navigate('/admin/products');
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      if (error.status === 409) {
+        return { error: error.data }; // Return error data to the form
+      }
+      return false; // Prevent form reset for other errors
+    }
   };
 
   if (isProductLoading) {
@@ -33,6 +45,7 @@ const EditProductPage = () => {
         categories={categoriesData?.categories || []}
         brands={brandsData?.brands || []}
         initialData={productData}
+        error={updateError?.data}
       />
     </div>
   );

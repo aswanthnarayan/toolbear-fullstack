@@ -34,8 +34,6 @@ export function CategoryTable() {
     search: searchQuery
   });
 
-  console.log(data);
-  
 
   const [toggleList, { isLoading: isToggling }] = useToggleListCategoryMutation();
 

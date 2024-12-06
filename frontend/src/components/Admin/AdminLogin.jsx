@@ -12,7 +12,6 @@ const AdminSigninComponent = () => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <Typography variant="h3" className="text-3xl text-center mb-6">ADMIN LOGIN</Typography>
 
-            {/* Username Input */}
             <CustomInput 
               type="text" 
               placeholder="Enter Your Username" 
@@ -21,7 +20,6 @@ const AdminSigninComponent = () => {
               onChange=''
             />
 
-            {/* Password Input */}
             <CustomInput 
               type="password" 
               placeholder="Enter Your Password" 
@@ -30,9 +28,7 @@ const AdminSigninComponent = () => {
               onChange='' 
             />
 
-            {/* General Error (Invalid credentials) */}
 
-            {/* Sign In Button */}
             <CustomButton type="submit"  className="mt-4 w-full" >
               'SIGN IN'
             </CustomButton>
@@ -40,7 +36,6 @@ const AdminSigninComponent = () => {
         </Card>
       </div>
 
-      {/* Image Section */}
       <div className="hidden md:block w-1/2 h-full">
         <img 
           src='' 

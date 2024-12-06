@@ -94,13 +94,11 @@ const SignUp = () => {
         }
       }
     } catch (error) {
-      if (error.code !== 'auth/cancelled-popup-request') {
         console.error('Google sign-up error:', error);
         setError('general', { 
           type: 'server', 
           message: 'Could not sign up with Google' 
         });
-      }
     }
   };
 
@@ -108,7 +106,6 @@ const SignUp = () => {
     <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
       p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
       <div className="mb-8 text-center relative">
-        {/* Tool-themed decorative elements */}
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
         <div className="absolute -bottom-4 -left-4 w-8 h-8 border-b-4 border-l-4 border-yellow-500"></div>
@@ -130,7 +127,6 @@ const SignUp = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-5">
-          {/* Input fields with industrial-themed animation */}
           <div className="transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
               label="Name"

@@ -165,12 +165,12 @@ export function ProductsTable() {
                     </td>
                     <td className={classes}>
                       <Typography variant="small" color="blue-gray">
-                        {product.category}
+                        {product.category?.name || '-'}
                       </Typography>
                     </td>
                     <td className={classes}>
                       <Typography variant="small" color="blue-gray">
-                        {product.brand}
+                        {product.brand?.name || '-'}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -191,9 +191,10 @@ export function ProductsTable() {
                     <td className={classes}>
                       <div className="w-max">
                         <SwitchButton
-                          checked={product.isListed}
+                          id={product._id}
+                          checked={!product.isListed}
                           onChange={() => handleSwitchClick(product)}
-                          icon={product.isListed ? <FaEyeSlash /> : <FaEye />}
+                          icon={!product.isListed ? <FaEyeSlash /> : <FaEye />}
                           activeText="Unlisted"
                           inactiveText="Listed"
                         />
@@ -246,13 +247,13 @@ export function ProductsTable() {
       <AlertModal
         open={modalOpen}
         handleOpen={handleModalOpen}
-        heading={selectedProduct?.isListed ? "Unlist Product" : "List Product"}
+        heading={!selectedProduct?.isListed ? "List Product" : "Unlist Product"}
         message={`Are you sure you want to ${selectedProduct?.isListed ? 'unlist' : 'list'} ${selectedProduct?.name}?`}
-        confirmText={selectedProduct?.isListed ? "Unlist" : "List"}
-        confirmColor={selectedProduct?.isListed ? "red" : "green"}
+        confirmText={!selectedProduct?.isListed ? "List" : "Unlist"}
+        confirmColor={!selectedProduct?.isListed ? "green" : "red"}
         onConfirm={() => handleListToggle(selectedProduct?._id)}
         loading={isToggling}
-        icon={selectedProduct?.isListed ? <FaEyeSlash className="text-red-500" /> : <FaEye className="text-green-500" />}
+        icon={!selectedProduct?.isListed ? <FaEye className="text-green-500" /> : <FaEyeSlash className="text-red-500" />}
       />
     </Card>
   );

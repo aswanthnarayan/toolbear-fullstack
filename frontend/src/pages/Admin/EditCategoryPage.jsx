@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 const EditCategoryPage = () => {
   const { id } = useParams();
   const { data: category, isLoading: isFetching } = useGetCategoryByIdQuery(id);
-  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+  const [updateCategory, { isLoading: isUpdating, error: updateError }] = useUpdateCategoryMutation();
   const navigate = useNavigate();
 
   const handleSubmit = async (formData) => {
@@ -20,6 +20,7 @@ const EditCategoryPage = () => {
       navigate('/admin/categories');  
     } catch (error) {
       console.error('Failed to update category:', error);
+      return false; // Prevent form reset
     }
   };
 
@@ -37,6 +38,7 @@ const EditCategoryPage = () => {
       onSubmit={handleSubmit}
       isLoading={isUpdating}
       mode="edit"
+      error={updateError?.data} // Pass the error data from RTK Query
     />
   );
 };
