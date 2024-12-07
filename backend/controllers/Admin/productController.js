@@ -1,5 +1,7 @@
 import {Product} from "../../models/ProductSchema.js";
 import { cloudinary, bufferToDataURI } from '../../utils/cloudinaryConfig.js';
+import HttpStatusEnum from '../../constants/httpStatus.js';
+import MessageEnum from '../../constants/messages.js';
 
 export const createProduct = async (req, res) => {
     try {
@@ -15,21 +17,20 @@ export const createProduct = async (req, res) => {
             isListed
         } = req.body;
 
-
         const existingProduct = await Product.findOne({ 
             name: { $regex: new RegExp(`^${name}$`, 'i') }
           });
           if (existingProduct) {
-            return res.status(409).json({ 
+            return res.status(HttpStatusEnum.CONFLICT).json({ 
               field: 'name',
-              message: "Product with this name already exists" 
+              message: MessageEnum.Admin.PRODUCT_EXISTS 
             });
           }
 
         // Basic validation
         if (!name || !desc || !category || !brand || !price || stock === undefined) {
-            return res.status(400).json({
-                message: "All fields are required"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.ALL_FIELDS_REQUIRED
             });
         }
 
@@ -39,47 +40,47 @@ export const createProduct = async (req, res) => {
         const offerPercentageNum = Number(offerPercentage || 0);
 
         if (isNaN(priceNum) || priceNum < 0) {
-            return res.status(400).json({
-                message: "Price must be a valid positive number"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.INVALID_PRICE
             });
         }
 
         if (isNaN(stockNum) || stockNum < 0) {
-            return res.status(400).json({
-                message: "Stock must be a valid non-negative number"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.INVALID_STOCK
             });
         }
 
         if (isNaN(offerPercentageNum) || offerPercentageNum < 0 || offerPercentageNum > 100) {
-            return res.status(400).json({
-                message: "Offer percentage must be between 0 and 100"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.INVALID_OFFER_PERCENTAGE
             });
         }
 
         // Validate specifications
         if (!specifications) {
-            return res.status(400).json({
-                message: "Product specifications are required"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.INVALID_SPECIFICATIONS
             });
         }
 
         try {
             const parsedSpecs = JSON.parse(specifications);
             if (typeof parsedSpecs !== 'object') {
-                return res.status(400).json({
-                    message: "Invalid specifications format"
+                return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                    message: MessageEnum.Validation.INVALID_SPECIFICATIONS
                 });
             }
         } catch (error) {
-            return res.status(400).json({
-                message: "Invalid specifications format"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.INVALID_SPECIFICATIONS
             });
         }
 
         // Check for required images
         if (!req.files || !req.files.mainImage) {
-            return res.status(400).json({
-                message: "Main product image is required"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Validation.MAIN_IMAGE_REQUIRED
             });
         }
 
@@ -105,8 +106,8 @@ export const createProduct = async (req, res) => {
             const additionalFiles = req.files.additionalImages;
             
             if (additionalFiles.length > 3) {
-                return res.status(400).json({
-                    message: "Maximum 3 additional images allowed"
+                return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                    message: MessageEnum.Validation.MAX_ADDITIONAL_IMAGES_EXCEEDED
                 });
             }
 
@@ -154,9 +155,9 @@ export const createProduct = async (req, res) => {
 
         await product.save();
 
-        res.status(201).json({
+        res.status(HttpStatusEnum.CREATED).json({
             success: true,
-            message: "Product created successfully",
+            message: MessageEnum.Admin.PRODUCT_CREATED,
             product
         });
 
@@ -165,14 +166,14 @@ export const createProduct = async (req, res) => {
         
         // Handle specific errors
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ 
-                message: "Validation error",
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ 
+                message: MessageEnum.Validation.VALIDATION_ERROR,
                 errors: Object.values(error.errors).map(err => err.message)
             });
         }
 
-        res.status(500).json({ 
-            message: "Error creating product",
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR,
             error: error.message 
         });
     }
@@ -221,7 +222,7 @@ export const getAllProducts = async (req, res) => {
 
         const totalPages = Math.ceil(totalCount / limit);
 
-        res.status(200).json({
+        res.status(HttpStatusEnum.OK).json({
             products: mappedProducts,
             currentPage: page,
             totalPages,
@@ -230,7 +231,7 @@ export const getAllProducts = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching products:", error);
-        res.status(500).json({ message: error.message });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ message: MessageEnum.Error.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -255,16 +256,16 @@ export const updateProduct = async (req, res) => {
             _id: { $ne: productId } 
           });
           if (existingProduct) {
-            return res.status(409).json({ 
+            return res.status(HttpStatusEnum.CONFLICT).json({ 
               field: 'name',
-              message: "Product with this name already exists" 
+              message: MessageEnum.Admin.PRODUCT_EXISTS 
             });
           }
 
         // Find existing product
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ message: MessageEnum.Admin.PRODUCT_NOT_FOUND });
         }
 
         // Handle numeric fields
@@ -280,15 +281,15 @@ export const updateProduct = async (req, res) => {
         }
 
         if (isNaN(parsedPrice) || parsedPrice < 0) {
-            return res.status(400).json({ message: "Invalid price value" });
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ message: MessageEnum.Validation.INVALID_PRICE });
         }
 
         if (isNaN(parsedStock) || parsedStock < 0) {
-            return res.status(400).json({ message: "Invalid stock value" });
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ message: MessageEnum.Validation.INVALID_STOCK });
         }
 
         if (isNaN(parsedOfferPercentage) || parsedOfferPercentage < 0 || parsedOfferPercentage > 100) {
-            return res.status(400).json({ message: "Invalid offer percentage" });
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ message: MessageEnum.Validation.INVALID_OFFER_PERCENTAGE });
         }
 
         // Upload main image if provided
@@ -377,7 +378,7 @@ export const updateProduct = async (req, res) => {
         res.json(updatedProduct);
     } catch (error) {
         console.error("Error updating product:", error);
-        res.status(500).json({ message: error.message });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ message: MessageEnum.Error.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -387,7 +388,7 @@ export const toggleListProduct = async (req, res) => {
         const product = await Product.findById(productId);
         
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ message: MessageEnum.Admin.PRODUCT_NOT_FOUND });
         }
 
         // Toggle isListed status
@@ -401,13 +402,13 @@ export const toggleListProduct = async (req, res) => {
         );
 
         if (!updatedProduct) {
-            return res.status(404).json({ message: "Failed to update product" });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ message: MessageEnum.Admin.PRODUCT_NOT_FOUND });
         }
 
         res.json(updatedProduct);
     } catch (error) {
         console.error("Error toggling product listing:", error);
-        res.status(500).json({ message: error.message });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ message: MessageEnum.Error.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -421,7 +422,7 @@ export const getProductById = async (req, res) => {
             .lean();
         
         if (!product) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ message: MessageEnum.Admin.PRODUCT_NOT_FOUND });
         }
 
         // Transform category and brand to match the format expected by the frontend
@@ -431,9 +432,9 @@ export const getProductById = async (req, res) => {
             brand: product.brand.name
         };
 
-        res.json(transformedProduct);
+        res.status(HttpStatusEnum.OK).json(transformedProduct);
     } catch (error) {
         console.error("Error fetching product:", error);
-        res.status(500).json({ message: error.message });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ message: MessageEnum.Error.INTERNAL_SERVER_ERROR });
     }
 };      

@@ -2,6 +2,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { authApi } from '../rtkApis/authApi.js';
 
+const extractMinimalUserData = (user) => ({
+  _id: user._id,
+  role: user.role,
+  isVerified: user.isVerified
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -17,21 +23,24 @@ const authSlice = createSlice({
       .addMatcher(
         authApi.endpoints.signIn.matchFulfilled,
         (state, { payload }) => {
-          state.user = payload.user;
+          if (payload?.user) {
+            state.user = extractMinimalUserData(payload.user);
+          }
         }
       )
       .addMatcher(
         authApi.endpoints.completeGoogleSignup.matchFulfilled,
         (state, { payload }) => {
-          state.user = payload.user;
+          if (payload?.user) {
+            state.user = extractMinimalUserData(payload.user);
+          }
         }
       )
       .addMatcher(
         authApi.endpoints.signUpGoogle.matchFulfilled,
         (state, { payload }) => {
-          // Only update state if user exists in payload (for existing verified users)
-          if (payload.user) {
-            state.user = payload.user;
+          if (payload?.user) {
+            state.user = extractMinimalUserData(payload.user);
           }
         }
       );

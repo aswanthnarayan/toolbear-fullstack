@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import CustomInput from "../../components/CustomInput";
@@ -34,7 +34,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
     formState: { errors },
     setError,
     clearErrors,
-    watch
+    watch,
+    trigger
   } = useForm({
     defaultValues: {
       name: initialData?.name || "",
@@ -54,6 +55,28 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
       }
     }
   });
+
+  useEffect(() => {
+    register("logo", {
+      validate: () => {
+        if (mode === "add" && !logoFile) {
+          return "Logo is required";
+        }
+        return true;
+      }
+    });
+  }, [register, mode, logoFile]);
+
+  useEffect(() => {
+    register("banners", {
+      validate: () => {
+        if (mode === "add" && !bannerImages.some(banner => banner)) {
+          return "At least one banner image is required";
+        }
+        return true;
+      }
+    });
+  }, [register, mode, bannerImages]);
 
   const selectedColor = watch("base_color");
 
@@ -137,6 +160,7 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
       if (currentImageType === 'logo') {
         setLogoFile(file);
         setLogoPreview(croppedImageUrl);
+        clearErrors("logo");
       } else if (currentImageType === 'banner') {
         const newBannerImages = [...bannerImages];
         const newBannerPreviews = [...bannerPreviews];
@@ -146,6 +170,9 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
         
         setBannerImages(newBannerImages);
         setBannerPreviews(newBannerPreviews);
+        
+        // Trigger banner validation
+        trigger("banners");
       }
     } catch (error) {
       console.error('Error processing cropped image:', error);
@@ -155,6 +182,20 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
     setCurrentImage(null);
     setCurrentImageType(null);
     setCurrentBannerIndex(null);
+  };
+
+  const handleRemoveBanner = (index) => {
+    const newBannerImages = [...bannerImages];
+    const newBannerPreviews = [...bannerPreviews];
+    
+    newBannerImages[index] = null;
+    newBannerPreviews[index] = null;
+    
+    setBannerImages(newBannerImages);
+    setBannerPreviews(newBannerPreviews);
+
+    // Trigger banner validation after removal
+    trigger("banners");
   };
 
   const onSubmit = async (data) => {
@@ -340,7 +381,7 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
 
         <div className="mb-6">
           <Typography variant="h6" color="blue-gray" className="mb-3">
-            Brand Logo
+            Brand Logo {mode === "add" ? "(Required)" : ""}
           </Typography>
           <div className="flex flex-col items-center gap-4">
             <div className="w-40 h-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative">
@@ -368,7 +409,7 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
 
         <div className="mb-6">
           <Typography variant="h6" color="blue-gray" className="mb-3">
-            Banner Images (Max 3)
+            Banner Images (Max 3) {mode === "add" ? "(At least 1 required)" : ""}
           </Typography>
           <div className="grid grid-cols-3 gap-4">
             {[...Array(3)].map((_, index) => (
@@ -392,6 +433,15 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   disabled={bannerImages.length >= 3 && !bannerImages[index]}
                 />
+                {bannerPreviews[index] && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveBanner(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
           </div>

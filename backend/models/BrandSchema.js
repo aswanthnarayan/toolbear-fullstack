@@ -5,20 +5,17 @@ const brandSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    minlength: [2, 'Brand name must be at least 2 characters long']
   },
   desc: {
     type: String,
     required: true,
-    trim: true,
-    minlength: [10, 'Description must be at least 10 characters long']
+    
   },
   offerPercentage: {
     type: Number,
     required: true,
-    min: [0, 'Offer percentage must be between 0 and 100'],
-    max: [100, 'Offer percentage must be between 0 and 100']
+    min: 0,
+    max: 100
   },
   base_color: {
     type: String,
@@ -50,32 +47,24 @@ const brandSchema = new mongoose.Schema({
       title: {
         type: String,
         required: true,
-        trim: true,
-        minlength: [3, 'Section 1 title must be at least 3 characters long'],
-        default: "About Our Brand"
+      
       },
       desc: {
         type: String,
         required: true,
-        trim: true,
-        minlength: [10, 'Section 1 description must be at least 10 characters long'],
-        default: "Tell us about your brand's story and mission"
+      
       }
     },
     section2: {
       title: {
         type: String,
         required: true,
-        trim: true,
-        minlength: [3, 'Section 2 title must be at least 3 characters long'],
-        default: "Why Choose Us"
+       
       },
       desc: {
         type: String,
         required: true,
-        trim: true,
-        minlength: [10, 'Section 2 description must be at least 10 characters long'],
-        default: "Share what makes your brand unique and special"
+        
       }
     }
   },

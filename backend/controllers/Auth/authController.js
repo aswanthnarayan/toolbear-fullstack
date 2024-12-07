@@ -3,6 +3,9 @@ import { OTP } from "../../models/OtpSchema.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import HttpStatusEnum from "../../constants/httpStatus.js";
+import MessageEnum from "../../constants/messages.js";
+
 dotenv.config();
 
 export const verifyEmail = async (req, res) => {
@@ -11,11 +14,11 @@ export const verifyEmail = async (req, res) => {
     // Check if the email / phone already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "Email is already in use" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.EMAIL_IN_USE });
     }
     const existingPhone = await User.findOne({ phone });
     if (existingPhone) {
-      return res.status(400).json({ error: "Phone is already in use" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.PHONE_IN_USE });
     }
     // Generate OTP (6-digit number)
     const otp = Math.floor(100000 + Math.random() * 900000);
@@ -50,14 +53,14 @@ export const verifyEmail = async (req, res) => {
 
     // Return success response
     res 
-      .status(200)
+      .status(HttpStatusEnum.OK)
       .json({
-        message: "OTP sent to your email. Please verify to complete sign up.",
+        message: MessageEnum.Auth.OTP_SENT,
       });
       
   } catch (error) {
     console.error("Error in sending OTP:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 };
 
@@ -68,11 +71,11 @@ export const verifyOtpAndSignUp = async (req, res) => {
     const otpData = await OTP.findOne({ email, type: 'signup' });
 
     if (!otpData) {
-      return res.status(400).json({ error: "OTP not found or expired. Please request a new one." });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.INVALID_OTP });
     }
 
     if (otpData.otp !== otp) {
-      return res.status(400).json({ error: "Invalid OTP" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.INVALID_OTP });
     }
 
     // Create the new user since OTP is valid
@@ -89,10 +92,10 @@ export const verifyOtpAndSignUp = async (req, res) => {
     await OTP.deleteOne({ email, type: 'signup' });
 
     // Return success message
-    res.status(201).json({ message: "User successfully created" });
+    res.status(HttpStatusEnum.CREATED).json({ message: MessageEnum.Auth.ACCOUNT_CREATED });
   } catch (error) {
     console.error("Error in OTP verification:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 };
 
@@ -102,20 +105,20 @@ export const postSignIn = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ field: "email", message: "User does not exist" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ field: "email", message: MessageEnum.Auth.USER_NOT_FOUND });
     }
     if (user.isBlocked) {
-      return res.status(403).json({ field: "email", message: "Your account has been blocked" });
+      return res.status(HttpStatusEnum.FORBIDDEN).json({ field: "email", message: "Your account has been blocked" });
     }
   
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ field: "password", message: "Password does not match" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ field: "password", message: MessageEnum.Auth.INVALID_CREDENTIALS });
     }
 
 
     // JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -138,7 +141,7 @@ export const postSignIn = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 };
 
@@ -150,12 +153,12 @@ export const signUpGoogle = async (req,res)=>{
     if (existingUser) {
 
       if (existingUser.isBlocked) {
-        return res.status(403).json({ error: "Your account has been blocked" });
+        return res.status(HttpStatusEnum.FORBIDDEN).json({ error: "Your account has been blocked" });
       }
 
       // User exists - check if verified
       if (!existingUser.isVerified) {
-        return res.status(200).json({ message: 'New user created', isNewUser: true });
+        return res.status(HttpStatusEnum.OK).json({ message: MessageEnum.Auth.GOOGLE_SIGNUP_REQUIRED, isNewUser: true });
       }
       
       // User exists and is verified - generate token and send user data
@@ -172,7 +175,7 @@ export const signUpGoogle = async (req,res)=>{
         maxAge: 24 * 60 * 60 * 1000,
       });
       
-      return res.status(200).json({
+      return res.status(HttpStatusEnum.OK).json({
         user: {
           _id: existingUser._id,
           name: existingUser.name,
@@ -193,11 +196,11 @@ export const signUpGoogle = async (req,res)=>{
       role: 'user',
     });
     await newUser.save();
-    return res.status(201).json({ message: 'New user created', isNewUser: true });
+    return res.status(HttpStatusEnum.CREATED).json({ message: 'New user created', isNewUser: true });
     
   } catch (error) {
     console.error('Google Signup Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: 'Internal server error' });
   }
 };
 
@@ -208,7 +211,7 @@ export const completeGoogleSignup = async (req, res) => {
     // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ error: MessageEnum.Auth.USER_NOT_FOUND });
     }
 
     // Update user's phone number
@@ -228,7 +231,7 @@ export const completeGoogleSignup = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({
+    res.status(HttpStatusEnum.OK).json({
       message: "Profile completed successfully",
       user: {
         _id: user._id,
@@ -242,58 +245,16 @@ export const completeGoogleSignup = async (req, res) => {
     });
   } catch (error) {
     console.error('Complete Google Signup Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: 'Internal server error' });
   }
 };
-
-// export const handleGoogleSignIn = async () => {
-//   try {
-//     const result = await signInWithPopup(auth, googleProvider);
-//     const { user } = result;
-    
-//     try {
-//       // Try to sign in or sign up with Google
-//       const response = await signUpGoogle({
-//         email: user.email,
-//         name: user.displayName,
-//       }).unwrap();
-      
-//       if (response.message === 'New user created' && response.isNewUser) {
-//         // New user - redirect to complete profile
-//         navigate('/user/complete-signup', { 
-//           state: { email: user.email }
-//         });
-//       } else {
-//         // Existing user - navigate based on role
-//         if (response.user.role === "admin") {
-//           navigate("/admin/dashboard");
-//         } else {
-//           navigate("/user/home");
-//         }
-//       }
-//     } catch (error) {
-//       console.error('Server error:', error);
-//       setError('general', { 
-//         type: 'server', 
-//         message: error.data?.error || 'An error occurred during Google sign in' 
-//       });
-//     }
-//   } catch (error) {
-//     console.error('Google sign-in error:', error);
-//     setError('general', { 
-//       type: 'server', 
-//       message: 'Could not sign in with Google' 
-//     });
-//   }
-// };
-
 
 export const sendOtpForgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ error: MessageEnum.Auth.USER_NOT_FOUND });
     }
     const otp = Math.floor(100000 + Math.random() * 900000);
     // Delete any existing password reset OTPs for this email
@@ -324,10 +285,10 @@ export const sendOtpForgotPassword = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "OTP sent successfully" });
+    res.status(HttpStatusEnum.OK).json({ message: MessageEnum.Auth.OTP_SENT });
   } catch (error) {
     console.error('Send OTP Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: 'Internal server error' });
   }
 };  
 
@@ -340,43 +301,43 @@ export const verifyOtpForgotPassword = async (req, res) => {
 
     // Check if OTP data exists
     if (!otpData) {
-      return res.status(400).json({ error: "OTP not found or expired. Please request a new one." });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.INVALID_OTP });
     }
 
     // Check if OTP matches
     if (otpData.otp !== otp) {
-      return res.status(400).json({ error: "Invalid OTP" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ error: MessageEnum.Auth.INVALID_OTP });
     }
 
     // Delete the OTP after successful verification
     await OTP.deleteOne({ email, type: 'password-reset' });
 
     // Return success message
-    res.status(200).json({ message: "OTP verified successfully" });
+    res.status(HttpStatusEnum.OK).json({ message: MessageEnum.Auth.OTP_VERIFIED });
   } catch (error) {
     console.error("Error in OTP verification:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 };
 
 export const changePassword = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, newPassword } = req.body;
 
     // Find the user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ error: MessageEnum.Auth.USER_NOT_FOUND });
     }
 
     // Update password and save (this will trigger the pre-save middleware)
-    user.password = password;
+    user.password = newPassword;
     await user.save();
 
-    res.status(200).json({ message: "Password updated successfully" });
+    res.status(HttpStatusEnum.OK).json({ message: MessageEnum.Auth.PASSWORD_CHANGED });
   } catch (error) {
     console.error("Error in changing password:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 };
 
@@ -389,10 +350,10 @@ export const logout = async (req, res) => {
       sameSite: 'Lax'
     });
     
-    res.status(200).json({ message: 'Logged out successfully' });
+    res.status(HttpStatusEnum.OK).json({ message: MessageEnum.Auth.LOGOUT_SUCCESS });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ error: 'Server error during logout' });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: 'Server error during logout' });
   }
 };        
 
@@ -433,13 +394,13 @@ export const resendOtp = async(req,res)=>{
 
     // Return success response
     res 
-      .status(200)
+      .status(HttpStatusEnum.OK)
       .json({
         success: true,
         message: `OTP sent to your email for ${type === 'signup' ? 'account creation' : 'password reset'}.`,
       });
   } catch (error) {
     console.error("Error in sending OTP:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
   }
 }

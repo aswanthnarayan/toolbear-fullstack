@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import { authApi } from './features/rtkApis/authApi.js';
 import authReducer from './features/slices/authSlice.js';
@@ -10,16 +9,18 @@ import { adminApi } from './features/rtkApis/adminApi.js';
 const persistAuthConfig = {
   key: 'auth',
   storage,
-  whitelist: ['user', 'token'],
+  whitelist: ['user']
 };
-const persistThemeConfig = {  // Theme
+
+const persistThemeConfig = {
   key: 'theme',
   storage,
-  whitelist: ['isDarkMode'],
+  whitelist: ['isDarkMode']
 };
 
 const persistedAuthReducer = persistReducer(persistAuthConfig, authReducer);
 const persistedThemeReducer = persistReducer(persistThemeConfig, themeReducer);
+
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,

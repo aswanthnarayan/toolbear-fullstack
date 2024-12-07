@@ -1,5 +1,7 @@
 import { cloudinary, bufferToDataURI } from '../../utils/cloudinaryConfig.js';
 import { Brand } from '../../models/BrandSchema.js';
+import HttpStatusEnum from '../../constants/httpStatus.js';
+import MessageEnum from '../../constants/messages.js';
 
 export const createBrand = async (req, res) => {
     try {
@@ -8,7 +10,8 @@ export const createBrand = async (req, res) => {
             desc, 
             base_color,
             offerPercentage,
-            isListed
+            isListed,
+            about
         } = req.body;
 
         const existingBrand = await Brand.findOne({ 
@@ -16,35 +19,34 @@ export const createBrand = async (req, res) => {
         });
         
         if (existingBrand) {
-          return res.status(409).json({ 
+          return res.status(HttpStatusEnum.CONFLICT).json({ 
             field: 'name',
-            message: "A brand with this name already exists" 
+            message: MessageEnum.Brand.NAME_EXISTS 
           });
         }
 
         // Basic validation
         if (!name || !desc || !offerPercentage) {
-            return res.status(400).json({
-                message: "Name, description, and offer percentage are required"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Brand.REQUIRED_FIELDS
             });
         }
 
         // Validate offer percentage
-        const offerPercentageNum = Number(offerPercentage);
+        const offerPercentageNum = parseInt(offerPercentage, 10);
         if (isNaN(offerPercentageNum) || offerPercentageNum < 0 || offerPercentageNum > 100) {
-            return res.status(400).json({
-                message: "Offer percentage must be between 0 and 100"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Brand.INVALID_OFFER
             });
         }
 
         if (!req.files || !req.files.logo || !req.files.banners) {
-            return res.status(400).json({
-                message: "Logo and at least one banner image are required"
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({
+                message: MessageEnum.Brand.REQUIRED_IMAGES
             });
         }
 
         // Upload logo
-        // const logoFile = req.files.logo[0];
         const logoFile = req.files.logo[0];
         const bannerFiles = req.files.banners;
         const { base64: logoDataURI } = bufferToDataURI(logoFile.originalname, logoFile.buffer);
@@ -87,14 +89,15 @@ export const createBrand = async (req, res) => {
                 cloudinary_id: logoResult.public_id
             },
             bannerImages: bannerResults,
-            isListed: isListed === 'true'
+            isListed: isListed === 'true',
+            about: JSON.parse(about)
         });
 
         await brand.save();
 
-        res.status(201).json({
+        res.status(HttpStatusEnum.CREATED).json({
             success: true,
-            message: "Brand created successfully",
+            message: MessageEnum.Brand.CREATED,
             brand
         });
 
@@ -102,14 +105,13 @@ export const createBrand = async (req, res) => {
         console.error("Error creating brand:", error);
         
         if (error.code === 11000) {
-            return res.status(400).json({ 
-                message: "A brand with this name already exists" 
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ 
+                message: MessageEnum.Brand.NAME_EXISTS 
             });
         }
 
-        res.status(500).json({ 
-            message: "Error creating brand",
-            error: error.message 
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            error: error.message || 'Internal server error' 
         });
     }
 };
@@ -140,7 +142,7 @@ export const getAllBrands = async (req, res) => {
 
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(200).json({
+    res.status(HttpStatusEnum.OK).json({
       brands,
       currentPage: page,
       totalPages,
@@ -149,7 +151,9 @@ export const getAllBrands = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching brands:', error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+        error: error.message || 'Internal server error' 
+    });
   }
 };
 
@@ -159,7 +163,9 @@ export const toggleListBrand = async (req, res) => {
     const brand = await Brand.findById(brandId);
 
     if (!brand) {
-      return res.status(404).json({ message: "Brand not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+        message: MessageEnum.Brand.NOT_FOUND 
+      });
     }
 
     // Toggle isListed status
@@ -173,13 +179,17 @@ export const toggleListBrand = async (req, res) => {
     );
 
     if (!updatedBrand) {
-      return res.status(404).json({ message: "Failed to update brand" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+        message: MessageEnum.Brand.NOT_FOUND 
+      });
     }
 
-    res.json(updatedBrand);
+    res.status(HttpStatusEnum.OK).json(updatedBrand);
   } catch (error) {
     console.error("Error toggling brand listing:", error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+        error: error.message || 'Internal server error' 
+    });
   }
 };
 
@@ -191,13 +201,17 @@ export const getBrandById = async (req, res) => {
 
     
     if (!brand) {
-      return res.status(404).json({ message: "Brand not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+        message: MessageEnum.Brand.NOT_FOUND 
+      });
     }
 
-    res.json(brand);
+    res.status(HttpStatusEnum.OK).json(brand);
   } catch (error) {
     console.error("Error fetching brand:", error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+        error: error.message || 'Internal server error' 
+    });
   }
 };
 
@@ -212,9 +226,9 @@ export const updateBrand = async (req, res) => {
     });
     
     if (existingBrand) {
-      return res.status(409).json({ 
+      return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
-        message: "A brand with this name already exists" 
+        message: MessageEnum.Brand.NAME_EXISTS 
       });
     }
 
@@ -296,12 +310,16 @@ export const updateBrand = async (req, res) => {
     );
 
     if (!updatedBrand) {
-      return res.status(404).json({ message: "Brand not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+        message: MessageEnum.Brand.NOT_FOUND 
+      });
     }
 
-    res.json(updatedBrand);
+    res.status(HttpStatusEnum.OK).json(updatedBrand);
   } catch (error) {
     console.error("Error updating brand:", error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+        error: error.message || 'Internal server error' 
+    });
   }
 };

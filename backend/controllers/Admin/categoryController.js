@@ -1,6 +1,7 @@
 import Category from '../../models/CategorySchema.js';
 import { cloudinary, bufferToDataURI } from '../../utils/cloudinaryConfig.js';
-
+import HttpStatusEnum from '../../constants/httpStatus.js';
+import MessageEnum from '../../constants/messages.js';
 
 export const createCategory = async (req, res) => {
   try {
@@ -11,14 +12,16 @@ export const createCategory = async (req, res) => {
     });
     
     if (existingCategory) {
-      return res.status(409).json({ 
+      return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
-        message: "Category with this name already exists" 
+        message: MessageEnum.Admin.CATEGORY_EXISTS 
       });
     }
     
     if (!req.file) {
-      return res.status(400).json({ message: "Image is required" });
+      return res.status(HttpStatusEnum.BAD_REQUEST).json({ 
+        message: MessageEnum.Validation.INVALID_FILE 
+      });
     }
 
     // Convert buffer to data URI
@@ -43,47 +46,50 @@ export const createCategory = async (req, res) => {
     });
 
     await category.save();
-    res.status(201).json(category);
+    res.status(HttpStatusEnum.CREATED).json({
+      message: MessageEnum.Admin.CATEGORY_CREATED,
+      category
+    });
   } catch (error) {
     console.error('Error creating category:', error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: error.message });
   }
 };
 
 export const getAllCategories = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const search = req.query.search || "";
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
 
-        const query = {
-            $or: [
-                { name: { $regex: search, $options: 'i' } },
-            ],
-        };
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: 'i' } },
+      ],
+    };
 
-        const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-        const [categories, total] = await Promise.all([
-            Category.find(query)
-                .skip(skip)
-                .limit(limit)
-                .select('name desc offerPercentage isListed image cloudinary_id createdAt'),
-            Category.countDocuments(query)
-        ]);
-        const totalPages = Math.ceil(total / limit);
-        
-        res.json({
-            categories,
-            currentPage: page,
-            totalPages,
-            totalUsers: total,
-            hasNextPage: page < totalPages,
-            hasPrevPage: page > 1
-        });
+    const [categories, total] = await Promise.all([
+      Category.find(query)
+        .skip(skip)
+        .limit(limit)
+        .select('name desc offerPercentage isListed image cloudinary_id createdAt'),
+      Category.countDocuments(query)
+    ]);
+    const totalPages = Math.ceil(total / limit);
+    
+    res.status(HttpStatusEnum.OK).json({
+      categories,
+      currentPage: page,
+      totalPages,
+      totalUsers: total,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    });
   } catch (error) {
     console.error("Error fetching categories:", error);
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: error.message });
   }
 };
 
@@ -99,84 +105,104 @@ export const updateCategory = async (req, res) => {
     });
     
     if (existingCategory) {
-      return res.status(409).json({ 
+      return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
-        message: "Category with this name already exists" 
+        message: MessageEnum.Admin.CATEGORY_EXISTS 
       });
     }
-    const category = await Category.findById(categoryId);
-    
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
 
-    // If new image is uploaded, delete old image and upload new one
+    let updateData = {
+      name,
+      desc,
+      offerPercentage: Number(offerPercentage),
+      isListed: isListed === 'true'
+    };
+
     if (req.file) {
+      // Get the current category to delete old image
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+          message: MessageEnum.Admin.CATEGORY_NOT_FOUND 
+        });
+      }
+
       // Delete old image from Cloudinary
       if (category.cloudinary_id) {
         await cloudinary.uploader.destroy(category.cloudinary_id);
       }
 
-      // Convert buffer to data URI
+      // Upload new image
       const fileFormat = req.file.originalname;
       const { base64: dataURI } = bufferToDataURI(fileFormat, req.file.buffer);
-
-      // Upload new image
       const result = await cloudinary.uploader.upload(`data:image/jpeg;base64,${dataURI}`, {
         folder: 'toolbear/categories',
         public_id: `category_${name.toLowerCase().replace(/\s+/g, '_')}`,
         resource_type: 'auto'
       });
 
-      category.image = result.secure_url;
-      category.cloudinary_id = result.public_id;
+      updateData.image = result.secure_url;
+      updateData.cloudinary_id = result.public_id;
     }
 
-    // Update other fields
-    category.name = name || category.name;
-    category.desc = desc || category.desc;
-    category.offerPercentage = offerPercentage !== undefined ? Number(offerPercentage) : category.offerPercentage;
-    category.isListed = isListed === 'true';
+    const updatedCategory = await Category.findByIdAndUpdate(
+      categoryId,
+      updateData,
+      { new: true }
+    );
 
-    await category.save();
-    res.status(200).json(category);
+    if (!updatedCategory) {
+      return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+        message: MessageEnum.Admin.CATEGORY_NOT_FOUND 
+      });
+    }
+
+    res.status(HttpStatusEnum.OK).json({
+      message: MessageEnum.Admin.CATEGORY_UPDATED,
+      category: updatedCategory
+    });
   } catch (error) {
-    console.error("Error updating category:", error);
-    res.status(500).json({ message: error.message });
+    console.error('Error updating category:', error);
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: error.message });
   }
 };
 
 export const toggleListCategory = async (req, res) => {
   try {
-    const { categoryId } = req.params;
-    const category = await Category.findById(categoryId);
-
+    const category = await Category.findById(req.params.categoryId);
+    
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({
+        message: MessageEnum.Admin.CATEGORY_NOT_FOUND
+      });
     }
 
     category.isListed = !category.isListed;
     await category.save();
 
-    res.json(category);
+    res.status(HttpStatusEnum.OK).json({
+      message: category.isListed ? MessageEnum.Admin.CATEGORY_LISTED : MessageEnum.Admin.CATEGORY_UNLISTED,
+      isListed: category.isListed
+    });
   } catch (error) {
-    console.error("Error toggling category listing:", error);
-    res.status(500).json({ message: error.message });
+    console.error('Error toggling category:', error);
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: error.message });
   }
 };
 
 export const getCategoryById = async (req, res) => {
   try {
-    const { categoryId } = req.params;
-    const category = await Category.findById(categoryId);
+    const category = await Category.findById(req.params.categoryId);
     
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(HttpStatusEnum.NOT_FOUND).json({
+        message: MessageEnum.Admin.CATEGORY_NOT_FOUND
+      });
     }
 
-    res.json(category);
+    res.status(HttpStatusEnum.OK).json(category);
   } catch (error) {
-    console.error("Error fetching category:", error);
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching category:', error);
+    res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: error.message });
   }
 };

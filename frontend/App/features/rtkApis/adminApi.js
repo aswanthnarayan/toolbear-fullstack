@@ -4,6 +4,7 @@ export const adminApi = createApi({
     reducerPath: 'adminApi',
     baseQuery: fetchBaseQuery({ 
         baseUrl: '/api/admin',
+        credentials: 'include',
         prepareHeaders: (headers) => {
             if (headers.get('Content-Type')?.includes('multipart/form-data')) {
                 headers.delete('Content-Type');
@@ -137,7 +138,7 @@ export const adminApi = createApi({
                 method: 'POST',
                 body: formData,
                 formData: true,
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Products'],
         }),
@@ -161,7 +162,7 @@ export const adminApi = createApi({
                 method: 'PATCH',
                 body: formData,
                 formData: true,
-                timeout: 10000,
+                // timeout: 10000,
             }),
             invalidatesTags: ['Products'],
         }),

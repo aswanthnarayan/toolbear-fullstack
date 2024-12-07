@@ -72,6 +72,35 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       }
     });
   }, [register, mode, mainImageFile]);
+
+  useEffect(() => {
+    // Register additionalImages field for validation
+    register("additionalImages", {
+      validate: () => {
+        // In create mode
+        if (mode === 'add') {
+          const validImages = additionalImages.filter(img => img !== null);
+          if (validImages.length !== 3) {
+            return "Exactly 3 additional images are required";
+          }
+        }
+        
+        // In edit mode
+        if (mode === 'edit') {
+          const totalValidImages = additionalImagePreviews.reduce((count, preview, index) => {
+            // Count either a new image or an existing preview at each position
+            return count + ((additionalImages[index] || preview) ? 1 : 0);
+          }, 0);
+          
+          if (totalValidImages !== 3) {
+            return "Exactly 3 additional images are required";
+          }
+        }
+        return true;
+      }
+    });
+  }, [register, mode, additionalImages, additionalImagePreviews]);
+
   useEffect(() => {
     if (error) {
       if (error.field === 'name') {
@@ -243,6 +272,37 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
     }
   };
 
+  const handleAdditionalImageSelect = (e, index) => {
+    clearErrors("additionalImages");
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError("additionalImages", {
+          type: "manual",
+          message: "Image size should be less than 5MB"
+        });
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        setError("additionalImages", {
+          type: "manual",
+          message: "Please select an image file"
+        });
+        return;
+      }
+
+      setCurrentImageType('additional');
+      setCurrentImageIndex(index);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setOriginalImage(reader.result);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCroppedImage = async (croppedImage) => {
     try {
       const response = await fetch(croppedImage);
@@ -252,23 +312,46 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       if (currentImageType === 'main') {
         setMainImageFile(file);
         setMainImagePreview(croppedImage);
+        clearErrors("mainImage");
       } else if (currentImageType === 'additional' && currentImageIndex !== null) {
+        // Update the images array at the specific index
         setAdditionalImages(prevImages => {
           const newImages = [...prevImages];
           newImages[currentImageIndex] = file;
           return newImages;
         });
         
+        // Keep the existing previews for other positions
         setAdditionalImagePreviews(prevPreviews => {
           const newPreviews = [...prevPreviews];
           newPreviews[currentImageIndex] = croppedImage;
           return newPreviews;
         });
+
+        // Trigger validation after updating images
+        trigger("additionalImages");
       }
     } catch (error) {
       console.error('Error processing cropped image:', error);
     }
     setShowCropper(false);
+  };
+
+  const handleRemoveAdditionalImage = (index) => {
+    setAdditionalImages(prevImages => {
+      const newImages = [...prevImages];
+      newImages[index] = null;
+      return newImages;
+    });
+    
+    setAdditionalImagePreviews(prevPreviews => {
+      const newPreviews = [...prevPreviews];
+      newPreviews[index] = null;
+      return newPreviews;
+    });
+
+    // Trigger validation after removing image
+    trigger("additionalImages");
   };
 
   const onSubmit = async (data) => {
@@ -303,13 +386,35 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       }
 
       // Handle additional images
+      let hasAdditionalImages = false;
       additionalImages.forEach((image, index) => {
         if (image) {
           formData.append('additionalImages', image);
-        } else if (mode === 'edit' && additionalImagePreviews[index]) {
-          formData.append('additionalImageUrls', additionalImagePreviews[index]);
+          hasAdditionalImages = true;
         }
       });
+
+      // If in edit mode and we have existing images that weren't changed
+      if (mode === 'edit') {
+        additionalImagePreviews.forEach((preview, index) => {
+          // Only append if this position doesn't have a new image
+          if (preview && !additionalImages[index]) {
+            formData.append('additionalImageUrls', preview);
+          }
+        });
+      }
+
+      // Validate that we have enough images
+      const totalImages = additionalImages.filter(img => img).length + 
+                         (mode === 'edit' ? additionalImagePreviews.filter((preview, index) => preview && !additionalImages[index]).length : 0);
+
+      if (totalImages !== 3) {
+        setError("additionalImages", {
+          type: "manual",
+          message: "Exactly 3 additional images are required"
+        });
+        return;
+      }
 
       const result = await submitForm(formData);
       if (result?.error) {
@@ -494,7 +599,7 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                       type="file"
                       id={`additionalImage${index}`}
                       accept="image/*"
-                      onChange={(e) => handleImageSelect(e, 'additional', index)}
+                      onChange={(e) => handleAdditionalImageSelect(e, index)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                   </div>

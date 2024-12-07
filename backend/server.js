@@ -1,5 +1,6 @@
 import express, { json } from 'express'
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';  
 dotenv.config()
 import {connectDb} from './config/database.js'
 import authRoutes from './routes/authRoutes.js'
@@ -12,10 +13,10 @@ connectDb()
 
 app.use(json())
 app.use(express.json());
+app.use(cookieParser());  
 app.use(express.urlencoded({ extended: true })); 
 app.use('/api/user/', authRoutes);
-app.use('/api/admin/', adminRoutes);``
-
+app.use('/api/admin/', adminRoutes);
 
 app.listen(port,(req,res)=>{
     console.log(`Server running on ${port}`)

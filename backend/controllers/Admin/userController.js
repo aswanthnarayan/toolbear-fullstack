@@ -1,4 +1,6 @@
-import User from "../../models/UserSchema.js";
+import User from '../../models/UserSchema.js';
+import HttpStatusEnum from '../../constants/httpStatus.js';
+import MessageEnum from '../../constants/messages.js';
 
 export const getAllUsers = async (req, res) => {
     try {
@@ -11,8 +13,13 @@ export const getAllUsers = async (req, res) => {
                 { name: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } }
             ],
-            role: { $ne: 'admin' }  // Exclude users with admin role
+            role: { $ne: 'admin' }
         };
+
+        // Add phone search only if search is a number
+        if (!isNaN(search) && search !== "") {
+            query.$or.push({ phone: parseInt(search) });
+        }
 
         const skip = (page - 1) * limit;
 
@@ -20,13 +27,13 @@ export const getAllUsers = async (req, res) => {
             User.find(query)
                 .skip(skip)
                 .limit(limit)
-                .select('name email phone createdAt isBlocked provider'),
+                .select('-password -refreshToken'),
             User.countDocuments(query)
         ]);
 
         const totalPages = Math.ceil(total / limit);
 
-        res.json({
+        res.status(HttpStatusEnum.OK).json({
             users,
             currentPage: page,
             totalPages,
@@ -36,7 +43,9 @@ export const getAllUsers = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching users:", error);
-        res.status(500).json({ error: "Server error" });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR 
+        });
     }
 };
 
@@ -44,21 +53,25 @@ export const toggleBlockUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await User.findById(userId);
-        
+
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({
+                message: MessageEnum.Admin.USER_NOT_FOUND
+            });
         }
 
-        // Toggle the isBlocked status
+        // Toggle isBlocked status
         user.isBlocked = !user.isBlocked;
         await user.save();
 
-        res.json({ 
-            message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully`,
-            isBlocked: user.isBlocked 
+        res.status(HttpStatusEnum.OK).json({
+            message: user.isBlocked ? MessageEnum.Admin.USER_BLOCKED : MessageEnum.Admin.USER_UNBLOCKED,
+            isBlocked: user.isBlocked
         });
     } catch (error) {
         console.error("Error toggling user block status:", error);
-        res.status(500).json({ error: "Server error" });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR 
+        });
     }
 };
