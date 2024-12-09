@@ -5,6 +5,7 @@ import themeReducer from './features/slices/themeSlice.js';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { adminApi } from './features/rtkApis/adminApi.js';
+import { userApi } from './features/rtkApis/userApi.js';
 
 const persistAuthConfig = {
   key: 'auth',
@@ -27,13 +28,14 @@ export const store = configureStore({
     theme: persistedThemeReducer,
     [authApi.reducerPath]: authApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(authApi.middleware, adminApi.middleware),
+    }).concat(authApi.middleware, adminApi.middleware, userApi.middleware),
 });
 
 export const persistor = persistStore(store);

@@ -45,6 +45,9 @@ const MessageEnum = Object.freeze({
         BRAND_LISTED: 'Brand listed successfully',
         BRAND_UNLISTED: 'Brand unlisted successfully'
     }),
+    Users: Object.freeze({
+        ADDRESS_ADDED: 'Address added successfully'
+    }),
 
     Brand: Object.freeze({
         CREATED: 'Brand created successfully',

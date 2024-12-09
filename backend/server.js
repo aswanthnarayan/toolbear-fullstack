@@ -5,6 +5,7 @@ dotenv.config()
 import {connectDb} from './config/database.js'
 import authRoutes from './routes/authRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 
 const port = process.env.PORT || 5000
 const app = express();
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true })); 
 app.use('/api/user/', authRoutes);
 app.use('/api/admin/', adminRoutes);
+app.use('/api/user/', userRoutes);
 
 app.listen(port,(req,res)=>{
     console.log(`Server running on ${port}`)

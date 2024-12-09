@@ -8,6 +8,7 @@ import ForgotPwOtpConfirmPage from "./pages/Auth/ForgotPwOtpConfirmPage";
 import CreateNewPwPage from "./pages/Auth/CreateNewPwPage";
 import NoAccessPage from "./pages/NoAccessPage";
 import DealsPage from "./pages/User/DealsPage";
+import UserProfilePage from './pages/User/UserProfilePage';
 import Layout from "./components/utils/Layout";
 import AuthLayout from "./components/utils/AuthLayout";
 import { ProtectedRoute } from "./components/utils/ProtectedRoute";
@@ -28,6 +29,12 @@ import EditBrandPage from "./pages/Admin/EditBrandPage";
 import AddProductPage from "./pages/Admin/AddProductPage";
 import EditProductPage from "./pages/Admin/EditProductPage";
 import SingleProductPage from "./pages/User/SingleProductPage";
+import EditProfileSection from "./components/Users/profile/sections/EditProfileSection";
+import OrdersSection from "./components/Users/profile/sections/OrdersSection";
+import AddressSection from "./components/Users/profile/sections/AddressSection";
+import PaymentMethodsSection from "./components/Users/profile/sections/PaymentMethodsSection";
+import WalletSection from "./components/Users/profile/sections/WalletSection";
+import CouponsSection from "./components/Users/profile/sections/CouponsSection";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -40,17 +47,29 @@ function App() {
 
   return (
     <Routes>
-      {/* Public and User Routes with Navbar */}
-        <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to={getHomeRoute()} />} />
-          <Route path="/user/home" element={<Navigate to="/user/deals" />} />
-          <Route path="/user/deals" element={<DealsPage />} />
-          <Route path="/user/all-products" element={<AllProductsPage />} />
-          <Route path="/user/categories" element={<CategoriesPage />} />
-          <Route path="/user/brands" element={<BrandsPage />} />
-          <Route path="/user/products/:id" element={<SingleProductPage />} />
-        </Route>
+      {/* Public and Protected Routes with Navbar */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<Navigate to={getHomeRoute()} />} />
+        <Route path="/user/home" element={<Navigate to="/user/deals" />} />
+        <Route path="/user/deals" element={<DealsPage />} />
+        <Route path="/user/all-products" element={<AllProductsPage />} />
+        <Route path="/user/categories" element={<CategoriesPage />} />
+        <Route path="/user/brands" element={<BrandsPage />} />
+        <Route path="/user/products/:id" element={<SingleProductPage />} />
 
+        {/* Protected User Routes (still within Layout) */}
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route path="/user/profile" element={<UserProfilePage />}>
+            <Route index element={<Navigate to="edit" />} />
+            <Route path="edit" element={<EditProfileSection />} />
+            <Route path="orders" element={<OrdersSection />} />
+            <Route path="address" element={<AddressSection />} />
+            <Route path="payment" element={<PaymentMethodsSection />} />
+            <Route path="wallet" element={<WalletSection />} />
+            <Route path="coupons" element={<CouponsSection />} />
+          </Route>
+        </Route>
+      </Route>
 
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
@@ -66,7 +85,6 @@ function App() {
           <Route path="products" element={<AdminProductsPage/>} />
           <Route path="products/new" element={<AddProductPage/>} />
           <Route path="products/edit/:id" element={<EditProductPage />} />
-
         </Route>
       </Route>
 

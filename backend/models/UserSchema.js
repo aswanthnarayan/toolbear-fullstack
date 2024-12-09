@@ -10,6 +10,10 @@ const userSchema = mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     provider: { type: String, enum: ['local', 'google'], default: 'local' },
+    addresses: [{ 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address'
+    }]
 }, { timestamps: true });
 
 // Unique indexes
