@@ -52,9 +52,10 @@ const ForgotPwOtpVerification = () => {
       }).unwrap();
       
       if (response.message === "OTP verified successfully") {
-        navigate('/user/forgot-password/change-password', {
-          state: { email }
-        });
+        // navigate('/user/forgot-password/change-password', {
+        //   state: { email }
+        // });
+        navigate('/user/signin');
       }
     } catch (err) {
       if (err.data?.error) {

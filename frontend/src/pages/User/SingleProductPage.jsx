@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import SingleProduct from '../../components/Users/SingleProduct';
 import { Breadcrumbs, Spinner } from '@material-tailwind/react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useGetProductByIdQuery } from '../../../App/features/rtkApis/adminApi';
+import { Toaster, toast } from 'sonner';
 
 const SingleProductPage = () => {
   const { id } = useParams();
@@ -12,6 +13,12 @@ const SingleProductPage = () => {
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   
   const { data: product, isLoading, error } = useGetProductByIdQuery(id);
+ 
+
+
+  const handleToast = (message, type) => {
+    toast[type](message);
+  };
 
   if (isLoading) {
     return (
@@ -64,8 +71,9 @@ const SingleProductPage = () => {
           </Breadcrumbs>
         </div>
 
-        <SingleProduct product={product} />
+        <SingleProduct product={product} toastMsg={handleToast}  />
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 };

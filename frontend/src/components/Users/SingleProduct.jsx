@@ -1,26 +1,47 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import {
-  Typography,
-  Button,
-} from '@material-tailwind/react';
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { Typography, Button } from "@material-tailwind/react";
 import {
   ShoppingCartIcon,
   HeartIcon,
   ShareIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
-import Magnifier from 'react-magnifier';
+} from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
+import Magnifier from "react-magnifier";
+import { useAddToCartMutation } from "../../../App/features/rtkApis/userApi";
+import { useNavigate } from "react-router-dom";
 
-const SingleProduct = ({ product }) => {
+const SingleProduct = ({ product, toastMsg }) => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
 
+  const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
+  const [isInCart, setIsInCart] = useState(false);
+
+  const handleAddToCart = async () => {
+    try {
+      await addToCart({ productId: product._id, quantity: 1 }).unwrap();
+      setIsInCart(true);
+      toastMsg("Product added to cart", "success");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toastMsg(error.data.message, "error");
+    }
+  };
+  const handleGoToCart = (e) => {
+    e.preventDefault(); // Prevent navigation from Link
+    navigate("/user/cart");
+  };
+
   // Calculate discounted price
-  const discountedPrice = product.offerPercentage > 0 
-    ? Math.round(product.price - (product.price * product.offerPercentage / 100))
-    : product.price;
+  // const discountedPrice =
+  //   product.offerPercentage > 0
+  //     ? Math.round(
+  //         product.price - (product.price * product.offerPercentage) / 100
+  //       )
+  //     : product.price;
 
   // Custom Rating Display
   const renderRating = (rating) => {
@@ -46,38 +67,34 @@ const SingleProduct = ({ product }) => {
 
   // Get all product images
   const productImages = [];
-  
+
   // Add main image
   if (product.mainImage) {
     productImages.push(product.mainImage?.imageUrl || product.mainImage);
   }
-  
+
   // Add sub images
   if (product.subImages && Array.isArray(product.subImages)) {
-    product.subImages.forEach(img => {
+    product.subImages.forEach((img) => {
       const imageUrl = img?.imageUrl || img;
       if (imageUrl) productImages.push(imageUrl);
     });
   }
-  
+
   // Add additional images
   if (product.additionalImages && Array.isArray(product.additionalImages)) {
-    product.additionalImages.forEach(img => {
+    product.additionalImages.forEach((img) => {
       const imageUrl = img?.imageUrl || img;
       if (imageUrl) productImages.push(imageUrl);
     });
   }
 
-  console.log('Product:', product); // Debug product data
-  console.log('Product Images:', productImages); // Debug image array
-
   return (
-    <div className={`${currentTheme.secondary} rounded-lg shadow-lg p-4 lg:p-6`}>
+    <div
+      className={`${currentTheme.secondary} rounded-lg shadow-lg p-4 lg:p-6`}
+    >
       <div className="flex justify-end mb-2">
-        <Button
-          variant="text"
-          className="p-2"
-        >
+        <Button variant="text" className="p-2">
           <ShareIcon className="h-5 w-5" />
         </Button>
       </div>
@@ -92,12 +109,16 @@ const SingleProduct = ({ product }) => {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`w-16 h-16 lg:w-[64px] lg:h-[64px] rounded-md overflow-hidden flex-shrink-0 border-2 
-                    ${selectedImage === index ? 'border-yellow-500' : 'border-transparent'}`}
+                    ${
+                      selectedImage === index
+                        ? "border-yellow-500"
+                        : "border-transparent"
+                    }`}
                 >
-                  <img 
-                    src={image} 
-                    alt="" 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={image}
+                    alt=""
+                    className="w-full h-full object-cover"
                   />
                 </button>
               ))}
@@ -124,9 +145,7 @@ const SingleProduct = ({ product }) => {
             <Typography variant="h4" color="blue-gray">
               {product.name}
             </Typography>
-            <p className="text-gray-600">
-              {product.brand}
-            </p>
+            <p className="text-gray-600">{product.brand}</p>
           </div>
 
           <div className="flex items-center gap-2 mb-6">
@@ -139,9 +158,9 @@ const SingleProduct = ({ product }) => {
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-4">
             <Typography variant="h4" color="blue-gray">
-              ₹{discountedPrice}
+              ₹{product.price}
             </Typography>
-            {product.offerPercentage > 0 && (
+            {/* {product.offerPercentage > 0 && (
               <>
                 <Typography color="gray" className="line-through">
                   ₹{product.price}
@@ -150,7 +169,7 @@ const SingleProduct = ({ product }) => {
                   {product.offerPercentage}% off
                 </Typography>
               </>
-            )}
+            )} */}
           </div>
 
           {/* Description */}
@@ -161,13 +180,34 @@ const SingleProduct = ({ product }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4">
-            <Button
-              size="lg"
-              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600"
-            >
-              <ShoppingCartIcon className="h-5 w-5" /> Add to Cart
-            </Button>
+          <div className="flex gap-4 items-center">
+            {product.stock > 0 ? (
+              isInCart ? (
+                <Button
+                  color="blue"
+                  variant="outlined"
+                  className="flex items-center gap-2 "
+                  onClick={handleGoToCart}
+                >
+                  <ShoppingCartIcon className="h-5 w-5" />
+                  Go to Cart
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600"
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
+                >
+                  <ShoppingCartIcon className="h-5 w-5" />
+                  {isAdding ? "Adding..." : "Add to Cart"}
+                </Button>
+              )
+            ) : (
+              <Typography variant="h5" color="red">
+                Out of Stock
+              </Typography>
+            )}
             <Button
               variant="outlined"
               size="lg"

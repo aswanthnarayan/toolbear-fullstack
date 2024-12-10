@@ -35,6 +35,10 @@ import AddressSection from "./components/Users/profile/sections/AddressSection";
 import PaymentMethodsSection from "./components/Users/profile/sections/PaymentMethodsSection";
 import WalletSection from "./components/Users/profile/sections/WalletSection";
 import CouponsSection from "./components/Users/profile/sections/CouponsSection";
+import CartPage from "./pages/User/CartPage";
+import CheckoutPage from "./pages/User/CheckoutPage";
+import PurchasePaymentPage from "./pages/User/PurchasePaymentPage";
+import OrderCompletePage from "./pages/User/OrderCompletePage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -59,6 +63,11 @@ function App() {
 
         {/* Protected User Routes (still within Layout) */}
         <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+        <Route path="/user/cart" element={<CartPage />} />
+        <Route path="/user/checkout" element={<CheckoutPage />} />
+        <Route path="/user/checkout/payments" element={<PurchasePaymentPage />} />
+        <Route path="/user/checkout/success" element={<OrderCompletePage />} />
+
           <Route path="/user/profile" element={<UserProfilePage />}>
             <Route index element={<Navigate to="edit" />} />
             <Route path="edit" element={<EditProfileSection />} />

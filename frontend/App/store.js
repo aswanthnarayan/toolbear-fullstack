@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { authApi } from './features/rtkApis/authApi.js';
 import authReducer from './features/slices/authSlice.js';
 import themeReducer from './features/slices/themeSlice.js';
+import checkoutReducer from './features/slices/checkoutSlice.js';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { adminApi } from './features/rtkApis/adminApi.js';
@@ -26,6 +27,7 @@ export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
     theme: persistedThemeReducer,
+    checkout: checkoutReducer,
     [authApi.reducerPath]: authApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
     [userApi.reducerPath]: userApi.reducer,

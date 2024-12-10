@@ -12,7 +12,7 @@ export const userApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ['Address'],
+    tagTypes: ["Address", "Cart", "Order"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -48,7 +48,69 @@ export const userApi = createApi({
                 method: 'PATCH'
             }),
             invalidatesTags: ['Address']
-        })
+        }),
+         // Cart endpoints
+    getCart: builder.query({
+      query: () => "/cart",
+      providesTags: ["Cart"],
+    }),
+    addToCart: builder.mutation({
+      query: (data) => ({
+        url: "/cart",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+    removeFromCart: builder.mutation({
+      query: (productId) => ({
+        url: `/cart/${productId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+    updateCartQuantity: builder.mutation({
+      query: ({ productId, quantity }) => ({
+        url: `/cart/${productId}`,
+        method: "PATCH",
+        body: { quantity },
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
+  //  Order endpoints
+  getAllOrders: builder.query({
+    query: () => "/order/all",
+    providesTags: ["Order"],
+  }),
+  createOrder: builder.mutation({
+    query: (data) => ({
+      url: "/order",
+      method: "POST",
+      body: data,
+    }),
+    invalidatesTags: ["Order", "Cart"],
+  }),
+  getOrderById: builder.query({
+    query: (id) => `/order/${id}`,
+    providesTags: ["Order"],
+  }),
+  cancelOrder: builder.mutation({
+    query: (id) => ({
+      url: `/order/${id}`,
+      method: "PATCH",
+    }),
+    invalidatesTags: ["Order"],
+  }),
+  // updateOrder: builder.mutation({
+  //   query: ({ id, data }) => ({
+  //     url: `/order/${id}`,
+  //     method: "PUT",
+  //     body: data,
+  //   }),
+  //   invalidatesTags: ["Order"],
+  // }),
+
     }),
 });
 
@@ -57,5 +119,13 @@ export const {
     useAddAddressMutation,
     useUpdateAddressMutation,
     useDeleteAddressMutation,
-    useSetDefaultAddressMutation
+    useSetDefaultAddressMutation,
+    useGetCartQuery,
+  useAddToCartMutation,
+  useRemoveFromCartMutation,
+  useUpdateCartQuantityMutation,
+  useGetAllOrdersQuery,
+  useCreateOrderMutation,
+  useGetOrderByIdQuery,
+  useCancelOrderMutation
 } = userApi

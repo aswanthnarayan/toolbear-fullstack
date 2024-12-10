@@ -56,7 +56,10 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
   return (
     <Dialog open={isOpen} handler={onClose} size="md">
       <DialogHeader>{editAddress ? 'Edit Address' : 'Add New Address'}</DialogHeader>
-      <DialogBody divider className="overflow-y-auto">
+      <DialogBody 
+        divider 
+        className="overflow-y-auto max-h-[80vh] "
+      >
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div>
             <Input

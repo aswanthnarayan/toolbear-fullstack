@@ -1,19 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { Button } from '@material-tailwind/react';
+import { useAddToCartMutation } from '../../../App/features/rtkApis/userApi';
 
-function ProductCard({ id, image, name, brand, rating, reviews, price, description, offerPercentage = 0 }) {
+function ProductCard({ id, image, name, brand, rating, reviews, price,stock, description,toastMsg }) {
     const { isDarkMode, theme } = useSelector((state) => state.theme);
     const currentTheme = isDarkMode ? theme.dark : theme.light;
+    const navigate = useNavigate();
+    const [isInCart, setIsInCart] = useState(false);
+    const [addToCart, { isLoading }] = useAddToCartMutation();
 
     // Calculate discounted price
-    const discountedPrice = offerPercentage > 0 
-        ? Math.round(price - (price * offerPercentage / 100))
-        : price;
+    // const discountedPrice = offerPercentage > 0 
+    //     ? Math.round(price - (price * offerPercentage / 100))
+    //     : price;
+
+    const handleAddToCart = async (e) => {
+        e.preventDefault(); // Prevent navigation from Link
+        try {
+            await addToCart({ productId: id, quantity: 1 }).unwrap();
+            setIsInCart(true);
+            toastMsg('Product added to cart','success');
+
+        } catch (error) {
+            console.error('Failed to add to cart:', error);
+            toastMsg(error.data.message,'error');
+        }
+    };
+
+    const handleGoToCart = (e) => {
+        e.preventDefault(); // Prevent navigation from Link
+        navigate('/user/cart');
+    };
 
     return (
         <div className={`w-full mx-auto rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 ${
@@ -53,8 +76,8 @@ function ProductCard({ id, image, name, brand, rating, reviews, price, descripti
                         </span>
                     </div>
                     <div className="flex items-baseline mb-2">
-                        <span className={`text-xl font-bold ${currentTheme.text}`}>₹{discountedPrice}</span>
-                        {offerPercentage > 0 && (
+                        <span className={`text-xl font-bold ${currentTheme.text}`}>₹{price}</span>
+                        {/* {offerPercentage > 0 && (
                             <>
                                 <span className="ml-2 text-sm text-gray-500 line-through">
                                     ₹{price}
@@ -63,33 +86,43 @@ function ProductCard({ id, image, name, brand, rating, reviews, price, descripti
                                     {offerPercentage}% off
                                 </span>
                             </>
-                        )}
+                        )} */}
                     </div>
                     <p className={`text-xs mb-3 line-clamp-2 hover:line-clamp-none ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
                         {description}
                     </p>
-                    <div className="flex gap-2">
-                        <button className={`flex-1 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 ${
-                            isDarkMode 
-                                ? 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'
-                                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                        }`}>
-                            <ShoppingCartIcon className="w-5 h-5" />
-                            <span className="text-sm">Add to Cart</span>
-                        </button>
-                        <button className={`px-4 py-2 rounded-lg transition-colors ${
-                            isDarkMode 
-                                ? 'bg-gray-800 hover:bg-gray-700'
-                                : 'bg-gray-100 hover:bg-gray-200'
-                        }`}>
-                            <HeartIcon className={`w-5 h-5 ${
-                                isDarkMode 
-                                    ? 'text-gray-300 hover:text-red-400'
-                                    : 'text-gray-600 hover:text-red-500'
-                            } transition-colors`} />
-                        </button>
+                    <div className="mt-4 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                            {stock > 0 ? (
+                                isInCart ? (
+                                    <Button
+                                        color="blue"
+                                        variant="outlined"
+                                        className="flex items-center gap-2"
+                                        onClick={handleGoToCart}
+                                    >
+                                        <ShoppingCartIcon className="h-4 w-4" />
+                                        Go to Cart
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        color="blue"
+                                        className="flex items-center gap-2"
+                                        onClick={handleAddToCart}
+                                        disabled={isLoading}
+                                    >
+                                        <ShoppingCartIcon className="h-4 w-4" />
+                                        {isLoading ? 'Adding...' : 'Add to Cart'}
+                                    </Button>
+                                )
+                            ) : (
+                                <p className={`text-xs font-bold ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                                    Out of Stock
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </Link>

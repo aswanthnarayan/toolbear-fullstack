@@ -143,9 +143,9 @@ export const adminApi = createApi({
             invalidatesTags: ['Products'],
         }),
         getAllProducts: builder.query({
-            query: ({ page = 1, limit = 10, search = '' }) => ({
+            query: ({ page = 1, limit = 10, search = '', sort = 'newest' }) => ({
                 url: '/products',
-                params: { page, limit, search }
+                params: { page, limit, search, sort }
             }),
             providesTags: ['Products'],
             transformResponse: (response) => ({

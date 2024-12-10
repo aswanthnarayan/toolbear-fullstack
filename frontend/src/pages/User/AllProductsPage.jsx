@@ -1,25 +1,35 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Breadcrumbs } from "@material-tailwind/react";
 import { HomeIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import ProductCard from '../../components/Users/ProductCard'
 import { FilterSidebar } from '../../components/Users/FilterSidebar'
 import { useGetAllProductsQuery } from '../../../App/features/rtkApis/adminApi';
 import { Spinner } from "@material-tailwind/react";
+import {Toaster,toast} from 'sonner'
+import SortSelect from '../../components/SortSelect';
 
 const AllProductsPage = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const [searchQuery, setSearchQuery] = useState(queryParams.get('search') || '');
+  const [sortOption, setSortOption] = useState('newest');
 
   const { data, isLoading, isFetching, error } = useGetAllProductsQuery({
     page: currentPage,
     limit: 12,
-    search: searchQuery
+    search: searchQuery,
+    sort: sortOption
   });
+
+  useEffect(() => {
+    setSearchQuery(queryParams.get('search') || '');
+  }, [location.search]);
 
   useEffect(() => {
     if (isSidebarOpen && window.innerWidth < 1024) {
@@ -36,6 +46,15 @@ const AllProductsPage = () => {
     if (data?.hasMore) {
       setCurrentPage(prev => prev + 1);
     }
+  };
+
+  const handleToast = (message, type) => {
+    toast[type](message);
+  };
+
+  const handleSortChange = (value) => {
+    setSortOption(value);
+    setCurrentPage(1); // Reset to first page when sort changes
   };
 
   return (
@@ -70,8 +89,10 @@ const AllProductsPage = () => {
                 All Products
               </Link>
             </Breadcrumbs>
+            <div className='flex justify-between items-center'>
             <h1 className={`text-3xl font-bold my-6 ${currentTheme.text}`}>All Products</h1>
-            
+            <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
+            </div>
             {isLoading ? (
               <div className="flex justify-center items-center min-h-[400px]">
                 <Spinner className="h-12 w-12" />
@@ -100,7 +121,9 @@ const AllProductsPage = () => {
                           reviews={128}
                           price={product.price}
                           description={product.desc}
-                          offerPercentage={product.offerPercentage}
+                          stock={product.stock}
+                          // offerPercentage={product.offerPercentage}
+                          toastMsg={handleToast}
                         />
                       </div>
                     ))}
@@ -126,6 +149,7 @@ const AllProductsPage = () => {
           </div>
         </div>
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 };

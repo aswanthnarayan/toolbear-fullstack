@@ -36,6 +36,15 @@ function Navbar() {
 
   const currentTheme = isDarkMode ? theme.dark : theme.light;
 
+  const [searchQuery, setSearchQuery] = useState(""); 
+
+  const handleSearch = ()=>{
+    if(searchQuery.trim() !== "")
+    {
+      navigate(`/user/all-products?search=${searchQuery}`)
+    }
+  }
+
   const handleCartClick = () => {
     if (!user) {
       navigate('/user/signin');
@@ -87,6 +96,9 @@ function Navbar() {
                   placeholder="Search for tools..."
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
                 <button
                   className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${

@@ -184,6 +184,14 @@ export const getAllProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || "";
+        const sort = req.query.sort || "createdAt";
+        const sortOrder = {
+            'a-z':{name: 1},
+            'z-a':{name: -1},
+            'price-low-high':{price: 1},
+            'price-high-low':{price: -1},
+            'newest':{createdAt: -1},
+        }
 
         const query = {
             $or: [
@@ -200,7 +208,7 @@ export const getAllProducts = async (req, res) => {
                 .populate('category', 'name isListed')
                 .populate('brand', 'name isListed')
                 .lean()
-                .sort({ createdAt: -1 })
+                .sort(sortOrder[sort] ||{ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
             Product.countDocuments(query)
