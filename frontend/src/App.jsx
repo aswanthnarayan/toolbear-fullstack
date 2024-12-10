@@ -39,6 +39,7 @@ import CartPage from "./pages/User/CartPage";
 import CheckoutPage from "./pages/User/CheckoutPage";
 import PurchasePaymentPage from "./pages/User/PurchasePaymentPage";
 import OrderCompletePage from "./pages/User/OrderCompletePage";
+import AdminOrdersPage from "./pages/Admin/AdminOrdersPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -94,6 +95,8 @@ function App() {
           <Route path="products" element={<AdminProductsPage/>} />
           <Route path="products/new" element={<AddProductPage/>} />
           <Route path="products/edit/:id" element={<EditProductPage />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+
         </Route>
       </Route>
 

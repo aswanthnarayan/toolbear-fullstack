@@ -5,17 +5,17 @@ import {
   Typography,
   Button,
   IconButton,
-  Spinner
+  Spinner,
 } from "@material-tailwind/react";
-import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
-import { 
-  useGetCartQuery, 
-  useRemoveFromCartMutation,
-  useUpdateCartQuantityMutation 
-} from '../../../App/features/rtkApis/userApi';
-import { Toaster,toast } from 'sonner';
+import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { AlertModal } from '../../components/AlertModal';
+import { Toaster, toast } from 'sonner';
+import {
+  useGetCartQuery,
+  useRemoveFromCartMutation,
+  useUpdateCartQuantityMutation,
+} from '../../../App/features/rtkApis/userApi';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ const CartPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleOpenAlert = (productId) => {
+    console.log('Opening alert for product:', productId);
     setItemToDelete(productId);
     setOpenAlert(true);
   };
@@ -36,7 +37,6 @@ const CartPage = () => {
   const handleQuantityChange = async (productId, currentQuantity, change) => {
     const newQuantity = Math.max(1, Math.min(3, currentQuantity + change));
     
-    // Find the cart item for this product
     const cartItem = cartItems.find(item => item.product._id === productId);
     
     if (currentQuantity === 3 && change > 0) {
@@ -56,13 +56,6 @@ const CartPage = () => {
     }
   };
 
-  // const handleRemoveItem = async (productId) => {
-  //   try {
-  //     await removeFromCart(productId).unwrap();
-  //   } catch (error) {
-  //     console.error('Failed to remove item:', error);
-  //   }
-  // };
   const handleRemoveItem = async () => {
     try {
       await removeFromCart(itemToDelete).unwrap();
@@ -150,11 +143,9 @@ const CartPage = () => {
                           color="red"
                           variant="text"
                           onClick={() => handleOpenAlert(item.product._id)}
-                          // onClick={() => handleRemoveItem(item.product._id)}
                         >
                           <TrashIcon className="h-5 w-5" />
                         </IconButton>
-                  
                       </div>
                     </div>
                   </CardBody>
@@ -197,6 +188,7 @@ const CartPage = () => {
           </Card>
         </div>
       </div>
+
       <AlertModal
         open={openAlert}
         handleOpen={() => setOpenAlert(false)}
@@ -208,7 +200,6 @@ const CartPage = () => {
         onConfirm={handleRemoveItem}
       />
       <Toaster richColors position="top-right" />
-
     </div>
   );
 };

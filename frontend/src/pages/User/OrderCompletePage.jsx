@@ -58,7 +58,7 @@ const OrderCompletePage = () => {
             <Button
               color="blue"
               className="flex-1"
-              onClick={() => navigate('/user/orders')}
+              onClick={() => navigate('/user/profile/orders')}
             >
               View Orders
             </Button>

@@ -17,6 +17,7 @@ export const addToCart = async (req, res) => {
         if (!cart) {
             cart = new Cart({ user: userId, items: [] });
         }
+        
 
         // Check if product already exists in cart
         const existingItem = cart.items.find(item => 
@@ -25,6 +26,9 @@ export const addToCart = async (req, res) => {
 
         if (existingItem) {
             const newQuantity = existingItem.quantity + quantity;
+            if(product.stock < newQuantity) {
+                return res.status(400).json({ message: "Insufficient stock" });
+            }
             if (newQuantity > 3) {
                 return res.status(400).json({ message: "Maximum quantity limit is 3 items" });
             }
@@ -40,6 +44,8 @@ export const addToCart = async (req, res) => {
                 price: product.price
             });
         }
+
+        
 
         await cart.save();
         

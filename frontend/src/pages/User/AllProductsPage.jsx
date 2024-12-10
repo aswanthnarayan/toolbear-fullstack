@@ -129,7 +129,7 @@ const AllProductsPage = () => {
                     ))}
                 </div>
 
-                {data?.hasMore && (
+                {/* {data?.hasMore && (
                   <div className="flex justify-center mt-8">
                     <button
                       onClick={handleLoadMore}
@@ -143,7 +143,7 @@ const AllProductsPage = () => {
                       )}
                     </button>
                   </div>
-                )}
+                )} */}
               </>
             )}
           </div>

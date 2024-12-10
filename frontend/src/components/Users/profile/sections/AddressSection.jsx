@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Typography } from "@material-tailwind/react";
+import { Button, Spinner, Typography } from "@material-tailwind/react";
 import AddressCard from '../shared/AddressCard';
 import AddAddressModal from '../shared/AddAddressModal';
 import { 
@@ -48,7 +48,7 @@ const AddressSection = () => {
   };
 
   if (isLoading) {
-    return <div>Loading addresses...</div>;
+    return <Spinner className="mx-auto" />
   }
 
   return (

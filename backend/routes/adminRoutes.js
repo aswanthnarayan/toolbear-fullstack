@@ -5,6 +5,7 @@ import { createBrand, getAllBrands, updateBrand, toggleListBrand, getBrandById }
 import { createProduct, getAllProducts, updateProduct, toggleListProduct, getProductById } from '../controllers/Admin/productController.js';
 import { handleSingleUpload, handleBrandUpload, handleProductUpload } from '../middleware/multerMiddleWare.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
+import { getAllOrders, cancelOrder, getOrderById, updateOrderStatus } from '../controllers/Admin/OrderController.js';
 
 const router = express.Router();
 
@@ -32,5 +33,11 @@ router.get("/products", getAllProducts);
 router.get("/products/:productId", getProductById);
 router.patch("/products/:productId/update", protect, adminOnly, handleProductUpload, updateProduct);
 router.patch("/products/:productId/toggle-list", protect, adminOnly, toggleListProduct);
+
+//Orders
+router.get("/orders", protect, adminOnly, getAllOrders);
+router.patch("/orders/:orderId/cancel", protect, adminOnly, cancelOrder);
+router.get("/orders/:orderId", protect, adminOnly, getOrderById);
+router.patch("/orders/status", protect, adminOnly, updateOrderStatus);
 
 export default router;

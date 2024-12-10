@@ -12,7 +12,7 @@ export const adminApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ['Users', 'Categories', 'Brands', 'Products'],
+    tagTypes: ['Users', 'Categories', 'Brands', 'Products', 'Orders'],
     endpoints: (builder) => ({
         //User management
         getUsers: builder.query({
@@ -177,6 +177,41 @@ export const adminApi = createApi({
             query: (productId) => `/products/${productId}`,
             providesTags: ['Products'],
         }),
+        // Order Management
+        getAllOrders: builder.query({
+            query: ({ page = 1, limit = 10, search = '' }) => ({
+                url: '/orders',
+                params: { page, limit, search }
+            }),
+            providesTags: ['Orders'],
+            transformResponse: (response) => ({
+                orders: response.orders,
+                currentPage: response.currentPage,
+                totalPages: response.totalPages,
+                totalOrders: response.totalOrders,
+                hasNextPage: response.hasNextPage,
+                hasPrevPage: response.hasPrevPage
+            })
+        }),
+        updateOrderStatus: builder.mutation({
+            query: ({ _id, status }) => ({
+                url: `/orders/status`, // Adjust the endpoint if needed
+                method: 'PATCH',
+                body: { _id, status }
+            }),
+            invalidatesTags: ['Orders']
+        }),
+        cancelOrder: builder.mutation({
+            query: (orderId) => ({
+                url: `/orders/${orderId}/cancel`,
+                method: 'PATCH'
+            }),
+            invalidatesTags: ['Orders']
+        }),
+        getOrderById: builder.query({
+            query: (orderId) => `/orders/${orderId}`,
+            providesTags: ['Orders']
+        }),
     })
 });
 
@@ -198,4 +233,8 @@ export const {
     useUpdateProductMutation,
     useToggleListProductMutation,
     useGetProductByIdQuery,
+    useGetAllOrdersQuery,
+    useUpdateOrderStatusMutation,
+    useCancelOrderMutation,
+    useGetOrderByIdQuery,
 } = adminApi;
