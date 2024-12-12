@@ -140,7 +140,7 @@ const AdminOrders = () => {
                   </td>
                   <td className="p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                      {order.products.map(item => item.productId.name).join(", ")}
+                      {order.products.map(item => item.productId?.name || 'Product Unavailable').join(", ")}
                     </Typography>
                   </td>
                   <td className="p-4">

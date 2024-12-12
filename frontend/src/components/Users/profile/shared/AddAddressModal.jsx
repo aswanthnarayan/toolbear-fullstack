@@ -57,7 +57,7 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
     <Dialog open={isOpen} handler={onClose} size="md">
       <DialogHeader>{editAddress ? 'Edit Address' : 'Add New Address'}</DialogHeader>
       <DialogBody 
-        divider 
+        // divider 
         className="overflow-y-auto max-h-[80vh] "
       >
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -70,6 +70,7 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "Name must be at least 3 characters",
                 },
+              validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
               })}
               error={!!errors.fullName}
             />
@@ -89,6 +90,8 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 6,
                   message: "Address must be at least 6 characters",
                 },
+              validate: (value) => value.trim() !== "" || "Address cannot be empty or spaces only"
+
               })}
               error={!!errors.address}
             />
@@ -108,6 +111,8 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "Area must be at least 3 characters",
                 },
+              validate: (value) => value.trim() !== "" || "Area cannot be empty or spaces only"
+
               })}
               error={!!errors.area}
             />
@@ -147,6 +152,7 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 2,
                   message: "City must be at least 2 characters",
                 },
+              validate: (value) => value.trim() !== "" || "City cannot be empty or spaces only"
               })}
               error={!!errors.city}
             />
@@ -166,6 +172,8 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "State must be at least 3 characters",
                 },
+              validate: (value) => value.trim() !== "" || "State cannot be empty or spaces only"
+
               })}
               error={!!errors.state}
             />

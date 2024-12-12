@@ -31,9 +31,8 @@ const OrderUpdateSelect = ({ order, onUpdateStatus }) => {
     const handleConfirm = async () => {
         try {
             await onUpdateStatus(order._id, selectedStatus);
-            alert('Status updated successfully!');
         } catch (error) {
-            alert('Failed to update status. Please try again.');
+            console.log('Failed to update status. Please try again.');
         } finally {
             setIsOpen(false);
         }

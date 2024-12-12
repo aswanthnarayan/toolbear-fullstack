@@ -25,11 +25,10 @@ function ProductCard({ id, image, name, brand, rating, reviews, price,stock, des
         try {
             await addToCart({ productId: id, quantity: 1 }).unwrap();
             setIsInCart(true);
-            toastMsg('Product added to cart','success');
-
+            toastMsg('Product added to cart',"success");
         } catch (error) {
             console.error('Failed to add to cart:', error);
-            toastMsg(error.data.message,'error');
+            toastMsg(error.data.message,"error");
         }
     };
 

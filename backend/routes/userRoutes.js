@@ -14,8 +14,13 @@ import {
     updateCartItemQuantity
 } from '../controllers/Users/CartController.js';
 import { getOrderById, cancelOrder ,createOrder, getAllOrdersofUser } from '../controllers/Users/OrderController.js';
+import {getUserDetails,updateProfile} from '../controllers/Users/ProfileController.js'
 
 const router = express.Router();
+//profile
+
+router.route('/profile').get(protect,getUserDetails)
+router.route('/profile/edit').patch(protect,updateProfile)
 
 // Address routes
 router.route('/address')

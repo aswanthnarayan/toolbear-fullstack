@@ -135,6 +135,7 @@ const SignUp = () => {
               {...register("name", {
                 required: "Name is required",
                 minLength: { value: 3, message: "Name must be at least 3 characters long" },
+                validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
               })}
               error={errors.name?.message}
             />
@@ -177,6 +178,8 @@ const SignUp = () => {
               {...register("password", {
                 required: "Password is required",
                 minLength: { value: 6, message: "Password must be at least 6 characters long" },
+                validate: (value) => value.trim() !== "" || "Password cannot be empty or spaces only"
+
               })}
               error={errors.password?.message}
             />

@@ -12,7 +12,7 @@ export const userApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ["Address", "Cart", "Order"],
+    tagTypes: ["Address", "Cart", "Order , Profile"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -102,16 +102,23 @@ export const userApi = createApi({
     }),
     invalidatesTags: ["Order"],
   }),
-  // updateOrder: builder.mutation({
-  //   query: ({ id, data }) => ({
-  //     url: `/order/${id}`,
-  //     method: "PUT",
-  //     body: data,
-  //   }),
-  //   invalidatesTags: ["Order"],
-  // }),
-
+  //profile
+  getUser:builder.query({
+    query:(data)=>({
+      url:"/profile",
+      method:"GET",
+      providesTags:["Profile"]
+    })
+  }),
+  updateProfile:builder.mutation({
+    query:(data)=>({
+      url:"/profile/edit",
+      method:"PATCH",
+      body:data
     }),
+    invalidatesTags:["Profile"]
+  })
+   }),
 });
 
 export const {
@@ -127,5 +134,7 @@ export const {
   useGetAllOrdersQuery,
   useCreateOrderMutation,
   useGetOrderByIdQuery,
-  useCancelOrderMutation
+  useCancelOrderMutation,
+  useGetUserQuery,
+  useUpdateProfileMutation,
 } = userApi

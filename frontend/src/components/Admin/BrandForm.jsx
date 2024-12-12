@@ -321,7 +321,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 2,
                 message: "Brand name must be at least 2 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
             })}
             error={errors.name?.message}
           />
@@ -333,7 +334,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 10,
                 message: "Description must be at least 10 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
             })}
             error={errors.desc?.message}
           />
@@ -461,7 +463,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 3,
                 message: "Title must be at least 3 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Title cannot be empty or spaces only"
             })}
             error={errors?.about?.section1?.title?.message}
           />
@@ -473,7 +476,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 10,
                 message: "Description must be at least 10 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
             })}
             error={errors?.about?.section1?.desc?.message}
           />
@@ -490,7 +494,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 3,
                 message: "Title must be at least 3 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Title cannot be empty or spaces only"
             })}
             error={errors?.about?.section2?.title?.message}
           />
@@ -502,7 +507,8 @@ const BrandForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialData 
               minLength: {
                 value: 10,
                 message: "Description must be at least 10 characters long"
-              }
+              },
+              validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
             })}
             error={errors?.about?.section2?.desc?.message}
           />

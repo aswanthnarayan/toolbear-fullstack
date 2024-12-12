@@ -180,7 +180,8 @@ const CategoryForm = ({ initialData, onSubmit, isLoading, mode, error }) => {
                   maxLength: {
                     value: 50,
                     message: "Category name must not exceed 50 characters"
-                  }
+                  },
+                  validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
                 })}
                 error={errors.name?.message}
               />
@@ -198,7 +199,8 @@ const CategoryForm = ({ initialData, onSubmit, isLoading, mode, error }) => {
                   maxLength: {
                     value: 500,
                     message: "Description must not exceed 500 characters"
-                  }
+                  },
+                  validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
                 })}
                 error={errors.desc?.message}
               />

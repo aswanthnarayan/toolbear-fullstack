@@ -214,17 +214,16 @@ export const getAllProducts = async (req, res) => {
             Product.countDocuments(query)
         ]);
 
-        // Map products to include brand and category data with listing status
         const mappedProducts = products.map(product => ({
             ...product,
-            category: {
+            category: product.category ? {
                 name: product.category.name,
                 isListed: product.category.isListed
-            },
-            brand: {
+            } : null,
+            brand: product.brand ? {
                 name: product.brand.name,
                 isListed: product.brand.isListed
-            },
+            } : null,
             offerPercentage: product.offerPercentage || 0
         }));
 

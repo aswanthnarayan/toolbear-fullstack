@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardBody,
@@ -6,32 +6,99 @@ import {
   Button,
   Typography,
   Avatar,
+  Spinner,
 } from "@material-tailwind/react";
-import { UserCircleIcon, CameraIcon } from "@heroicons/react/24/solid";
+import { CameraIcon, PencilIcon } from "@heroicons/react/24/solid";
+import {useGetUserQuery,useUpdateProfileMutation} from '../../../../../App/features/rtkApis/userApi'
+import { useForm } from "react-hook-form";
+import { Toaster, toast } from 'sonner';
+
 
 const EditProfileSection = () => {
-  const [formData, setFormData] = useState({
-    firstName: 'Aswanth',
-    lastName: 'C K',
-    email: 'aswanth@example.com',
-    phone: '+91 9876543210',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const {data, isLoading, error} = useGetUserQuery();
+  const [updateProfile, {error: updateError, isLoading: updateLoading}] = useUpdateProfileMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+
+  } = useForm({
+    defaultValues: {
+      name: data?.name || '',
+      phone: data?.phone || '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  // Update form default values when data is loaded
+  useEffect(() => {
+    if (data) {
+      reset({
+        name: data.name,
+        phone: data.phone
+      });
+    }
+  }, [data, reset]);
+
+  const onSubmit = async (formData) => {
+    try {
+      if (isEditing) {
+        // Update profile information
+        const response = await updateProfile({
+          name: formData.name,
+          phone: formData.phone
+        }).unwrap();
+        
+        if (response) {
+          setIsEditing(false);
+        }
+      }
+
+      if (showPasswordSection) {
+        // Validate password fields
+        if (formData.newPassword !== formData.confirmPassword) {
+          errors.confirmPassword = {
+            type: 'manual',
+            message: 'Passwords do not match'
+          };
+          return;
+        }
+
+        // Update password
+        await updateProfile({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword
+        }).unwrap();
+        
+        // Reset password fields and close section
+        reset({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setShowPasswordSection(false);
+      }
+      toast.success('Profile Updated Successfully')
+    } catch (err) {
+      toast.error('Something went wrong. Try again')
+      console.error('Update failed:', err);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log(formData);
-  };
+  if (isLoading) {
+    return <Spinner className="mx-auto" />;
+  }
+
+  if (error) {
+    return <div>Error loading profile data</div>;
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -61,86 +128,145 @@ const EditProfileSection = () => {
         </Typography>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
           <CardBody className="space-y-4">
-            <Typography variant="h6" color="blue-gray" className="mb-4">
-              Personal Information
-            </Typography>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-              />
-              <Input
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+            <div className="flex justify-between items-center mb-4">
+              <Typography variant="h6" color="blue-gray">
+                Personal Information
+              </Typography>
+              <Button 
+                size="sm" 
+                variant="text" 
+                className="flex items-center gap-2"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <PencilIcon className="h-4 w-4" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
             </div>
-
+            <div>
+            <Input
+              label="Name"
+              {...register("name", {
+                required: "Name is required",
+                minLength: { value: 3, message: "Name must be at least 3 characters long" },
+                pattern: {
+                  value: /^[a-zA-Z\s]+$/,
+                  message: "Name can only contain letters and spaces"
+                },
+                validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only",
+              })}
+              error={errors.name?.message}
+              disabled={!isEditing}
+            />
+              <p className='text-sm text-red-500 '>{errors.name?.message}</p>
+            </div>
             <Input
               label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={data?.email}
+              disabled={true}
             />
-
+            <div>
             <Input
-              label="Phone Number"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
+              label="Phone"
+              {...register("phone", {
+                required: "Phone number is required",
+                pattern: {
+                  value: /^[0-9]{10}$/,
+                  message: "Please enter a valid 10-digit phone number"
+                }
+              })}
+              error={errors.phone?.message}
+              disabled={!isEditing}
             />
+              <p className='text-sm text-red-500'>{errors.phone?.message}</p>
+            </div>
           </CardBody>
         </Card>
 
-        <Card>
-          <CardBody className="space-y-4">
-            <Typography variant="h6" color="blue-gray" className="mb-4">
-              Change Password
-            </Typography>
+        <div className="flex justify-between items-center">
+          <Button
+            variant="text"
+            color="blue"
+            className="flex items-center gap-2"
+            onClick={() => setShowPasswordSection(!showPasswordSection)}
+          >
+            {showPasswordSection ? 'Cancel' : 'Change Password ?'}
+          </Button>
+        </div>
 
-            <Input
-              label="Current Password"
-              name="currentPassword"
-              type="password"
-              value={formData.currentPassword}
-              onChange={handleChange}
-            />
+        {showPasswordSection && (
+          <Card>
+            <CardBody className="space-y-4">
+              <Typography variant="h6" color="blue-gray" className="mb-4">
+                Change Password
+              </Typography>
 
-            <Input
-              label="New Password"
-              name="newPassword"
-              type="password"
-              value={formData.newPassword}
-              onChange={handleChange}
-            />
-
-            <Input
-              label="Confirm New Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-          </CardBody>
-        </Card>
+              <div>
+              <Input
+                label="Current Password"
+                type="password"
+                {...register("currentPassword", {
+                  required: "Current password is required"
+                })}
+                error={errors.currentPassword?.message}
+              />
+              <p className='text-sm text-red-500'>{errors.currentPassword?.message}</p>
+              </div>
+              <div>
+              <Input
+                label="New Password"
+                type="password"
+                {...register("newPassword", {
+                  required: "New password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters long"
+                  },
+                  // pattern: {
+                  //   value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+                  //   message: "Password must contain at least one letter and one number"
+                  // }
+                })}
+                error={errors.newPassword?.message}
+              />
+              <p className='text-sm text-red-500'>{errors.newPassword?.message}</p>
+              </div>
+              <div>
+              <Input
+                label="Confirm New Password"
+                type="password"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) => value === watch('newPassword') || "Passwords do not match"
+                })}
+                error={errors.confirmPassword?.message}
+              />
+              <p className='text-sm text-red-500'>{errors.confirmPassword?.message}</p>
+              </div>
+            </CardBody>
+          </Card>
+        )}
 
         <div className="flex justify-end gap-4">
-          <Button variant="outlined" color="red">
-            Cancel
-          </Button>
-          <Button type="submit" variant="gradient" color="blue">
-            Save Changes
+          {(updateError || error) && (
+            <Typography color="red" className="text-sm">
+              {updateError?.data?.message || error?.data?.message || "An error occurred"}
+            </Typography>
+          )}
+          <Button 
+            type="submit" 
+            variant="gradient" 
+            color="blue" 
+            disabled={(!isEditing && !showPasswordSection) || updateLoading}
+          >
+            {updateLoading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </form>
+      <Toaster richColors position="top-right" />
+
     </div>
   );
 };

@@ -447,7 +447,10 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               <CustomInput
                 label="Product Name"
                 placeholder="Enter product name"
-                {...register("name")}
+                {...register("name",{
+                  required:"Product Name required",
+                  validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
+                })}
                 error={errors.name?.message}
               />
             </div>
@@ -457,7 +460,10 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 label="Description"
                 placeholder="Enter product description"
                 type="textarea"
-                {...register("desc")}
+                {...register("desc",{
+                  required:"Product Description required",
+                  validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
+                })}
                 error={errors.desc?.message}
               />
             </div>

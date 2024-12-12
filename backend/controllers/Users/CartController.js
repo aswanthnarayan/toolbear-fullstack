@@ -12,6 +12,10 @@ export const addToCart = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
+        if(!product.isListed){
+            return res.status(404).json({message:"Sorry This Product not available right now"})
+        }
+
         // Find existing cart or create new one
         let cart = await Cart.findOne({ user: userId });
         if (!cart) {
@@ -122,7 +126,9 @@ export const updateCartItemQuantity = async (req, res) => {
         if (!cartItem) {
             return res.status(404).json({ message: "Item not found in cart" });
         }
-
+            
+        cartItem.quantity = quantity;
+        await cart.save();
         cartItem.quantity = quantity;
         await cart.save();
 

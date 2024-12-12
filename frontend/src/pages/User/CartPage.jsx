@@ -28,6 +28,18 @@ const CartPage = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
+  // Check for unlisted products
+  const unlistedItems = cartItems.filter(item => !item.product.isListed);
+  const hasUnlistedItems = unlistedItems.length > 0;
+
+  const handleCheckout = () => {
+    if (hasUnlistedItems) {
+      toast.error("Please remove unlisted items from cart before proceeding");
+      return;
+    }
+    navigate('/user/checkout');
+  };
+
   const handleOpenAlert = (productId) => {
     console.log('Opening alert for product:', productId);
     setItemToDelete(productId);
@@ -38,6 +50,7 @@ const CartPage = () => {
     const newQuantity = Math.max(1, Math.min(3, currentQuantity + change));
     
     const cartItem = cartItems.find(item => item.product._id === productId);
+    
     
     if (currentQuantity === 3 && change > 0) {
       toast.error("Maximum quantity limit is 3 items");
@@ -90,6 +103,17 @@ const CartPage = () => {
     <div className="container mx-auto px-4 py-8 pt-[112px]">
       <Typography variant="h3" className="mb-6">Shopping Cart</Typography>
       
+      {hasUnlistedItems && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <Typography color="amber" className="font-medium">
+            Some items in your cart are currently unavailable
+          </Typography>
+          <Typography color="gray" className="text-sm">
+            Please remove these items before proceeding to checkout
+          </Typography>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           {cartItems.length === 0 ? (
@@ -108,7 +132,10 @@ const CartPage = () => {
           ) : (
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <Card key={item.product._id} className="overflow-hidden">
+                <Card 
+                  key={item.product._id} 
+                  className={`overflow-hidden ${!item.product.isListed ? 'opacity-75' : ''}`}
+                >
                   <CardBody className="p-4">
                     <div className="flex items-center gap-4">
                       <img
@@ -117,13 +144,21 @@ const CartPage = () => {
                         className="h-24 w-24 object-cover rounded-lg"
                       />
                       <div className="flex-grow">
-                        <Typography variant="h6">{item.product.name}</Typography>
+                        <div className="flex items-center gap-2">
+                          <Typography variant="h6">{item.product.name}</Typography>
+                          {!item.product.isListed && (
+                            <span className="px-2 py-1 text-xs bg-red-50 text-red-500 rounded">
+                              Unavailable
+                            </span>
+                          )}
+                        </div>
                         <Typography color="gray" className="mb-2">₹{item.price}</Typography>
                         <div className="flex items-center gap-2">
                           <IconButton
                             size="sm"
                             variant="outlined"
                             onClick={() => handleQuantityChange(item.product._id, item.quantity, -1)}
+                            disabled={!item.product.isListed}
                           >
                             <MinusIcon className="h-4 w-4" />
                           </IconButton>
@@ -132,6 +167,7 @@ const CartPage = () => {
                             size="sm"
                             variant="outlined"
                             onClick={() => handleQuantityChange(item.product._id, item.quantity, 1)}
+                            disabled={!item.product.isListed}
                           >
                             <PlusIcon className="h-4 w-4" />
                           </IconButton>
@@ -179,10 +215,10 @@ const CartPage = () => {
                 size="lg"
                 fullWidth
                 className="mt-4"
-                disabled={cartItems.length === 0}
-                onClick={() => navigate('/user/checkout')}
+                disabled={cartItems.length === 0 || hasUnlistedItems}
+                onClick={handleCheckout}
               >
-                Proceed to Checkout
+                {hasUnlistedItems ? 'Remove Unlisted Items to Checkout' : 'Proceed to Checkout'}
               </Button>
             </CardBody>
           </Card>
