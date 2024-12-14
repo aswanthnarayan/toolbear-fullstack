@@ -185,6 +185,10 @@ export const getAllProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || "";
         const sort = req.query.sort || "createdAt";
+        const categories = req.query.categories ? req.query.categories.split(',') : [];
+        const brands = req.query.brands ? req.query.brands.split(',') : [];
+        const priceRange = req.query.priceRange;
+
         const sortOrder = {
             'a-z':{name: 1},
             'z-a':{name: -1},
@@ -194,11 +198,40 @@ export const getAllProducts = async (req, res) => {
         }
 
         const query = {
-            $or: [
-                { name: { $regex: search, $options: 'i' } },
-                { desc: { $regex: search, $options: 'i' } }
-            ],
+            $and: [
+                {
+                    $or: [
+                        { name: { $regex: search, $options: 'i' } },
+                        { desc: { $regex: search, $options: 'i' } }
+                    ]
+                }
+            ]
         };
+
+        // Add category filter if categories are selected
+        if (categories.length > 0) {
+            query.$and.push({ category: { $in: categories } });
+        }
+
+        // Add brand filter if brands are selected
+        if (brands.length > 0) {
+            query.$and.push({ brand: { $in: brands } });
+        }
+
+        // Add price range filter if selected
+        if (priceRange) {
+            const priceRanges = {
+                'price-1': { $gte: 0, $lte: 1000 },
+                'price-2': { $gt: 1000, $lte: 5000 },
+                'price-3': { $gt: 5000, $lte: 15000 },
+                'price-4': { $gt: 15000, $lte: 25000 },
+                'price-5': { $gt: 25000 }
+            };
+
+            if (priceRanges[priceRange]) {
+                query.$and.push({ price: priceRanges[priceRange] });
+            }
+        }
 
         const skip = (page - 1) * limit;
 

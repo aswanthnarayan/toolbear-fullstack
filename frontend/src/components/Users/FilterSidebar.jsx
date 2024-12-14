@@ -1,19 +1,85 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Typography,
   List,
   ListItem,
   ListItemPrefix,
-  Slider,
   Checkbox,
 } from "@material-tailwind/react";
 import { useSelector } from 'react-redux';
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { useGetAllCategoriesQuery, useGetAllBrandsQuery } from '../../../App/features/rtkApis/adminApi';
 
-export function FilterSidebar({ isOpen, onClose }) {
+const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
+  const { data: categoriesData } = useGetAllCategoriesQuery({ 
+    page: 1, 
+    limit: 100  // Get all categories
+  });
+  const { data: brandsData } = useGetAllBrandsQuery({ 
+    page: 1, 
+    limit: 100  // Get all brands
+  });
+
+  const [selectedFilters, setSelectedFilters] = useState({
+    categories: [],
+    brands: [],
+    priceRange: null
+  });
+
+  const priceRanges = [
+    { id: 'price-1', label: '₹0 - ₹1,000', min: 0, max: 1000 },
+    { id: 'price-2', label: '₹1,001 - ₹5,000', min: 1001, max: 5000 },
+    { id: 'price-3', label: '₹5,001 - ₹15,000', min: 5001, max: 15000 },
+    { id: 'price-4', label: '₹15,001 - ₹25,000', min: 15001, max: 25000 },
+    { id: 'price-5', label: '₹25,000+', min: 25000, max: Infinity }
+  ];
+
+  const categories = categoriesData?.categories || [];
+  const brands = brandsData?.brands || [];
+
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
+  const [openAccordions, setOpenAccordions] = useState({
+    categories: false,
+    brands: false,
+    price: false
+  });
+
+  const toggleAccordion = (section) => {
+    setOpenAccordions(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const handleCheckboxChange = (type, value) => {
+    setSelectedFilters(prev => {
+      if (type === 'priceRange') {
+        return {
+          ...prev,
+          priceRange: prev.priceRange === value ? null : value
+        };
+      } else {
+        const array = prev[type];
+        return {
+          ...prev,
+          [type]: array.includes(value)
+            ? array.filter(item => item !== value)
+            : [...array, value]
+        };
+      }
+    });
+  };
+
+  const handleApplyFilter = () => {
+    console.log('Applying filters:', selectedFilters);
+    onApplyFilters(selectedFilters);
+    if (window.innerWidth < 1024) {
+      onClose(); // Close sidebar on mobile after applying filters
+    }
+  };
 
   return (
     <>
@@ -48,74 +114,106 @@ export function FilterSidebar({ isOpen, onClose }) {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           <List className="p-0">
-            {/* Price Range */}
+            {/* Categories Accordion */}
             <ListItem className="flex-col items-start">
-              <Typography variant="h6" className="mb-4">
-                Price Range
-              </Typography>
-              <div className="w-full px-2">
-                <Slider defaultValue={50} className="text-yellow-500" />
-                <div className="flex justify-between mt-2">
-                  <span>₹0</span>
-                  <span>₹10000</span>
-                </div>
-              </div>
-            </ListItem>
-
-            {/* Categories */}
-            <ListItem className="flex-col items-start">
-              <Typography variant="h6" className="mb-4">
-                Categories
-              </Typography>
-              <List className="w-full p-0">
-                {["Power Tools", "Hand Tools", "Safety Equipment", "Measuring Tools"].map(
-                  (category) => (
-                    <ListItem key={category} className="p-0">
-                      <label className="flex w-full cursor-pointer items-center px-3 py-2">
-                        <ListItemPrefix className="mr-3">
-                          <Checkbox
-                            color="yellow"
-                            className="h-5 w-5"
-                            ripple={false}
-                          />
-                        </ListItemPrefix>
-                        <Typography color="blue-gray" className="font-medium">
-                          {category}
-                        </Typography>
+              <button
+                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                onClick={() => toggleAccordion('categories')}
+              >
+                <span>Categories</span>
+                {openAccordions.categories ? <IoIosArrowUp /> : <IoIosArrowDown />}
+              </button>
+              {openAccordions.categories && (
+                <div className="space-y-2 ml-2 transition-all duration-300">
+                  {categories.map((category) => (
+                    <ListItemPrefix key={category._id} className="flex items-center">
+                      <Checkbox
+                        id={category._id}
+                        color="yellow"
+                        className="h-5 w-5"
+                        ripple={false}
+                        checked={selectedFilters.categories.includes(category._id)}
+                        onChange={() => handleCheckboxChange('categories', category._id)}
+                      />
+                      <label htmlFor={category._id} className="ml-2 text-gray-700">
+                        {category.name}
                       </label>
-                    </ListItem>
-                  )
-                )}
-              </List>
+                    </ListItemPrefix>
+                  ))}
+                </div>
+              )}
             </ListItem>
 
-            {/* Brands */}
+            {/* Brands Accordion */}
             <ListItem className="flex-col items-start">
-              <Typography variant="h6" className="mb-4">
-                Brands
-              </Typography>
-              <List className="w-full p-0">
-                {["DeWalt", "Bosch", "Stanley", "3M", "Makita"].map((brand) => (
-                  <ListItem key={brand} className="p-0">
-                    <label className="flex w-full cursor-pointer items-center px-3 py-2">
-                      <ListItemPrefix className="mr-3">
-                        <Checkbox
-                          color="yellow"
-                          className="h-5 w-5"
-                          ripple={false}
-                        />
-                      </ListItemPrefix>
-                      <Typography color="blue-gray" className="font-medium">
-                        {brand}
-                      </Typography>
-                    </label>
-                  </ListItem>
-                ))}
-              </List>
+              <button
+                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                onClick={() => toggleAccordion('brands')}
+              >
+                <span>Brands</span>
+                {openAccordions.brands ? <IoIosArrowUp /> : <IoIosArrowDown />}
+              </button>
+              {openAccordions.brands && (
+                <div className="space-y-2 ml-2 transition-all duration-300">
+                  {brands.map((brand) => (
+                    <div key={brand._id} className="flex items-center">
+                      <Checkbox
+                        id={brand._id}
+                        color="yellow"
+                        className="h-5 w-5"
+                        ripple={false}
+                        checked={selectedFilters.brands.includes(brand._id)}
+                        onChange={() => handleCheckboxChange('brands', brand._id)}
+                      />
+                      <label htmlFor={brand._id} className="ml-2 text-gray-700">
+                        {brand.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ListItem>
+
+            {/* Price Range Accordion */}
+            <ListItem className="flex-col items-start">
+              <button
+                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                onClick={() => toggleAccordion('price')}
+              >
+                <span>Price Range</span>
+                {openAccordions.price ? <IoIosArrowUp /> : <IoIosArrowDown />}
+              </button>
+              {openAccordions.price && (
+                <div className="w-full px-2 space-y-2 ml-2 transition-all duration-300">
+                  {priceRanges.map((range) => (
+                    <div key={range.id} className="flex items-center">
+                      <Checkbox
+                        id={range.id}
+                        color="yellow"
+                        className="h-5 w-5"
+                        ripple={false}
+                        checked={selectedFilters.priceRange === range.id}
+                        onChange={() => handleCheckboxChange('priceRange', range.id)}
+                      />
+                      <label htmlFor={range.id} className="ml-2 text-gray-700">
+                        {range.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </ListItem>
           </List>
         </div>
 
+        <div className="p-4 border-t mt-auto">
+        <button 
+          onClick={handleApplyFilter}
+          className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition duration-300 font-medium"
+        >
+          Apply Filters
+        </button>
+      </div>
         <style jsx global>{`
           /* Custom scrollbar styles */
           .scrollbar-thin::-webkit-scrollbar {
@@ -144,6 +242,6 @@ export function FilterSidebar({ isOpen, onClose }) {
       </Card>
     </>
   );
-}
+};
 
 export default FilterSidebar;

@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Breadcrumbs } from "@material-tailwind/react";
 import { HomeIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import ProductCard from '../../components/Users/ProductCard'
-import { FilterSidebar } from '../../components/Users/FilterSidebar'
+import FilterSidebar from '../../components/Users/FilterSidebar'
 import { useGetAllProductsQuery } from '../../../App/features/rtkApis/adminApi';
 import { Spinner } from "@material-tailwind/react";
 import {Toaster,toast} from 'sonner'
@@ -19,12 +19,20 @@ const AllProductsPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const [searchQuery, setSearchQuery] = useState(queryParams.get('search') || '');
   const [sortOption, setSortOption] = useState('newest');
+  const [filters, setFilters] = useState({
+    categories: [],
+    brands: [],
+    priceRange: null
+  });
 
   const { data, isLoading, isFetching, error } = useGetAllProductsQuery({
     page: currentPage,
     limit: 12,
     search: searchQuery,
-    sort: sortOption
+    sort: sortOption,
+    categories: filters.categories.join(','),
+    brands: filters.brands.join(','),
+    priceRange: filters.priceRange
   });
 
   useEffect(() => {
@@ -57,17 +65,31 @@ const AllProductsPage = () => {
     setCurrentPage(1); // Reset to first page when sort changes
   };
 
+  const handleApplyFilters = (newFilters) => {
+    console.log('Applying filters:', newFilters);
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
   return (
     <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
       <div className="flex relative">
         {/* Filter Sidebar */}
         <div className="hidden lg:block sticky top-[112px]">
-          <FilterSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <FilterSidebar 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)}
+            onApplyFilters={handleApplyFilters}
+          />
         </div>
         
         {/* Mobile Filter Sidebar */}
         <div className="lg:hidden">
-          <FilterSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <FilterSidebar 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)}
+            onApplyFilters={handleApplyFilters}
+          />
         </div>
 
         {/* Main Content */}

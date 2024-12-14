@@ -143,10 +143,21 @@ export const adminApi = createApi({
             invalidatesTags: ['Products'],
         }),
         getAllProducts: builder.query({
-            query: ({ page = 1, limit = 10, search = '', sort = 'newest' }) => ({
-                url: '/products',
-                params: { page, limit, search, sort }
-            }),
+            query: ({ page = 1, limit = 10, search = '', sort = 'newest', categories = '', brands = '', priceRange = null }) => {
+                const params = { page, limit, search, sort };
+                
+                // Only add filter params if they have values
+                if (categories) params.categories = categories;
+                if (brands) params.brands = brands;
+                if (priceRange) params.priceRange = priceRange;
+
+                console.log('API Query Params:', params);
+
+                return {
+                    url: '/products',
+                    params
+                };
+            },
             providesTags: ['Products'],
             transformResponse: (response) => ({
                 products: response.products,
