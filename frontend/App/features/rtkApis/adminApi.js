@@ -164,7 +164,7 @@ export const adminApi = createApi({
                 formData: true,
                 // timeout: 10000,
             }),
-            invalidatesTags: ['Products'],
+            invalidatesTags: ['Products','Cart'],
         }),
         toggleListProduct: builder.mutation({
             query: (productId) => ({

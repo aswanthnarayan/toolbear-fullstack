@@ -12,7 +12,7 @@ export const userApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ["Address", "Cart", "Order , Profile"],
+    tagTypes: ["Address", "Cart", "Order", "Profile"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -89,7 +89,7 @@ export const userApi = createApi({
       method: "POST",
       body: data,
     }),
-    invalidatesTags: ["Order", "Cart"],
+    invalidatesTags: ["Order", "Cart", "Products"],
   }),
   getOrderById: builder.query({
     query: (id) => `/order/${id}`,
@@ -117,7 +117,15 @@ export const userApi = createApi({
       body:data
     }),
     invalidatesTags:["Profile"]
-  })
+  }),
+  // Razorpay endpoint
+  createRazorpayOrder: builder.mutation({
+    query: (data) => ({
+      url: '/orders/create-razorpay',
+      method: 'POST',
+      body: data
+    })
+  }),
    }),
 });
 
@@ -137,4 +145,5 @@ export const {
   useCancelOrderMutation,
   useGetUserQuery,
   useUpdateProfileMutation,
+  useCreateRazorpayOrderMutation,
 } = userApi

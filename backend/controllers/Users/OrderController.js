@@ -1,10 +1,10 @@
 import Order from "../../models/OrderSchema.js";
 import User from "../../models/UserSchema.js";
 import { Product } from "../../models/ProductSchema.js";
-import Cart from "../../models/CartSchema.js"; // Added Cart model import
+import Cart from "../../models/CartSchema.js"; 
 import HttpStatusEnum from "../../constants/httpStatus.js";
-import MessageEnum from "../../constants/messages.js";  
-import mongoose from "mongoose";
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 
 export const getAllOrders = async (req, res) => {
     try {
@@ -19,7 +19,7 @@ export const getAllOrders = async (req, res) => {
 export const getAllOrdersofUser = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        const orders = await Order.find({ userId: user._id }).populate('products.productId')
+        const orders = await Order.find({ userId: user._id }).sort({ createdAt: -1 }).populate('products.productId')
         res.status(HttpStatusEnum.OK).json(orders); 
     } catch (error) {
         console.error("Error fetching orders:", error);
@@ -27,10 +27,55 @@ export const getAllOrdersofUser = async (req, res) => {
     }
 }
 
+export const createRazorpayOrder = async (req, res) => {
+    try {
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+
+        const options = {
+            amount: req.body.amount * 100, // amount in paisa
+            currency: "INR",
+            receipt: "order_" + Date.now(),
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.status(200).json({
+            success: true,
+            order
+        });
+    } catch (error) {
+        console.error("Razorpay order creation error:", error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
+    }
+};
+
 export const createOrder = async (req, res) => {
     try {
-        const { products, address, paymentMethod, totalAmount, shippingAmount } = req.body;
+        const { products, address, paymentMethod, totalAmount, shippingAmount, paymentDetails } = req.body;
         const user = await User.findById(req.user._id);
+
+        // Verify Razorpay payment if payment method is Razorpay
+        if (paymentMethod === "RAZORPAY" && paymentDetails) {
+            const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentDetails;
+            
+            const sign = razorpay_order_id + "|" + razorpay_payment_id;
+            const expectedSign = crypto
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+                .update(sign.toString())
+                .digest("hex");
+
+            if (razorpay_signature !== expectedSign) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: "Invalid payment verification" 
+                });
+            }
+        }
 
         // 1. Check stock availability first
         for (const item of products) {
@@ -85,7 +130,7 @@ export const getOrderById = async (req, res) => {
         console.error("Error fetching order:", error);
         res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
     }
-}   
+} 
 
 export const updateOrder = async (req, res) => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -12,20 +12,22 @@ import { RiSecurePaymentFill } from "react-icons/ri";
 import { BsCashStack } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useGetCartQuery, useCreateOrderMutation } from '../../../App/features/rtkApis/userApi';
+import { useGetCartQuery, useCreateOrderMutation, useCreateRazorpayOrderMutation } from '../../../App/features/rtkApis/userApi';
 import { useSelector } from "react-redux";
 
 const PurchasePaymentPage = () => {
   const navigate = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState("");
   const [openAccordion, setOpenAccordion] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { data: cart, isLoading: cartLoading, error: cartError } = useGetCartQuery();
   const selectedAddress = useSelector((state) => state.checkout.selectedAddress);
   const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
 
-
-  console.log(selectedAddress);
+  console.log(cart);
   
+
   const savedCards = [
     { id: 1, number: "**** **** **** 1234", type: "VISA" },
     { id: 2, number: "**** **** **** 5678", type: "Mastercard" },
@@ -33,6 +35,77 @@ const PurchasePaymentPage = () => {
 
   const savedUPI = [
   ];
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleRazorpayPayment = async (orderData) => {
+    try {
+      const result = await createRazorpayOrder({ amount: cart?.totalAmount }).unwrap();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create Razorpay order');
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: result.order.amount,
+        currency: "INR",
+        name: "ToolBear",
+        description: "Tool Purchase",
+        order_id: result.order.id,
+        handler: async function (response) {
+          try {
+            orderData.paymentMethod = "RAZORPAY";
+            orderData.paymentDetails = {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            };
+
+            const orderResult = await createOrder(orderData).unwrap();
+            if (orderResult) {
+              toast.success("Payment successful!");
+              navigate('/user/checkout/success');
+            }
+          } catch (error) {
+            toast.error("Payment verification failed. Please contact support.");
+            console.error('Order creation error:', error);
+          }
+        },
+        prefill: {
+          name: "User Name",
+          email: "user@example.com",
+        },
+        theme: {
+          color: "#3399cc",
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response) {
+        toast.error("Payment failed. Please try again.");
+        setIsProcessing(false);
+      });
+      paymentObject.open();
+    } catch (error) {
+      setIsProcessing(false);
+      toast.error(error.message || "Payment initialization failed");
+      console.error('Razorpay error:', error);
+    }
+  };
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -47,29 +120,31 @@ const PurchasePaymentPage = () => {
     }
 
     try {
-      if (selectedPayment === "cod") {
-        const orderData = {
-          address: selectedAddress,
-          products: cart?.items.map(item => ({
-            productId: item.product._id,
-            quantity: item.quantity,
-            priceAtPurchase: item.price
-          })),
-          paymentMethod: "COD",
-          totalAmount: cart?.totalAmount,
-          shippingAmount: 0 
-        };
+      setIsProcessing(true);
+      const orderData = {
+        address: selectedAddress,
+        products: cart?.items.map(item => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+          priceAtPurchase: item.price
+        })),
+        totalAmount: cart?.totalAmount,
+        shippingAmount: 0
+      };
 
+      if (selectedPayment === "cod") {
+        orderData.paymentMethod = "COD";
         await createOrder(orderData).unwrap();
         toast.success("Order placed successfully!");
         navigate('/user/checkout/success');
       } else if (selectedPayment === "razorpay") {
-        // Handle Razorpay payment flow here
-        toast.error("Razorpay payment not implemented yet");
+        await handleRazorpayPayment(orderData);
       }
     } catch (error) {
       console.error('Order creation error:', error);
       toast.error(error?.data?.message || "Failed to place order. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -121,9 +196,9 @@ const PurchasePaymentPage = () => {
             color="blue"
             className="w-full mt-4"
             onClick={handlePlaceOrder}
-            disabled={isCreatingOrder}
+            disabled={isCreatingOrder || isProcessing}
           >
-            {isCreatingOrder ? (
+            {(isCreatingOrder || isProcessing) ? (
               <div className="flex items-center justify-center gap-2">
                 <Spinner size="sm" />
                 <span>Processing...</span>

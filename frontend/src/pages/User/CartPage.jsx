@@ -19,7 +19,7 @@ import {
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { data: cart, isLoading, error } = useGetCartQuery();
+  const { data: cart, isLoading, error, refetch } = useGetCartQuery();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [updateQuantity] = useUpdateCartQuantityMutation();
   const cartItems = cart?.items || [];  
@@ -28,16 +28,53 @@ const CartPage = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Check for unlisted products
+  // Check for unlisted products and stock issues
   const unlistedItems = cartItems.filter(item => !item.product.isListed);
+  const outOfStockItems = cartItems.filter(item => item.product.stock === 0);
+  const insufficientStockItems = cartItems.filter(item => item.quantity > item.product.stock);
+  
   const hasUnlistedItems = unlistedItems.length > 0;
+  const hasOutOfStockItems = outOfStockItems.length > 0;
+  const hasInsufficientStock = insufficientStockItems.length > 0;
 
-  const handleCheckout = () => {
-    if (hasUnlistedItems) {
-      toast.error("Please remove unlisted items from cart before proceeding");
-      return;
+  const handleCheckout = async () => {
+    try {
+      // Refetch cart to get latest product status
+      const latestCart = await refetch();
+      
+      if (!latestCart.data) {
+        toast.error('Unable to fetch latest cart data');
+        return;
+      }
+      
+      // Check latest cart data
+      const unlistedItems = latestCart.data.items.filter(item => !item.product.isListed);
+      const outOfStockItems = latestCart.data.items.filter(item => item.product.stock === 0);
+      const insufficientStockItems = latestCart.data.items.filter(item => item.quantity > item.product.stock);
+
+      if (unlistedItems.length > 0) {
+        toast.error(`Please remove unavailable items: ${unlistedItems.map(item => item.product.name).join(', ')}`);
+        return;
+      }
+      
+      if (outOfStockItems.length > 0) {
+        toast.error(`Please remove out of stock items: ${outOfStockItems.map(item => item.product.name).join(', ')}`);
+        return;
+      }
+      
+      if (insufficientStockItems.length > 0) {
+        insufficientStockItems.forEach(item => {
+          toast.error(`${item.product.name} has only ${item.product.stock} units available`);
+        });
+        return;
+      }
+
+      // All checks passed, proceed to checkout
+      navigate('/user/checkout');
+    } catch (error) {
+      console.error('Checkout validation failed:', error);
+      toast.error('Unable to proceed with checkout. Please try again.');
     }
-    navigate('/user/checkout');
   };
 
   const handleOpenAlert = (productId) => {
@@ -103,7 +140,7 @@ const CartPage = () => {
     <div className="container mx-auto px-4 py-8 pt-[112px]">
       <Typography variant="h3" className="mb-6">Shopping Cart</Typography>
       
-      {hasUnlistedItems && (
+      {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) && (
         <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <Typography color="amber" className="font-medium">
             Some items in your cart are currently unavailable
@@ -215,10 +252,10 @@ const CartPage = () => {
                 size="lg"
                 fullWidth
                 className="mt-4"
-                disabled={cartItems.length === 0 || hasUnlistedItems}
+                disabled={cartItems.length === 0 || hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock}
                 onClick={handleCheckout}
               >
-                {hasUnlistedItems ? 'Remove Unlisted Items to Checkout' : 'Proceed to Checkout'}
+                {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) ? 'Remove Unavailable Items to Checkout' : 'Proceed to Checkout'}
               </Button>
             </CardBody>
           </Card>

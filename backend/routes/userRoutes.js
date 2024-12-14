@@ -13,7 +13,7 @@ import {
     removeFromCart,
     updateCartItemQuantity
 } from '../controllers/Users/CartController.js';
-import { getOrderById, cancelOrder ,createOrder, getAllOrdersofUser } from '../controllers/Users/OrderController.js';
+import { getOrderById, cancelOrder, createOrder, getAllOrdersofUser, createRazorpayOrder } from '../controllers/Users/OrderController.js';
 import {getUserDetails,updateProfile} from '../controllers/Users/ProfileController.js'
 
 const router = express.Router();
@@ -45,5 +45,6 @@ router.route('/cart/:productId')
 router.route('/order').post(protect, createOrder);
 router.route('/order/all').get(protect, getAllOrdersofUser);
 router.route('/order/:id').get(protect, getOrderById).patch(protect, cancelOrder);
+router.route('/orders/create-razorpay').post(protect, createRazorpayOrder);
 
 export default router;
