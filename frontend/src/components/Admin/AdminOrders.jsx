@@ -17,6 +17,8 @@ import { useGetAllOrdersQuery, useUpdateOrderStatusMutation } from "../../../App
 import OrderUpdateSelect from "./OrderUpdateSelect";
 import CustomInput from "../CustomInput";
 import { AlertModal } from "../AlertModal";
+import { useNavigate } from "react-router-dom";
+import { Chip } from "@material-tailwind/react";
 
 const TABLE_HEAD = ["Order ID", "Customer", "Products", "Total", "Date", "Status", "Actions"];
 const ORDER_STATUSES = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
@@ -28,6 +30,7 @@ const AdminOrders = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
   const ITEMS_PER_PAGE = 10;
+  const navigate = useNavigate();
 
   // RTK Query hooks
   const { data, isLoading, isFetching, error } = useGetAllOrdersQuery({
@@ -91,6 +94,13 @@ const AdminOrders = () => {
               <FaMagnifyingGlass className="absolute right-3 top-[35%] text-gray-400" />
             </div>
           </div>
+          <Button
+            variant="filled"
+            size="md"
+            onClick={() => navigate("/admin/orders/return")}
+          >
+            Returned Requests
+          </Button>
         </div>
       </CardHeader>
 
@@ -167,10 +177,22 @@ const AdminOrders = () => {
                     </div>
                   </td>
                   <td className="p-4">
-                    <OrderUpdateSelect 
-                      order={order} 
-                      onUpdateStatus={handleStatusUpdate}
-                    />
+                    {!['return requested', 'return approved', 'return rejected'].includes(order.status) ? (
+                      <OrderUpdateSelect 
+                        order={order}
+                        onUpdateStatus={handleStatusUpdate}
+                      />
+                    ) : (
+                      <Chip
+                        variant="gradient"
+                        color={
+                          order.status === 'return requested' ? 'amber' : 
+                          order.status === 'return approved' ? 'green' : 'red'
+                        }
+                        value={order.status}
+                        className="py-0.5 px-2 text-[11px] font-medium"
+                      />
+                    )}
                   </td>
                 </tr>
               ))}

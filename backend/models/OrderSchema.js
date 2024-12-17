@@ -56,7 +56,7 @@ const orderSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ["Order Placed", "Cancelled", "Processing", "Shipped", "Out for delivery", "Delivered", "Returned"],
+        enum: ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "return requested", "return approved", "return rejected"],
         required: true,
         default: "Order Placed"
     },
@@ -85,6 +85,16 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         min: 0
+    },
+    returnReason: {
+        type: String,
+        trim: true
+    },
+    returnRequestedAt: {
+        type: Date
+    },
+    deliveredAt: {
+        type: Date
     }
 }, { timestamps: true });
 

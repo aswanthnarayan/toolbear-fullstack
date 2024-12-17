@@ -5,7 +5,19 @@ import { createBrand, getAllBrands, updateBrand, toggleListBrand, getBrandById }
 import { createProduct, getAllProducts, updateProduct, toggleListProduct, getProductById } from '../controllers/Admin/productController.js';
 import { handleSingleUpload, handleBrandUpload, handleProductUpload } from '../middleware/multerMiddleWare.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
-import { getAllOrders, cancelOrder, getOrderById, updateOrderStatus } from '../controllers/Admin/OrderController.js';
+import { 
+    getAllOrders, 
+    cancelOrder, 
+    getOrderById, 
+    updateOrderStatus,
+    getReturnRequests,
+    handleReturnRequest 
+} from '../controllers/Admin/OrderController.js';
+import { 
+    getAllCoupons, 
+    createCoupon, 
+    deleteCoupon,
+} from '../controllers/Admin/couponController.js';
 
 const router = express.Router();
 
@@ -35,9 +47,17 @@ router.patch("/products/:productId/update", protect, adminOnly, handleProductUpl
 router.patch("/products/:productId/toggle-list", protect, adminOnly, toggleListProduct);
 
 //Orders
-router.get("/orders", protect, adminOnly, getAllOrders);
-router.patch("/orders/:orderId/cancel", protect, adminOnly, cancelOrder);
-router.get("/orders/:orderId", protect, adminOnly, getOrderById);
-router.patch("/orders/status", protect, adminOnly, updateOrderStatus);
+router.get('/orders/returns', protect, adminOnly, getReturnRequests); 
+router.patch('/orders/:orderId/return', protect, adminOnly, handleReturnRequest);
+router.get('/orders/:orderId', protect, adminOnly, getOrderById);
+router.patch('/orders/:orderId/cancel', protect, adminOnly, cancelOrder);
+router.patch('/orders/status', protect, adminOnly, updateOrderStatus);
+router.get('/orders', protect, adminOnly, getAllOrders);
+
+// Coupon routes
+router.get('/coupons', protect, adminOnly, getAllCoupons);
+router.post('/coupons/new', protect, adminOnly, createCoupon);
+router.delete('/coupons/:couponId', protect, adminOnly, deleteCoupon);
+// router.patch('/coupons/:couponId/toggle-status', protect, adminOnly, toggleCouponStatus);
 
 export default router;

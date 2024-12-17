@@ -1,40 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { Button } from '@material-tailwind/react';
-import { useAddToCartMutation } from '../../../App/features/rtkApis/userApi';
+import { 
+    useAddToCartMutation,
+    useAddToWishlistMutation,
+    useRemoveFromWishlistMutation
+} from '../../../App/features/rtkApis/userApi';
 
-function ProductCard({ id, image, name, brand, rating, reviews, price,stock, description,toastMsg }) {
+function ProductCard({ 
+    id, 
+    image, 
+    name, 
+    brand, 
+    rating, 
+    reviews, 
+    price, 
+    stock, 
+    description, 
+    toastMsg,
+    isInWishlist,
+    onWishlistChange 
+}) {
     const { isDarkMode, theme } = useSelector((state) => state.theme);
+    const { user } = useSelector((state) => state.auth);
     const currentTheme = isDarkMode ? theme.dark : theme.light;
     const navigate = useNavigate();
     const [isInCart, setIsInCart] = useState(false);
     const [addToCart, { isLoading }] = useAddToCartMutation();
-
-    // Calculate discounted price
-    // const discountedPrice = offerPercentage > 0 
-    //     ? Math.round(price - (price * offerPercentage / 100))
-    //     : price;
+    const [addToWishlist] = useAddToWishlistMutation();
+    const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
     const handleAddToCart = async (e) => {
-        e.preventDefault(); // Prevent navigation from Link
+        e.preventDefault();
         try {
             await addToCart({ productId: id, quantity: 1 }).unwrap();
             setIsInCart(true);
-            toastMsg('Product added to cart',"success");
+            toastMsg('Product added to cart', "success");
         } catch (error) {
             console.error('Failed to add to cart:', error);
-            toastMsg(error.data.message,"error");
+            toastMsg(error.data.message, "error");
         }
     };
 
     const handleGoToCart = (e) => {
-        e.preventDefault(); // Prevent navigation from Link
+        e.preventDefault();
         navigate('/user/cart');
+    };
+
+    const handleWishlist = async (e) => {
+        e.preventDefault();
+        if (!user) {
+            toastMsg('Login to add product to wishlist', "error");
+            return;
+        }
+        try {
+            if (isInWishlist) {
+                await removeFromWishlist(id).unwrap();
+                onWishlistChange && onWishlistChange(id, false);
+                toastMsg('Removed from wishlist', "success");
+            } else {
+                await addToWishlist({ productId: id }).unwrap();
+                onWishlistChange && onWishlistChange(id, true);
+                toastMsg('Added to wishlist', "success");
+            }
+        } catch (error) {
+            console.error('Wishlist operation failed:', error);
+            if(error?.status === 401) {
+                toastMsg('Login to add product to wishlist', "error");
+            } else {
+                toastMsg(error.data?.message || 'Wishlist operation failed', "error");
+            }
+        }
     };
 
     return (
@@ -92,36 +134,57 @@ function ProductCard({ id, image, name, brand, rating, reviews, price,stock, des
                     }`}>
                         {description}
                     </p>
-                    <div className="mt-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                            {stock > 0 ? (
-                                isInCart ? (
-                                    <Button
-                                        color="blue"
-                                        variant="outlined"
-                                        className="flex items-center gap-2"
-                                        onClick={handleGoToCart}
-                                    >
-                                        <ShoppingCartIcon className="h-4 w-4" />
-                                        Go to Cart
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        color="blue"
-                                        className="flex items-center gap-2"
-                                        onClick={handleAddToCart}
-                                        disabled={isLoading}
-                                    >
-                                        <ShoppingCartIcon className="h-4 w-4" />
-                                        {isLoading ? 'Adding...' : 'Add to Cart'}
-                                    </Button>
-                                )
-                            ) : (
-                                <p className={`text-xs font-bold ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                                    Out of Stock
-                                </p>
-                            )}
-                        </div>
+                    <div className="mt-4 flex justify-between items-center h-10 gap-2">
+                        {stock > 0 ? (
+                            <>
+                                <Button
+                                    color={isInWishlist ? "red" : "gray"}
+                                    variant="outlined"
+                                    className="flex items-center justify-center gap-2 min-w-[40px] p-2"
+                                    onClick={handleWishlist}
+                                >
+                                    {isInWishlist ? (
+                                        <HeartSolid className="w-5 h-5 text-red-500" />
+                                    ) : (
+                                        <HeartOutline className="w-5 h-5" />
+                                    )}
+                                </Button>
+                                <div className="flex-1">
+                                    {isInCart ? (
+                                        <Button
+                                            color="blue"
+                                            variant="outlined"
+                                            className="flex items-center justify-center gap-2 w-full py-2"
+                                            onClick={handleGoToCart}
+                                            disabled={isLoading}
+                                        >
+                                            <ShoppingCartIcon className="w-4 h-4" />
+                                            Go to Cart
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            color="blue"
+                                            variant="gradient"
+                                            className="flex items-center justify-center gap-2 w-full py-2"
+                                            onClick={handleAddToCart}
+                                            disabled={isLoading}
+                                        >
+                                            <ShoppingCartIcon className="w-4 h-4" />
+                                            Add to Cart
+                                        </Button>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <Button
+                                color="red"
+                                variant="text"
+                                className="w-full py-2"
+                                disabled
+                            >
+                                Out of Stock
+                            </Button>
+                        )}
                     </div>
                 </div>
             </Link>

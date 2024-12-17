@@ -12,7 +12,7 @@ export const userApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ["Address", "Cart", "Order", "Profile"],
+    tagTypes: ["Address", "Cart", "Order", "Profile,Wishlist", "Coupons"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -102,6 +102,14 @@ export const userApi = createApi({
     }),
     invalidatesTags: ["Order"],
   }),
+  returnOrder: builder.mutation({
+    query: ({ orderId, reason }) => ({
+      url: `/orders/${orderId}/return`,
+      method: 'POST',
+      body: { reason }
+    }),
+    invalidatesTags: ['Order']
+  }),
   //profile
   getUser:builder.query({
     query:(data)=>({
@@ -126,7 +134,36 @@ export const userApi = createApi({
       body: data
     })
   }),
-   }),
+  // Wishlist endpoints
+  getWishlist: builder.query({
+    query: () => "/wishlist",
+    providesTags: ["Wishlist"],
+  }),
+  addToWishlist: builder.mutation({
+    query: (data) => ({
+      url: "/wishlist",
+      method: "POST",
+      body: data,
+    }),
+    invalidatesTags: ["Wishlist"],
+  }),
+  removeFromWishlist: builder.mutation({
+    query: (productId) => ({
+      url: `/wishlist/${productId}`,
+      method: "DELETE",
+    }),
+    invalidatesTags: ["Wishlist"],
+  }),
+  // Coupon endpoints
+  getAvailableCoupons: builder.query({
+    query: () => '/coupons',
+    providesTags: ['Coupons']
+  }),
+  validateCoupon: builder.query({
+    query: (code) => `/coupons/${code}`,
+    providesTags: ['Coupons']
+  }),
+}),
 });
 
 export const {
@@ -143,7 +180,13 @@ export const {
   useCreateOrderMutation,
   useGetOrderByIdQuery,
   useCancelOrderMutation,
+  useReturnOrderMutation,
   useGetUserQuery,
   useUpdateProfileMutation,
   useCreateRazorpayOrderMutation,
+  useGetWishlistQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
+  useGetAvailableCouponsQuery,
+  useValidateCouponQuery,
 } = userApi

@@ -40,6 +40,10 @@ import CheckoutPage from "./pages/User/CheckoutPage";
 import PurchasePaymentPage from "./pages/User/PurchasePaymentPage";
 import OrderCompletePage from "./pages/User/OrderCompletePage";
 import AdminOrdersPage from "./pages/Admin/AdminOrdersPage";
+import WishlistPage from "./pages/User/WishlistPage";
+import ReturnedRequestPage from "./components/Admin/ReturnedRequestPage";
+import AdminCouponPage from "./pages/Admin/AdminCouponPage";
+import AddCouponPage from "./pages/Admin/AddCouponPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -64,6 +68,7 @@ function App() {
 
         {/* Protected User Routes (still within Layout) */}
         <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+        <Route path="/user/wishlist" element={<WishlistPage />} />
         <Route path="/user/cart" element={<CartPage />} />
         <Route path="/user/checkout" element={<CheckoutPage />} />
         <Route path="/user/checkout/payments" element={<PurchasePaymentPage />} />
@@ -96,6 +101,9 @@ function App() {
           <Route path="products/new" element={<AddProductPage/>} />
           <Route path="products/edit/:id" element={<EditProductPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/return" element={<ReturnedRequestPage />} />
+          <Route path="coupons" element={<AdminCouponPage />} />
+          <Route path="/admin/coupons/new" element={<AddCouponPage />} />
 
         </Route>
       </Route>

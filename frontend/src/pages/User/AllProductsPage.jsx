@@ -9,10 +9,13 @@ import { useGetAllProductsQuery } from '../../../App/features/rtkApis/adminApi';
 import { Spinner } from "@material-tailwind/react";
 import {Toaster,toast} from 'sonner'
 import SortSelect from '../../components/SortSelect';
+import { useGetWishlistQuery } from '../../../App/features/rtkApis/userApi';
 
 const AllProductsPage = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
+  const { user } = useSelector((state) => state.auth);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
@@ -34,6 +37,16 @@ const AllProductsPage = () => {
     brands: filters.brands.join(','),
     priceRange: filters.priceRange
   });
+
+  const { refetch: refetchWishlist } = useGetWishlistQuery(undefined, {
+    skip: !user
+  });
+
+  useEffect(() => {
+    if (user) {
+      refetchWishlist();
+    }
+  }, [user, refetchWishlist]);
 
   useEffect(() => {
     setSearchQuery(queryParams.get('search') || '');
@@ -69,6 +82,18 @@ const AllProductsPage = () => {
     console.log('Applying filters:', newFilters);
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const isProductInWishlist = (productId) => {
+    return wishlistItems.some(item => 
+      item.productId._id === productId || item.productId === productId
+    );
+  };
+
+  const handleWishlistChange = (productId, isAdded) => {
+    // This will be called after successful wishlist operations
+    // The state will be automatically updated through Redux
+    refetchWishlist();
   };
 
   return (
@@ -144,7 +169,8 @@ const AllProductsPage = () => {
                           price={product.price}
                           description={product.desc}
                           stock={product.stock}
-                          // offerPercentage={product.offerPercentage}
+                          isInWishlist={isProductInWishlist(product._id)}
+                          onWishlistChange={handleWishlistChange}
                           toastMsg={handleToast}
                         />
                       </div>

@@ -12,7 +12,7 @@ export const adminApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ['Users', 'Categories', 'Brands', 'Products', 'Orders'],
+    tagTypes: ['Users', 'Categories', 'Brands', 'Products', 'Orders', 'Coupons'],
     endpoints: (builder) => ({
         //User management
         getUsers: builder.query({
@@ -223,6 +223,39 @@ export const adminApi = createApi({
             query: (orderId) => `/orders/${orderId}`,
             providesTags: ['Orders']
         }),
+        // Return Order Management
+        getReturnRequests: builder.query({
+            query: () => '/orders/returns',
+            providesTags: ['Orders']
+        }),
+        handleReturnRequest: builder.mutation({
+            query: ({ orderId, action }) => ({
+                url: `/orders/${orderId}/return`,
+                method: 'PATCH',
+                body: { action }
+            }),
+            invalidatesTags: ['Orders']
+        }),
+        //Coupon Management
+        getAllCoupons: builder.query({
+            query: () => '/coupons',
+            providesTags: ['Coupons']
+        }),
+        createCoupon: builder.mutation({
+            query: (couponData) => ({
+                url: '/coupons/new',
+                method: 'POST',
+                body: couponData
+            }),
+            invalidatesTags: ['Coupons']
+        }),
+        deleteCoupon: builder.mutation({
+            query: (couponId) => ({
+                url: `/coupons/${couponId}`,
+                method: 'DELETE'
+            }),
+            invalidatesTags: ['Coupons']
+        }),
     })
 });
 
@@ -248,4 +281,9 @@ export const {
     useUpdateOrderStatusMutation,
     useCancelOrderMutation,
     useGetOrderByIdQuery,
+    useGetReturnRequestsQuery,
+    useHandleReturnRequestMutation,
+    useGetAllCouponsQuery,
+    useCreateCouponMutation,
+    useDeleteCouponMutation,
 } = adminApi;

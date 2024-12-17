@@ -191,3 +191,76 @@ export const cancelOrder = async (req, res) => {
         });
     }
 }
+
+export const returnOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { reason } = req.body;
+        const userId = req.user.id;
+
+        // Validate inputs
+        if (!reason) {
+            return res.status(400).json({
+                success: false,
+                message: 'Return reason is required'
+            });
+        }
+
+        // Find the order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Check if user owns the order
+        if (order.userId.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to return this order'
+            });
+        }
+
+        // Check if order is in delivered status
+        if (order.status.toLowerCase() !== 'delivered') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only delivered orders can be returned'
+            });
+        }
+
+        // Check if return window is still open (e.g., 7 days)
+        const deliveryDate = new Date(order.deliveredAt);
+        const returnWindowDays = 7;
+        const returnWindowDeadline = new Date(deliveryDate.getTime() + (returnWindowDays * 24 * 60 * 60 * 1000));
+        
+        if (Date.now() > returnWindowDeadline) {
+            return res.status(400).json({
+                success: false,
+                message: `Return window of ${returnWindowDays} days has expired`
+            });
+        }
+
+        // Update order status and add return details
+        order.status = 'return requested';
+        order.returnReason = reason;
+        order.returnRequestedAt = Date.now();
+
+        await order.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Return request submitted successfully',
+            order
+        });
+
+    } catch (error) {
+        console.error('Return order error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error processing return request'
+        });
+    }
+};
