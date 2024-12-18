@@ -16,6 +16,13 @@ export const addToCart = async (req, res) => {
             return res.status(404).json({message:"Sorry This Product not available right now"})
         }
 
+        // Calculate selling price
+        const productOffer = product.offerPercentage || 0;
+        const categoryOffer = product.category?.offerPercentage || 0;
+        const brandOffer = product.brand?.offerPercentage || 0;
+        const maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
+        const sellingPrice = Math.round(product.price - (product.price * maxOfferPercentage / 100));
+
         // Find existing cart or create new one
         let cart = await Cart.findOne({ user: userId });
         if (!cart) {
@@ -37,7 +44,7 @@ export const addToCart = async (req, res) => {
                 return res.status(400).json({ message: "Maximum quantity limit is 3 items" });
             }
             existingItem.quantity = newQuantity;
-            existingItem.price = product.price;
+            existingItem.price = product.sellingPrice;
         } else {
             if (quantity > 3) {
                 return res.status(400).json({ message: "Maximum quantity limit is 3 items" });
@@ -45,7 +52,7 @@ export const addToCart = async (req, res) => {
             cart.items.push({
                 product: productId,
                 quantity,
-                price: product.price
+                price: product.sellingPrice
             });
         }
 
@@ -67,15 +74,45 @@ export const getCart = async (req, res) => {
     try {
         const userId = req.user._id;
         const cart = await Cart.findOne({ user: userId })
-            .populate('items.product');
-        
+            .populate({
+                path: 'items.product',
+                select: 'name mainImage price stock isListed offerPercentage',
+                populate: [
+                    { path: 'category', select: 'offerPercentage' },
+                    { path: 'brand', select: 'offerPercentage' }
+                ]
+            });
+
         if (!cart) {
-            return res.status(200).json({ items: [], totalAmount: 0 });
+            return res.json({ items: [], totalAmount: 0 });
         }
-        
-        res.status(200).json(cart);
+
+        // Calculate selling price for each item
+        const enrichedItems = cart.items.map(item => {
+            const product = item.product;
+            const productOffer = product.offerPercentage || 0;
+            const categoryOffer = product.category?.offerPercentage || 0;
+            const brandOffer = product.brand?.offerPercentage || 0;
+            const maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
+            const sellingPrice = Math.round(product.price - (product.price * maxOfferPercentage / 100));
+
+            return {
+                ...item.toObject(),
+                price: sellingPrice
+            };
+        });
+
+        const totalAmount = enrichedItems.reduce((total, item) => {
+            return total + (item.price * item.quantity);
+        }, 0);
+
+        res.json({
+            items: enrichedItems,
+            totalAmount
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching cart:', error);
+        res.status(500).json({ message: 'Error fetching cart' });
     }
 };
 

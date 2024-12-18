@@ -6,12 +6,18 @@ import {
   HeartIcon,
   ShareIcon,
 } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import Magnifier from "react-magnifier";
-import { useAddToCartMutation } from "../../../App/features/rtkApis/userApi";
+import { 
+  useAddToCartMutation,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
+  useGetWishlistQuery
+} from "../../../App/features/rtkApis/userApi";
 import { useNavigate } from "react-router-dom";
 
-const SingleProduct = ({ product, toastMsg }) => {
+const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -19,6 +25,10 @@ const SingleProduct = ({ product, toastMsg }) => {
 
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
   const [isInCart, setIsInCart] = useState(false);
+  const [addToWishlist] = useAddToWishlistMutation();
+  const [removeFromWishlist] = useRemoveFromWishlistMutation();
+
+  
 
   const handleAddToCart = async () => {
     try {
@@ -30,20 +40,26 @@ const SingleProduct = ({ product, toastMsg }) => {
       toastMsg(error.data.message, "error");
     }
   };
+
   const handleGoToCart = (e) => {
     e.preventDefault(); // Prevent navigation from Link
     navigate("/user/cart");
   };
 
-  // Calculate discounted price
-  // const discountedPrice =
-  //   product.offerPercentage > 0
-  //     ? Math.round(
-  //         product.price - (product.price * product.offerPercentage) / 100
-  //       )
-  //     : product.price;
+  const handleWishlist = async () => {
+    try {
+      if (isInWishlist) {
+        await removeFromWishlist(product._id).unwrap();
+        toastMsg("Removed from wishlist", "success");
+      } else {
+        await addToWishlist({ productId: product._id }).unwrap();
+        toastMsg("Added to wishlist", "success");
+      }
+    } catch (error) {
+      toastMsg(error.data?.message || "Failed to update wishlist", "error");
+    }
+  };
 
-  // Custom Rating Display
   const renderRating = (rating) => {
     return (
       <div className="flex items-center">
@@ -145,7 +161,7 @@ const SingleProduct = ({ product, toastMsg }) => {
             <Typography variant="h4" color="blue-gray">
               {product.name}
             </Typography>
-            <p className="text-gray-600">{product.brand}</p>
+            <p className="text-gray-600">{product.brand?.name}</p>
           </div>
 
           <div className="flex items-center gap-2 mb-6">
@@ -157,19 +173,23 @@ const SingleProduct = ({ product, toastMsg }) => {
 
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-4">
-            <Typography variant="h4" color="blue-gray">
-              ₹{product.price}
-            </Typography>
-            {/* {product.offerPercentage > 0 && (
+            {product.maxOfferPercentage > 0 ? (
               <>
+                <Typography variant="h4" color="blue-gray">
+                  ₹{product.sellingPrice}
+                </Typography>
                 <Typography color="gray" className="line-through">
                   ₹{product.price}
                 </Typography>
                 <Typography color="green" className="text-sm">
-                  {product.offerPercentage}% off
+                  {product.maxOfferPercentage}% off
                 </Typography>
               </>
-            )} */}
+            ) : (
+              <Typography variant="h4" color="blue-gray">
+                ₹{product.price}
+              </Typography>
+            )}
           </div>
 
           {/* Description */}
@@ -186,7 +206,7 @@ const SingleProduct = ({ product, toastMsg }) => {
                 <Button
                   color="blue"
                   variant="outlined"
-                  className="flex items-center gap-2 "
+                  className="flex items-center gap-2"
                   onClick={handleGoToCart}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
@@ -209,11 +229,18 @@ const SingleProduct = ({ product, toastMsg }) => {
               </Typography>
             )}
             <Button
-              variant="outlined"
+              variant={isInWishlist ? "filled" : "outlined"}
               size="lg"
+              color={isInWishlist ? "red" : "blue-gray"}
               className="flex items-center gap-2"
+              onClick={handleWishlist}
             >
-              <HeartIcon className="h-5 w-5" /> Wishlist
+              {isInWishlist ? (
+                <HeartSolid className="h-5 w-5" />
+              ) : (
+                <HeartIcon className="h-5 w-5" />
+              )}
+              {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
             </Button>
           </div>
         </div>

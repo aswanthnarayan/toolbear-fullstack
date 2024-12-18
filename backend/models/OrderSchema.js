@@ -56,15 +56,15 @@ const orderSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "return requested", "return approved", "return rejected"],
+        enum: ["Payment Pending","Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "return requested", "return approved", "return rejected"],
         required: true,
-        default: "Order Placed"
+        default: "Payment Pending"
     },
     paymentMethod: {
         type: String,
-        enum: ["COD", "RAZORPAY"],
+        enum: ["COD", "RAZORPAY","PENDING"],
         required: true,
-        default: "COD"
+        default: "PENDING"
     },
     paymentStatus: {
         type: String,

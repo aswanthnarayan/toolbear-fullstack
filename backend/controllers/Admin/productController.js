@@ -237,9 +237,9 @@ export const getAllProducts = async (req, res) => {
 
         const [products, totalCount] = await Promise.all([
             Product.find(query)
-                .select('name desc mainImage additionalImages price stock offerPercentage isListed createdAt category brand specifications')
-                .populate('category', 'name isListed')
-                .populate('brand', 'name isListed')
+                .select('name desc mainImage additionalImages price stock offerPercentage maxOfferPercentage sellingPrice isListed createdAt category brand specifications')
+                .populate('category', 'name isListed offerPercentage')
+                .populate('brand', 'name isListed offerPercentage')
                 .lean()
                 .sort(sortOrder[sort] ||{ createdAt: -1 })
                 .skip(skip)
@@ -247,18 +247,31 @@ export const getAllProducts = async (req, res) => {
             Product.countDocuments(query)
         ]);
 
-        const mappedProducts = products.map(product => ({
-            ...product,
-            category: product.category ? {
-                name: product.category.name,
-                isListed: product.category.isListed
-            } : null,
-            brand: product.brand ? {
-                name: product.brand.name,
-                isListed: product.brand.isListed
-            } : null,
-            offerPercentage: product.offerPercentage || 0
-        }));
+        const mappedProducts = products.map(product => {
+            const productOffer = product.offerPercentage || 0;
+            const categoryOffer = product.category?.offerPercentage || 0;
+            const brandOffer = product.brand?.offerPercentage || 0;
+            
+            const maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
+            const sellingPrice = Math.round(product.price - (product.price * maxOfferPercentage / 100));
+
+            return {
+                ...product,
+                category: product.category ? {
+                    name: product.category.name,
+                    isListed: product.category.isListed,
+                    offerPercentage: product.category.offerPercentage || 0
+                } : null,
+                brand: product.brand ? {
+                    name: product.brand.name,
+                    isListed: product.brand.isListed,
+                    offerPercentage: product.brand.offerPercentage || 0
+                } : null,
+                offerPercentage: productOffer,
+                maxOfferPercentage,
+                sellingPrice
+            };
+        });
 
         const totalPages = Math.ceil(totalCount / limit);
 
@@ -456,25 +469,39 @@ export const getProductById = async (req, res) => {
     try {
         const { productId } = req.params;
         const product = await Product.findById(productId)
-            .populate('category', 'name')
-            .populate('brand', 'name')
-            .select('name desc mainImage additionalImages price stock offerPercentage isListed createdAt category brand specifications')
+            .select('name desc mainImage additionalImages price stock offerPercentage maxOfferPercentage sellingPrice isListed createdAt category brand specifications')
+            .populate('category', 'name isListed offerPercentage')
+            .populate('brand', 'name isListed offerPercentage')
             .lean();
         
         if (!product) {
-            return res.status(HttpStatusEnum.NOT_FOUND).json({ message: MessageEnum.Admin.PRODUCT_NOT_FOUND });
+            return res.status(HttpStatusEnum.NOT_FOUND).json({
+                message: MessageEnum.Error.PRODUCT_NOT_FOUND
+            });
+
         }
 
-        // Transform category and brand to match the format expected by the frontend
-        const transformedProduct = {
+        
+        // Calculate max offer percentage and selling price
+        const productOffer = product.offerPercentage || 0;
+        const categoryOffer = product.category?.offerPercentage || 0;
+        const brandOffer = product.brand?.offerPercentage || 0;
+        
+        const maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
+        const sellingPrice = Math.round(product.price - (product.price * maxOfferPercentage / 100));
+
+        // Add calculated values to the response
+        const enrichedProduct = {
             ...product,
-            category: product.category.name,
-            brand: product.brand.name
+            maxOfferPercentage,
+            sellingPrice
         };
 
-        res.status(HttpStatusEnum.OK).json(transformedProduct);
+        res.status(HttpStatusEnum.OK).json(enrichedProduct);
     } catch (error) {
         console.error("Error fetching product:", error);
-        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ message: MessageEnum.Error.INTERNAL_SERVER_ERROR });
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR 
+        });
     }
 };      

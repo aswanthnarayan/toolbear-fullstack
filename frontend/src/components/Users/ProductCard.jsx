@@ -20,7 +20,9 @@ function ProductCard({
     brand, 
     rating, 
     reviews, 
-    price, 
+    price,
+    maxOfferPercentage,
+    sellingPrice, 
     stock, 
     description, 
     toastMsg,
@@ -35,7 +37,7 @@ function ProductCard({
     const [addToCart, { isLoading }] = useAddToCartMutation();
     const [addToWishlist] = useAddToWishlistMutation();
     const [removeFromWishlist] = useRemoveFromWishlistMutation();
-
+    
     const handleAddToCart = async (e) => {
         e.preventDefault();
         try {
@@ -117,17 +119,23 @@ function ProductCard({
                         </span>
                     </div>
                     <div className="flex items-baseline mb-2">
-                        <span className={`text-xl font-bold ${currentTheme.text}`}>₹{price}</span>
-                        {/* {offerPercentage > 0 && (
-                            <>
-                                <span className="ml-2 text-sm text-gray-500 line-through">
+                        {maxOfferPercentage > 0 ? (
+                            <div className="flex items-center gap-2">
+                                <span className={`text-xl font-bold ${currentTheme.text}`}>
+                                    ₹{sellingPrice}
+                                </span>
+                                <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} line-through`}>
                                     ₹{price}
                                 </span>
-                                <span className="ml-2 text-xs text-green-600 font-medium">
-                                    {offerPercentage}% off
+                                <span className="text-xs text-green-600 font-medium">
+                                    {maxOfferPercentage}% off
                                 </span>
-                            </>
-                        )} */}
+                            </div>
+                        ) : (
+                            <span className={`text-xl font-bold ${currentTheme.text}`}>
+                                ₹{price}
+                            </span>
+                        )}
                     </div>
                     <p className={`text-xs mb-3 line-clamp-2 hover:line-clamp-none ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-600'

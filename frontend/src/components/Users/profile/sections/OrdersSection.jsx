@@ -11,7 +11,12 @@ import {
   DialogFooter,
   Spinner,
 } from "@material-tailwind/react";
-import { useGetAllOrdersQuery, useCancelOrderMutation, useReturnOrderMutation } from '../../../../../App/features/rtkApis/userApi';
+import { 
+  useGetAllOrdersQuery, 
+  useCancelOrderMutation, 
+  useReturnOrderMutation,
+  useProcessRefundMutation 
+} from '../../../../../App/features/rtkApis/userApi';
 import { toast } from 'sonner';
 import ReturnReasonModal from '../shared/ReturnReasonModal';
 
@@ -23,6 +28,7 @@ const OrdersSection = () => {
   const { data: orders, isLoading, error } = useGetAllOrdersQuery();
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
   const [returnOrder, { isLoading: isReturning }] = useReturnOrderMutation();
+  const [processRefund] = useProcessRefundMutation();
 
   const handleCancelClick = (order) => {
     setSelectedOrder(order);
@@ -31,10 +37,28 @@ const OrdersSection = () => {
 
   const handleCancelOrder = async () => {
     try {
+      // First cancel the order
       await cancelOrder(selectedOrder._id).unwrap();
+      
+      // Then process refund if payment method is not COD
+      if (selectedOrder.paymentMethod !== 'COD') {
+        try {
+          await processRefund({
+            orderId: selectedOrder._id,
+            amount: selectedOrder.totalAmount
+          }).unwrap();
+          toast.success('Order cancelled and amount refunded to wallet');
+        } catch (refundError) {
+          console.error('Refund error:', refundError);
+          toast.error('Order cancelled but refund failed. Please contact support.');
+        }
+      } else {
+        toast.success('Order cancelled successfully');
+      }
+      
       setCancelModal(false);
-      toast.success('Order cancelled successfully');
     } catch (error) {
+      console.error('Cancel error:', error);
       toast.error(error.data?.message || 'Failed to cancel order');
     }
   };
@@ -50,9 +74,22 @@ const OrdersSection = () => {
         orderId: selectedOrder._id,
         reason
       }).unwrap();
+
+      // Process refund for returned order
+      try {
+        await processRefund({
+          orderId: selectedOrder._id,
+          amount: selectedOrder.totalAmount
+        }).unwrap();
+        toast.success('Return request submitted and amount refunded to wallet');
+      } catch (refundError) {
+        console.error('Refund error:', refundError);
+        toast.error('Return request submitted but refund failed. Please contact support.');
+      }
+
       setReturnModal(false);
-      toast.success('Return request submitted successfully');
     } catch (error) {
+      console.error('Return error:', error);
       toast.error(error.data?.message || 'Failed to submit return request');
     }
   };

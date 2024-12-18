@@ -167,6 +167,8 @@ const AllProductsPage = () => {
                           rating={4.5}
                           reviews={128}
                           price={product.price}
+                          maxOfferPercentage={product.maxOfferPercentage}
+                          sellingPrice={product.sellingPrice}
                           description={product.desc}
                           stock={product.stock}
                           isInWishlist={isProductInWishlist(product._id)}

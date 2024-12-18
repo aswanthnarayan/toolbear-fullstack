@@ -35,12 +35,15 @@ export const createRazorpayOrder = async (req, res) => {
         });
 
         const options = {
-            amount: req.body.amount * 100, // amount in paisa
+            amount: req.body.amount, // amount already in paisa from frontend
             currency: "INR",
             receipt: "order_" + Date.now(),
         };
 
+        console.log('Creating Razorpay order with options:', options);
         const order = await razorpay.orders.create(options);
+        console.log('Razorpay order created:', order);
+        
         res.status(200).json({
             success: true,
             order
@@ -56,26 +59,8 @@ export const createRazorpayOrder = async (req, res) => {
 
 export const createOrder = async (req, res) => {
     try {
-        const { products, address, paymentMethod, totalAmount, shippingAmount, paymentDetails } = req.body;
+        const { products, address, totalAmount, shippingAmount } = req.body;
         const user = await User.findById(req.user._id);
-
-        // Verify Razorpay payment if payment method is Razorpay
-        if (paymentMethod === "RAZORPAY" && paymentDetails) {
-            const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentDetails;
-            
-            const sign = razorpay_order_id + "|" + razorpay_payment_id;
-            const expectedSign = crypto
-                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-                .update(sign.toString())
-                .digest("hex");
-
-            if (razorpay_signature !== expectedSign) {
-                return res.status(400).json({ 
-                    success: false,
-                    error: "Invalid payment verification" 
-                });
-            }
-        }
 
         // 1. Check stock availability first
         for (const item of products) {
@@ -88,14 +73,15 @@ export const createOrder = async (req, res) => {
             }
         }
         
-        // 2. Create the order
+        // 2. Create the order with pending payment status
         const order = await Order.create({ 
             userId: user._id, 
             products,
             address,
-            paymentMethod,
             totalAmount,
-            shippingAmount
+            shippingAmount,
+            paymentMethod: 'PENDING', // Default to pending
+            paymentStatus: 'Pending'  // Default to pending
         });
 
         // 3. Update product stock
@@ -122,9 +108,81 @@ export const createOrder = async (req, res) => {
     }
 }   
 
+export const completePayment = async (req, res) => {
+    try {
+        const { orderId, paymentMethod, paymentDetails } = req.body;
+
+        // Find order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+                error: "Order not found" 
+            });
+        }
+
+        // Check if order is already processed
+        if (order.status !== 'Payment Pending') {
+            return res.status(HttpStatusEnum.OK).json({ 
+                message: "Order already processed",
+                order 
+            });
+        }
+
+        // Update order based on payment method
+        if (paymentMethod === 'COD') {
+            order.paymentMethod = 'COD';
+            order.paymentStatus = 'Pending';  
+            order.status = 'Order Placed';    
+        } else {
+            // Verify Razorpay payment
+            const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentDetails;
+
+            // Verify Razorpay signature
+            const sign = razorpay_order_id + "|" + razorpay_payment_id;
+            const expectedSign = crypto
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+                .update(sign.toString())
+                .digest("hex");
+
+            if (razorpay_signature !== expectedSign) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: "Invalid payment verification" 
+                });
+            }
+
+            // Update order with Razorpay details
+            order.paymentMethod = 'RAZORPAY';
+            order.paymentStatus = 'Paid';     
+            order.status = 'Order Placed';    
+            order.paymentDetails = {
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature
+            };
+        }
+        
+        await order.save();
+        return res.status(HttpStatusEnum.OK).json(order);
+    } catch (error) {
+        console.error("Error completing payment:", error);
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            error: error.message || "Server error" 
+        });
+    }
+}
+
 export const getOrderById = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.orderId).populate('products.productId');
+        console.log('Fetching order with ID:', req.params.id); // Debug log
+        const order = await Order.findById(req.params.id).populate('products.productId');
+        
+        if (!order) {
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+                error: "Order not found" 
+            });
+        }
+        
         res.status(HttpStatusEnum.OK).json(order);
     } catch (error) {
         console.error("Error fetching order:", error);

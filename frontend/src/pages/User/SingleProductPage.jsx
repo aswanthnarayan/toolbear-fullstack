@@ -8,13 +8,18 @@ import { useGetProductByIdQuery } from '../../../App/features/rtkApis/adminApi';
 import { Toaster, toast } from 'sonner';
 
 const SingleProductPage = () => {
+  const wishlistItems = useSelector((state) => state.wishlist.items);
   const { id } = useParams();
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   
   const { data: product, isLoading, error } = useGetProductByIdQuery(id);
- 
 
+  const isProductInWishlist = (productId) => {
+    return wishlistItems.some(item => 
+      item.productId._id === productId || item.productId === productId
+    );
+  };
 
   const handleToast = (message, type) => {
     toast[type](message);
@@ -60,10 +65,10 @@ const SingleProductPage = () => {
               Products
             </Link>
             <Link 
-              to={`/user/products/category/${product.category?.toLowerCase().replace(/\s+/g, '-')}`} 
+              to={`/user/products/category/${product.category?.name?.toLowerCase().replace(/\s+/g, '-')}`} 
               className="opacity-60 hover:text-yellow-500"
             >
-              {product.category}
+              {product.category?.name}
             </Link>
             <span className="cursor-default">
               {product.name}
@@ -71,7 +76,7 @@ const SingleProductPage = () => {
           </Breadcrumbs>
         </div>
 
-        <SingleProduct product={product} toastMsg={handleToast}  />
+        <SingleProduct product={product} toastMsg={handleToast} isInWishlist={isProductInWishlist(product._id)}  />
       </div>
       <Toaster richColors position="top-right" />
     </div>

@@ -12,7 +12,7 @@ export const userApi = createApi({
             return headers;
         }
     }),
-    tagTypes: ["Address", "Cart", "Order", "Profile,Wishlist", "Coupons"],
+    tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -91,9 +91,21 @@ export const userApi = createApi({
     }),
     invalidatesTags: ["Order", "Cart", "Products"],
   }),
+  completePayment: builder.mutation({
+    query: (data) => ({
+      url: "/order/complete-payment",
+      method: "POST",
+      body: data,
+    }),
+    invalidatesTags: ["Order", "Cart", "Products"],
+  }),
+
   getOrderById: builder.query({
-    query: (id) => `/order/${id}`,
-    providesTags: ["Order"],
+    query: (id) => ({
+      url: `/order/${id}`,
+      method: 'GET'
+    }),
+    providesTags: ["Order"]
   }),
   cancelOrder: builder.mutation({
     query: (id) => ({
@@ -163,6 +175,19 @@ export const userApi = createApi({
     query: (code) => `/coupons/${code}`,
     providesTags: ['Coupons']
   }),
+  // Wallet endpoints
+  getWallet: builder.query({
+    query: () => '/wallet',
+    providesTags: ['Wallet']
+  }),
+  processRefund: builder.mutation({
+    query: ({ orderId, amount }) => ({
+      url: '/wallet/refund',
+      method: 'POST',
+      body: { orderId, amount }
+    }),
+    invalidatesTags: ['Wallet', 'Order']
+  }),
 }),
 });
 
@@ -178,6 +203,7 @@ export const {
   useUpdateCartQuantityMutation,
   useGetAllOrdersQuery,
   useCreateOrderMutation,
+  useCompletePaymentMutation,
   useGetOrderByIdQuery,
   useCancelOrderMutation,
   useReturnOrderMutation,
@@ -189,4 +215,6 @@ export const {
   useRemoveFromWishlistMutation,
   useGetAvailableCouponsQuery,
   useValidateCouponQuery,
+  useGetWalletQuery,
+  useProcessRefundMutation,
 } = userApi

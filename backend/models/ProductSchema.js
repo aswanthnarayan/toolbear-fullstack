@@ -27,16 +27,26 @@ const productSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    stock: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
     offerPercentage: {
         type: Number,
         required: true,
         min: 0,
         max: 100
+    },
+    maxOfferPercentage: {
+        type: Number,
+        default: 0
+    },
+    sellingPrice: {
+        type: Number,
+        default: function() {
+            return this.price; 
+        }
+    },
+    stock: {
+        type: Number,
+        required: true,
+        min: 0,
     },
     specifications: {
         color: {
@@ -104,30 +114,32 @@ productSchema.path('additionalImages').validate(function(value) {
     return value.length <= 3;
 }, 'Additional images cannot exceed 3');
 
-// Virtual field for final price
-productSchema.virtual('finalPrice').get(async function() {
-    // Populate category and brand if not already populated
-    if (!this.populated('category')) await this.populate('category');
-    if (!this.populated('brand')) await this.populate('brand');
-
-    // Get all applicable offer percentages
-    const productOffer = this.offerPercentage || 0;
-    const categoryOffer = this.category?.offerPercentage || 0;
-    const brandOffer = this.brand?.offerPercentage || 0;
-
-    // Find the highest offer percentage
-    const maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
-
-    // Calculate final price
-    const finalPrice = this.price - (this.price * maxOfferPercentage / 100);
-    return Math.round(finalPrice);
-});
-
 // Add text indexes for search
 productSchema.index({ name: 'text', desc: 'text' });
 
 // Add compound indexes for better query performance
 productSchema.index({ category: 1, brand: 1, isListed: 1 });
+
+// Pre-save middleware to calculate max offer percentage and selling price
+productSchema.pre('save', async function(next) {
+    if (!this.isModified('price') && !this.isModified('offerPercentage')) {
+        return next();
+    }
+
+    await this.populate(['category', 'brand']);
+    
+    // Calculate max offer percentage
+    const productOffer = this.offerPercentage || 0;
+    const categoryOffer = this.category?.offerPercentage || 0;
+    const brandOffer = this.brand?.offerPercentage || 0;
+    
+    this.maxOfferPercentage = Math.max(productOffer, categoryOffer, brandOffer);
+    
+    // Calculate selling price
+    this.sellingPrice = Math.round(this.price - (this.price * this.maxOfferPercentage / 100));
+    
+    next();
+});
 
 const Product = mongoose.model('Product', productSchema);
 

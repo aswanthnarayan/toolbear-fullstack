@@ -47,6 +47,11 @@ const AdminCouponPage = () => {
     return new Date(date).toLocaleDateString();
   };
 
+  const isActive = (expiryDate) => {
+    const currentDate = new Date();
+    return new Date(expiryDate) > currentDate;
+  };
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -130,8 +135,8 @@ const AdminCouponPage = () => {
                       <div className="w-max">
                         <Chip
                           variant="gradient"
-                          color={coupon.isActive ? "green" : "blue-gray"}
-                          value={coupon.isActive ? "Active" : "Inactive"}
+                          color={isActive(coupon.expiryDate) ? "green" : "red"}
+                          value={isActive(coupon.expiryDate) ? "Active" : "Expired"}
                           className="py-0.5 px-2 text-[11px] font-medium"
                         />
                       </div>
