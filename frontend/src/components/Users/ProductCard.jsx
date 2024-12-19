@@ -46,7 +46,12 @@ function ProductCard({
             toastMsg('Product added to cart', "success");
         } catch (error) {
             console.error('Failed to add to cart:', error);
+            if(error?.status === 401) {
+                toastMsg('Login to add product to cart', "error");
+            }else
+            {
             toastMsg(error.data.message, "error");
+            }
         }
     };
 

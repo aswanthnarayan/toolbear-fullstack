@@ -6,6 +6,12 @@ import {
   Button,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
+import { 
+  UserGroupIcon, 
+  BuildingStorefrontIcon,
+  PhoneIcon,
+  TrophyIcon 
+} from "@heroicons/react/24/solid";
 
 const DealsPage = () => {
   const navigate = useNavigate();
@@ -13,41 +19,41 @@ const DealsPage = () => {
   return (
     <div className="container mx-auto p-4 pt-[124px]">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* BOSCH Card - Spans 8 columns */}
-        <Card className="md:col-span-8 bg-[#002B5C] text-white">
-          <CardBody className="p-8">
-            <div className="flex items-center mb-6">
-              <img src="/bosch-logo.png" alt="BOSCH" className="h-8" />
+        <Card className="md:col-span-8 bg-[#002B5C] text-white h-full">
+          <CardBody className="p-8 flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center mb-6">
+                <img src="/bosch-logo.png" alt="BOSCH" className="h-8" />
+              </div>
+              <Typography variant="h4" className="text-2xl font-bold mb-6">
+                DEALS ON CHECKOUT
+              </Typography>
+              <div className="space-y-4 mb-8">
+                <Typography className="text-lg">
+                  ₹ 500 off <span className="text-sm">on Selected products above ₹ 5000</span>
+                </Typography>
+                <Typography className="text-lg">
+                  ₹ 750 off <span className="text-sm">on Selected products above ₹ 8000</span>
+                </Typography>
+                <Typography className="text-lg">
+                  ₹ 1000 off <span className="text-sm">on Selected products above ₹ 8000</span>
+                </Typography>
+              </div>
             </div>
-            <Typography variant="h4" className="text-2xl font-bold mb-6">
-              DEALS ON CHECKOUT
-            </Typography>
-            <div className="space-y-4 mb-8">
-              <Typography className="text-lg">
-                ₹ 500 off <span className="text-sm">on Selected products above ₹ 5000</span>
-              </Typography>
-              <Typography className="text-lg">
-                ₹ 750 off <span className="text-sm">on Selected products above ₹ 8000</span>
-              </Typography>
-              <Typography className="text-lg">
-                ₹ 1000 off <span className="text-sm">on Selected products above ₹ 8000</span>
-              </Typography>
-            </div>
-            <Button 
-              size="lg"
-              color="red"
-              className="bg-red-600 px-8"
-              onClick={() => navigate('/products')}
-            >
-              SHOP NOW
-            </Button>
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-between items-end">
+              <Button 
+                size="lg"
+                color="red"
+                className="bg-red-600 px-8"
+                onClick={() => navigate('/products')}
+              >
+                SHOP NOW
+              </Button>
               <img src="/bosch-tools.png" alt="Bosch tools" className="h-32" />
             </div>
           </CardBody>
         </Card>
 
-        {/* Right Column Cards - Stack in 4 columns */}
         <div className="md:col-span-4 space-y-6">
           {/* DEWALT Card */}
           <Card className="bg-[#FFD600]">
@@ -105,7 +111,7 @@ const DealsPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mt-12 mb-12">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src="/trust-icon.png" alt="Trust" className="h-12" />
+            <UserGroupIcon className="h-12 w-12 text-blue-500" />
           </div>
           <Typography variant="h6" className="font-bold">
             Trusted by Professionals
@@ -117,7 +123,7 @@ const DealsPage = () => {
 
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src="/inventory-icon.png" alt="Inventory" className="h-12" />
+            <BuildingStorefrontIcon className="h-12 w-12 text-blue-500" />
           </div>
           <Typography variant="h6" className="font-bold">
             HUGE INVENTORY
@@ -129,7 +135,7 @@ const DealsPage = () => {
 
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src="/support-icon.png" alt="Support" className="h-12" />
+            <PhoneIcon className="h-12 w-12 text-blue-500" />
           </div>
           <Typography variant="h6" className="font-bold">
             24 X 7 Customer Support
@@ -141,7 +147,7 @@ const DealsPage = () => {
 
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src="/leader-icon.png" alt="Leader" className="h-12" />
+            <TrophyIcon className="h-12 w-12 text-blue-500" />
           </div>
           <Typography variant="h6" className="font-bold">
             Market Leader

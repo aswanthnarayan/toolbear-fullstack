@@ -15,8 +15,8 @@ import {
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { useGetAllOrdersQuery, useUpdateOrderStatusMutation } from "../../../App/features/rtkApis/adminApi";
 import OrderUpdateSelect from "./OrderUpdateSelect";
-import CustomInput from "../CustomInput";
-import { AlertModal } from "../AlertModal";
+import CustomInput from "../../components/CustomInput";
+import { AlertModal } from "../../components/AlertModal";
 import { useNavigate } from "react-router-dom";
 import { Chip } from "@material-tailwind/react";
 

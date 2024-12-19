@@ -39,10 +39,37 @@ export const createCoupon = async (req, res) => {
 
 export const getAllCoupons = async (req, res) => {
     try {
-        const coupons = await Coupon.find().sort({ createdAt: -1 });
-        res.status(HttpStatusEnum.OK).json({ coupons });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+
+        const searchQuery = search ? {
+            $or: [
+                { code: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ]
+        } : {};
+
+        const totalCoupons = await Coupon.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalCoupons / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
+        const coupons = await Coupon.find(searchQuery)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.status(HttpStatusEnum.OK).json({
+            coupons,
+            currentPage: page,
+            totalPages,
+            totalCoupons,
+            hasNextPage,
+            hasPrevPage
+        });
     } catch (error) {
-        console.error("Error fetching coupons:", error);
+        console.error('Error getting coupons:', error);
         res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
     }
 };

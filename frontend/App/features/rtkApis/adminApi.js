@@ -238,8 +238,19 @@ export const adminApi = createApi({
         }),
         //Coupon Management
         getAllCoupons: builder.query({
-            query: () => '/coupons',
-            providesTags: ['Coupons']
+            query: ({ page = 1, limit = 10, search = '' }) => ({
+                url: '/coupons',
+                params: { page, limit, search }
+            }),
+            providesTags: ['Coupons'],
+            transformResponse: (response) => ({
+                coupons: response.coupons,
+                currentPage: response.currentPage,
+                totalPages: response.totalPages,
+                totalCoupons: response.totalCoupons,
+                hasNextPage: response.hasNextPage,
+                hasPrevPage: response.hasPrevPage
+            })
         }),
         createCoupon: builder.mutation({
             query: (couponData) => ({
@@ -256,6 +267,32 @@ export const adminApi = createApi({
             }),
             invalidatesTags: ['Coupons']
         }),
+        //Sales Reports
+        getSalesReport: builder.query({
+            query: ({filter, startDate, endDate} = {}) => ({
+                url: '/sales-report',
+                params: { filter, startDate, endDate }
+            }),
+            providesTags: ['Orders']
+        }),
+        downloadSalesPDF: builder.mutation({
+            query: ({filter, startDate, endDate} = {}) => ({
+                url: '/sales-report/pdf',
+                method: 'POST',
+                body: { filter, startDate, endDate },
+                responseHandler: (response) => response.blob()
+            })
+        }),
+        downloadSalesExcel: builder.mutation({
+            query: ({filter, startDate, endDate} = {}) => ({
+                url: '/sales-report/excel',
+                method: 'POST',
+                body: { filter, startDate, endDate },
+                responseHandler: (response) => response.blob()
+            })
+        }),
+        //Sales management
+   
     })
 });
 
@@ -286,4 +323,8 @@ export const {
     useGetAllCouponsQuery,
     useCreateCouponMutation,
     useDeleteCouponMutation,
+    useGetSalesReportQuery,
+ 
+    useDownloadSalesExcelMutation,
+    useDownloadSalesPDFMutation
 } = adminApi;

@@ -16,7 +16,6 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
     { id: 'edit', label: 'Edit Profile', icon: UserCircleIcon },
     { id: 'orders', label: 'Your Orders', icon: ShoppingBagIcon },
     { id: 'address', label: 'Your Address', icon: HomeIcon },
-    { id: 'payment', label: 'Payment Methods', icon: CreditCardIcon },
     { id: 'wallet', label: 'Wallet', icon: WalletIcon },
     { id: 'coupons', label: 'Coupons', icon: TicketIcon },
   ];

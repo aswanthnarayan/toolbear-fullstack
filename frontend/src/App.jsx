@@ -32,7 +32,6 @@ import SingleProductPage from "./pages/User/SingleProductPage";
 import EditProfileSection from "./components/Users/profile/sections/EditProfileSection";
 import OrdersSection from "./components/Users/profile/sections/OrdersSection";
 import AddressSection from "./components/Users/profile/sections/AddressSection";
-import PaymentMethodsSection from "./components/Users/profile/sections/PaymentMethodsSection";
 import WalletSection from "./components/Users/profile/sections/WalletSection";
 import CouponsSection from "./components/Users/profile/sections/CouponsSection";
 import CartPage from "./pages/User/CartPage";
@@ -79,7 +78,6 @@ function App() {
             <Route path="edit" element={<EditProfileSection />} />
             <Route path="orders" element={<OrdersSection />} />
             <Route path="address" element={<AddressSection />} />
-            <Route path="payment" element={<PaymentMethodsSection />} />
             <Route path="wallet" element={<WalletSection />} />
             <Route path="coupons" element={<CouponsSection />} />
           </Route>

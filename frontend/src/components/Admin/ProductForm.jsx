@@ -119,8 +119,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
 
   useEffect(() => {
     if (mode === 'edit' && initialData && categories?.length && brands?.length) {
-      const categoryId = categories.find(cat => cat.name === initialData.category)?._id;
-      const brandId = brands.find(brand => brand.name === initialData.brand)?._id;
+      // Find the category and brand by comparing IDs instead of names
+      const categoryId = initialData.category?._id || initialData.category;
+      const brandId = initialData.brand?._id || initialData.brand;
       
       reset({
         name: initialData.name,
@@ -135,6 +136,23 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
       });
     }
   }, [mode, initialData, categories, brands, reset]);
+
+  useEffect(() => {
+    // Register all fields with their validation rules
+    Object.entries(validationRules).forEach(([fieldName, rules]) => {
+      register(fieldName, rules);
+    });
+  }, [register]);
+
+  useEffect(() => {
+    if (initialData && mode === 'edit') {
+      // image preview 
+      setMainImagePreview(initialData.mainImage?.imageUrl || initialData.mainImage);
+      
+      const additionalPreviews = initialData.additionalImages?.map(img => img.imageUrl || img) || [null, null, null];
+      setAdditionalImagePreviews(additionalPreviews);
+    }
+  }, [initialData, mode]);
 
   const selectedCategory = watch("category");
   const selectedBrand = watch("brand");
@@ -213,31 +231,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
     }
   };
 
-  useEffect(() => {
-    // Register all fields with their validation rules
-    Object.entries(validationRules).forEach(([fieldName, rules]) => {
-      register(fieldName, rules);
-    });
-  }, [register]);
-
-  useEffect(() => {
-    if (initialData && mode === 'edit') {
-      // image preview 
-      setMainImagePreview(initialData.mainImage?.imageUrl || initialData.mainImage);
-      
-      const additionalPreviews = initialData.additionalImages?.map(img => img.imageUrl || img) || [null, null, null];
-      setAdditionalImagePreviews(additionalPreviews);
-    }
-  }, [initialData, mode]);
-
-  const handleSelectChange = async (fieldName, value) => {
-    setValue(fieldName, value, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true
-    });
-    
-    await trigger(fieldName);
+  const handleSelectChange = (field, value) => {
+    setValue(field, value);
+    trigger(field);
   };
 
   const handleImageSelect = (e, type, index = null) => {

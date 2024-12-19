@@ -47,7 +47,7 @@ const EmailVerification = () => {
         password: state.password,
       }).unwrap();
 
-      if (response.message === 'User successfully created') {
+      if (response.message === 'Account created successfully') {
         navigate('/user/signin');
       }
     } catch (err) {

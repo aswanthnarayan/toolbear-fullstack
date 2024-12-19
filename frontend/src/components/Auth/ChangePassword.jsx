@@ -34,10 +34,10 @@ const ChangePassword = () => {
     try {
       const response = await createNewPw({ 
         email,
-        password: data.password 
+        newPassword: data.password 
       }).unwrap();
       
-      if (response.message === "Password updated successfully") {
+      if (response.message === "Password changed successfully") {
         navigate('/user/signin');
       }
     } catch (err) {

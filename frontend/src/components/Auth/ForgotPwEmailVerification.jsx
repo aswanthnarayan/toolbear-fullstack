@@ -82,17 +82,14 @@ const ForgotPwEmailVerification = () => {
 
         <div className="pt-2">
           <CustomButton
-            text="Get OTP"
+            text={isLoading ? 'Sending OTP...' : 'Get OTP'}
             onClick={handleSubmit(onSubmit)}
             disabled={isLoading}
             width="w-full"
             height="h-12"
             className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
-          >
-            {isLoading ? 'Sending OTP...' : 'Get OTP'}
-            
-          </CustomButton>
+          />
         </div>
       </form>
     </div>

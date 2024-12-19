@@ -18,6 +18,11 @@ import {
     createCoupon, 
     deleteCoupon,
 } from '../controllers/Admin/couponController.js';
+import { 
+    getSalesReport,
+    downloadSalesPDF,
+    downloadSalesExcel
+} from '../controllers/Admin/salesController.js';
 
 const router = express.Router();
 
@@ -54,10 +59,16 @@ router.patch('/orders/:orderId/cancel', protect, adminOnly, cancelOrder);
 router.patch('/orders/status', protect, adminOnly, updateOrderStatus);
 router.get('/orders', protect, adminOnly, getAllOrders);
 
+//Sales Reports
+router.get('/sales-report', protect, adminOnly, getSalesReport);
+router.post('/sales-report/pdf', protect, adminOnly, downloadSalesPDF);
+router.post('/sales-report/excel', protect, adminOnly, downloadSalesExcel);
+
 // Coupon routes
 router.get('/coupons', protect, adminOnly, getAllCoupons);
 router.post('/coupons/new', protect, adminOnly, createCoupon);
 router.delete('/coupons/:couponId', protect, adminOnly, deleteCoupon);
 // router.patch('/coupons/:couponId/toggle-status', protect, adminOnly, toggleCouponStatus);
+
 
 export default router;

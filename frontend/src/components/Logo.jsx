@@ -1,12 +1,16 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const Logo = () => {
+  const navigate = useNavigate();
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
 
   return (
-    <div className={`flex items-center ${currentTheme.text} font-bold text-xl`}>
+    <div
+    onClick={()=>navigate('/')}
+    className={`flex items-center ${currentTheme.text} font-bold text-xl`}>
       <svg
         className="h-8 w-8 mr-2"
         fill="none"

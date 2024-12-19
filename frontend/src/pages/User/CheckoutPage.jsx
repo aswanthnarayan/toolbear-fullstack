@@ -108,6 +108,25 @@ const CheckoutPage = () => {
     }
 
     try {
+      // Check if the coupon exists in available coupons
+      const existingCoupon = availableCoupons.find(
+        coupon => coupon.code === couponCode
+      );
+
+      if (existingCoupon) {
+        // Check minimum purchase requirement
+        if (cart?.totalAmount < existingCoupon.minimumPurchase) {
+          toast.error(`Minimum purchase of ₹${existingCoupon.minimumPurchase} required to use this coupon`);
+          setAppliedCoupon(null);
+          return;
+        }
+
+        setAppliedCoupon(existingCoupon);
+        toast.success("Coupon applied successfully!");
+        return;
+      }
+
+      // If not found in available coupons, validate through API
       const result = await validateCoupon();
       const coupon = result.data?.coupon;
       

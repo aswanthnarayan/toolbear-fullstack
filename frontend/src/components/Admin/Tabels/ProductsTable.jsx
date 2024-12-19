@@ -107,114 +107,115 @@ export function ProductsTable() {
           </Button>
         </div>
       </CardHeader>
-      <CardBody className="overflow-scroll px-0">
-        <table className="w-full min-w-max table-auto text-left">
-          <thead>
-            <tr>
-              {TABLE_HEAD.map((head) => (
-                <th
-                  key={head}
-                  className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
-                >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-normal leading-none"
-                  >
-                    {head}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+      <CardBody className="overflow-y-auto px-0 pt-0 h-[calc(100vh-290px)] mt-4">
+        {isLoading || isFetching ? (
+          <div className="flex justify-center items-center h-full">
+            <Spinner className="h-8 w-8" />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500 py-4">
+            {error?.data?.message || 'Failed to fetch products'}
+          </div>
+        ) : (
+          <table className="w-full min-w-max table-auto text-left">
+            <thead className="sticky top-0 bg-gray-50 z-10">
               <tr>
-                <td colSpan={TABLE_HEAD.length} className="text-center py-4">
-                  <Spinner className="h-6 w-6 mx-auto" />
-                </td>
+                {TABLE_HEAD.map((head) => (
+                  <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70"
+                    >
+                      {head}
+                    </Typography>
+                  </th>
+                ))}
               </tr>
-            ) : data?.products?.length === 0 ? (
-              <tr>
-                <td colSpan={TABLE_HEAD.length} className="text-center py-4">
-                  <Typography variant="small" color="blue-gray">
-                    No products found
-                  </Typography>
-                </td>
-              </tr>
-            ) : (
-              data?.products?.map((product, index) => {
-                const isLast = index === data.products.length - 1;
-                const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+            </thead>
+            <tbody>
+              {data?.products?.length === 0 ? (
+                <tr>
+                  <td colSpan={TABLE_HEAD.length} className="text-center py-4">
+                    <Typography variant="small" color="blue-gray">
+                      No products found
+                    </Typography>
+                  </td>
+                </tr>
+              ) : (
+                data?.products?.map((product, index) => {
+                  const isLast = index === data.products.length - 1;
+                  const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={product._id}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.mainImage?.imageUrl || product.mainImage}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        {product.name}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        {product.category?.name || '-'}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        {product.brand?.name || '-'}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        ₹{product.price}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        {product.stock}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography variant="small" color="blue-gray">
-                        {product.offerPercentage ? `${product.offerPercentage}%` : '-'}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <SwitchButton
-                          id={product._id}
-                          checked={!product.isListed}
-                          onChange={() => handleSwitchClick(product)}
-                          icon={!product.isListed ? <FaEyeSlash /> : <FaEye />}
-                          activeText="Unlisted"
-                          inactiveText="Listed"
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <IconButton
-                        variant="text"
-                        color="blue-gray"
-                        onClick={() => navigate(`/admin/products/edit/${product._id}`)}
-                      >
-                        <FaPencil className="h-4 w-4" />
-                      </IconButton>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                  return (
+                    <tr key={product._id}>
+                      <td className={classes}>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.mainImage?.imageUrl || product.mainImage}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          {product.name}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          {product.category?.name || '-'}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          {product.brand?.name || '-'}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          ₹{product.price}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          {product.stock}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography variant="small" color="blue-gray">
+                          {product.offerPercentage ? `${product.offerPercentage}%` : '-'}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <div className="w-max">
+                          <SwitchButton
+                            id={product._id}
+                            checked={!product.isListed}
+                            onChange={() => handleSwitchClick(product)}
+                            icon={!product.isListed ? <FaEyeSlash /> : <FaEye />}
+                            activeText="Unlisted"
+                            inactiveText="Listed"
+                          />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <IconButton
+                          variant="text"
+                          color="blue-gray"
+                          onClick={() => navigate(`/admin/products/edit/${product._id}`)}
+                        >
+                          <FaPencil className="h-4 w-4" />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        )}
       </CardBody>
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
         <div className="flex items-center gap-2">

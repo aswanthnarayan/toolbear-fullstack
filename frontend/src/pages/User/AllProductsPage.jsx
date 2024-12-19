@@ -28,7 +28,7 @@ const AllProductsPage = () => {
     priceRange: null
   });
 
-  const { data, isLoading, isFetching, error } = useGetAllProductsQuery({
+  const { data, isLoading, error } = useGetAllProductsQuery({
     page: currentPage,
     limit: 12,
     search: searchQuery,
