@@ -73,9 +73,11 @@ const CompleteProfile = () => {
             id="phone"
             {...register("phone", {
               required: "Phone number is required",
-              minLength: {
-                value: 10,
-                message: "Phone number must be at least 10 digits",
+              minLength: { value: 10, message: "Phone number must be at least 10 digits" },
+              maxLength: { value: 10, message: "Phone number must be exactly 10 digits" },
+              pattern: {
+                value: /^[6-9]\d{9}$/,
+                message: "Invalid phone number. Must be 10 digits starting with 6-9",
               },
             })}
             error={errors.phone?.message}

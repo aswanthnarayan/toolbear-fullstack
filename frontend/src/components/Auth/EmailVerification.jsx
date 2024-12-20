@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
+import OtpComponent from '../OtpComponent';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useCreateUserMutation, useResendOtpMutation } from '../../../App/features/rtkApis/authApi';
 
@@ -36,12 +36,16 @@ const EmailVerification = () => {
   const theme = useSelector((state) => state.theme.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  const handleOtpComplete = (otpValue) => {
+    setOtp(otpValue);
+    handleVerifyOtp(otpValue);
+  };
+
+  const handleVerifyOtp = async (otpValue) => {
     try {
       const response = await createUser({
         email: state.email,
-        otp,
+        otp: otpValue,
         name: state.name,
         phone: state.phone,
         password: state.password,
@@ -94,23 +98,18 @@ const EmailVerification = () => {
       </div>
       
       <form className="space-y-6" >
-        <div className="transform transition-all duration-300 hover:translate-x-1">
-          <CustomInput
-            label="OTP"
-            placeholder="Enter OTP"
-            type="number"
-            name="otp"
-            id="otp"
-            onChange={(e) => setOtp(e.target.value)}
-            value={otp}
+        {/* OTP Component */}
+        <div className="transform transition-all duration-300">
+          <OtpComponent
+            length={6}
+            onComplete={handleOtpComplete}
           />
+          {error && (
+            <p className="mt-2 text-sm text-red-500 text-center">
+              {error?.data?.error || "Invalid OTP"}
+            </p>
+          )}
         </div>
-
-        {error && (
-          <p className={`text-red-500 text-sm text-center animate-fade-in`}>
-            {error?.data?.error || "Invalid OTP"}
-          </p>
-        )}
 
         <div className="space-y-4">
           <CustomButton
@@ -118,8 +117,11 @@ const EmailVerification = () => {
             type="submit"
             width="w-full"
             height="h-12"
-            onClick={handleVerifyOtp}
-            disabled={isLoading}
+            onClick={(e) => {
+              e.preventDefault();
+              handleVerifyOtp(otp);
+            }}
+            disabled={isLoading || !otp}
             className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />

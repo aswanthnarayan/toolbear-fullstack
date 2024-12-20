@@ -135,7 +135,10 @@ const SignUp = () => {
               {...register("name", {
                 required: "Name is required",
                 minLength: { value: 3, message: "Name must be at least 3 characters long" },
-                validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
+                validate: {
+                  notEmpty: (value) => value.trim() !== "" || "Name cannot be empty or spaces only",
+                  noSpecialChars: (value) => /^[a-zA-Z\s]*$/.test(value) || "Name cannot include special characters"
+                } 
               })}
               error={errors.name?.message}
             />
@@ -149,7 +152,7 @@ const SignUp = () => {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  value: /^[a-zA-Z0-9](?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                   message: "Invalid email address",
                 },
               })}
@@ -165,6 +168,11 @@ const SignUp = () => {
               {...register("phone", {
                 required: "Phone number is required",
                 minLength: { value: 10, message: "Phone number must be at least 10 digits" },
+                maxLength: { value: 10, message: "Phone number must be exactly 10 digits" },
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Invalid phone number. Must be 10 digits starting with 6-9",
+                },
               })}
               error={errors.phone?.message}
             />

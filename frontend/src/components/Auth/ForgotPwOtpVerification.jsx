@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
+import OtpComponent from '../OtpComponent';
 import { useForgotPwOtpConfirmMutation, useForgotPwemailVerificationMutation, useResendOtpMutation } from '../../../App/features/rtkApis/authApi';
 
 const ForgotPwOtpVerification = () => {
@@ -38,11 +38,14 @@ const ForgotPwOtpVerification = () => {
   }, [timer]);
 
   const {
-    register,
     handleSubmit,
     setError,
     formState: { errors },
   } = useForm();
+
+  const handleOtpComplete = (otpValue) => {
+    handleSubmit(onSubmit)({ otp: otpValue });
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -121,21 +124,15 @@ const ForgotPwOtpVerification = () => {
       )}
       
       <form  className="space-y-6">
-        {/* Input field with industrial-themed animation */}
-        <div className="transform transition-all duration-300 hover:translate-x-1">
-          <CustomInput
-            label="OTP"
-            placeholder="Enter OTP"
-            type="text"
-            {...register("otp", {
-              required: "OTP is required",
-              pattern: {
-                value: /^\d{6}$/,
-                message: "OTP must be 6 digits"
-              }
-            })}
-            error={errors.otp?.message}
+        {/* OTP Component */}
+        <div className="transform transition-all duration-300">
+          <OtpComponent
+            length={6}
+            onComplete={handleOtpComplete}
           />
+          {errors.otp && (
+            <p className="mt-2 text-sm text-red-500 text-center">{errors.otp.message}</p>
+          )}
         </div>
 
         <div className="space-y-4">
