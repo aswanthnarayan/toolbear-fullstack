@@ -2,6 +2,13 @@ import Order from '../../models/OrderSchema.js';
 import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 
+// Helper function to parse date string in DD/MM/YYYY format
+const parseDateString = (dateStr) => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split('/');
+    return new Date(year, month - 1, day); // month is 0-based in JavaScript
+};
+
 // Get sales report data
 export const getSalesReport = async (req, res) => {
     try {
@@ -43,9 +50,16 @@ export const getSalesReport = async (req, res) => {
                 } 
             };
         } else if (filter === 'custom' && startDate && endDate) {
-            const customStartDate = new Date(startDate);
+            const customStartDate = parseDateString(startDate);
+            const customEndDate = parseDateString(endDate);
+            
+            if (!customStartDate || !customEndDate) {
+                return res.status(400).json({ 
+                    message: 'Invalid date format. Please use DD/MM/YYYY format.' 
+                });
+            }
+
             customStartDate.setHours(0, 0, 0, 0);
-            const customEndDate = new Date(endDate);
             customEndDate.setHours(23, 59, 59, 999);
             
             dateFilter = {
@@ -175,9 +189,16 @@ export const downloadSalesPDF = async (req, res) => {
                 $lte: endOfDay 
             };
         } else if (filter === 'custom' && startDate && endDate) {
-            const customStartDate = new Date(startDate);
+            const customStartDate = parseDateString(startDate);
+            const customEndDate = parseDateString(endDate);
+            
+            if (!customStartDate || !customEndDate) {
+                return res.status(400).json({ 
+                    message: 'Invalid date format. Please use DD/MM/YYYY format.' 
+                });
+            }
+
             customStartDate.setHours(0, 0, 0, 0);
-            const customEndDate = new Date(endDate);
             customEndDate.setHours(23, 59, 59, 999);
             
             dateFilter.createdAt = {
@@ -294,9 +315,16 @@ export const downloadSalesExcel = async (req, res) => {
                 $lte: endOfDay 
             };
         } else if (filter === 'custom' && startDate && endDate) {
-            const customStartDate = new Date(startDate);
+            const customStartDate = parseDateString(startDate);
+            const customEndDate = parseDateString(endDate);
+            
+            if (!customStartDate || !customEndDate) {
+                return res.status(400).json({ 
+                    message: 'Invalid date format. Please use DD/MM/YYYY format.' 
+                });
+            }
+
             customStartDate.setHours(0, 0, 0, 0);
-            const customEndDate = new Date(endDate);
             customEndDate.setHours(23, 59, 59, 999);
             
             dateFilter.createdAt = {

@@ -43,6 +43,8 @@ import WishlistPage from "./pages/User/WishlistPage";
 import ReturnedRequestPage from "./components/Admin/ReturnedRequestPage";
 import AdminCouponPage from "./pages/Admin/AdminCouponPage";
 import AddCouponPage from "./pages/Admin/AddCouponPage";
+import FilterdCatefgoryOrBrandPage from "./pages/User/FilterdCatefgoryOrBrandPage";
+import BrandStore from "./components/Users/BrandStore";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -64,6 +66,9 @@ function App() {
         <Route path="/user/categories" element={<CategoriesPage />} />
         <Route path="/user/brands" element={<BrandsPage />} />
         <Route path="/user/products/:id" element={<SingleProductPage />} />
+        <Route path="/category/:id" element={<FilterdCatefgoryOrBrandPage />} />
+        <Route path="/brand/:id" element={<FilterdCatefgoryOrBrandPage />} />
+        <Route path="/brand-store/:id" element={<BrandStore />} />
 
         {/* Protected User Routes (still within Layout) */}
         <Route element={<ProtectedRoute allowedRoles={['user']} />}>

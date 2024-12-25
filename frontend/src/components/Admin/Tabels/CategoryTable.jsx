@@ -29,10 +29,10 @@ export function CategoryTable() {
 
   // RTK Query hooks
   const { data, isLoading, isFetching, error } = useGetAllCategoriesQuery({
-    page: currentPage,
+   page: currentPage,
     limit: ITEMS_PER_PAGE,
     search: searchQuery
-  });
+  }); 
 
 
   const [toggleList, { isLoading: isToggling }] = useToggleListCategoryMutation();

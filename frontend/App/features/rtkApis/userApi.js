@@ -1,4 +1,6 @@
 import { fetchBaseQuery, createApi } from "@reduxjs/toolkit/query/react";
+import { getAllCategoriesOfBrand } from "../../../../backend/controllers/Users/FilterdQuieriesController";
+
 
 export const userApi = createApi({
     reducerPath: 'userApi',
@@ -188,6 +190,15 @@ export const userApi = createApi({
     }),
     invalidatesTags: ['Wallet', 'Order']
   }),
+  getProductByCategory: builder.query({
+    query: (categoryId) => `/products/category/${categoryId}`,
+    providesTags: ['Products']
+  }),
+  //
+  getAllCategoriesOfBrand: builder.query({
+    query: (brandId) => `/products/brand/${brandId}/categories`,
+    providesTags: ['Products']
+  }),
 }),
 });
 
@@ -217,4 +228,6 @@ export const {
   useValidateCouponQuery,
   useGetWalletQuery,
   useProcessRefundMutation,
+  useGetProductByCategoryQuery,
+  useGetAllCategoriesOfBrandQuery
 } = userApi

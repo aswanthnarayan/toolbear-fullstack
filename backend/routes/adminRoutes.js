@@ -60,7 +60,7 @@ router.patch('/orders/status', protect, adminOnly, updateOrderStatus);
 router.get('/orders', protect, adminOnly, getAllOrders);
 
 //Sales Reports
-router.get('/sales-report', protect, adminOnly, getSalesReport);
+router.post('/sales-report', protect, adminOnly, getSalesReport);
 router.post('/sales-report/pdf', protect, adminOnly, downloadSalesPDF);
 router.post('/sales-report/excel', protect, adminOnly, downloadSalesExcel);
 

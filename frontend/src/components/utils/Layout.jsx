@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Navbar from '../Users/Navbar';
 import { useSelector } from 'react-redux';
+import Footer from '../Users/Footer';
 
 const Layout = () => {
   const { user } = useSelector((state) => state.auth);
@@ -17,6 +18,7 @@ const Layout = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <Footer/>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import SingleProduct from '../../components/Users/SingleProduct';
+import RelatedProducts from '../../components/Users/RelatedProducts';
 import { Breadcrumbs, Spinner } from '@material-tailwind/react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useGetProductByIdQuery } from '../../../App/features/rtkApis/adminApi';
@@ -65,7 +66,7 @@ const SingleProductPage = () => {
               Products
             </Link>
             <Link 
-              to={`/user/products/category/${product.category?.name?.toLowerCase().replace(/\s+/g, '-')}`} 
+              to={`/category/${product.category?._id}`} 
               className="opacity-60 hover:text-yellow-500"
             >
               {product.category?.name}
@@ -77,6 +78,11 @@ const SingleProductPage = () => {
         </div>
 
         <SingleProduct product={product} toastMsg={handleToast} isInWishlist={isProductInWishlist(product._id)}  />
+        <RelatedProducts 
+          category={product.category} 
+          currentProductId={product._id}
+          onToast={handleToast}
+        />
       </div>
       <Toaster richColors position="top-right" />
     </div>

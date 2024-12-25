@@ -271,7 +271,8 @@ export const adminApi = createApi({
         getSalesReport: builder.query({
             query: ({filter, startDate, endDate} = {}) => ({
                 url: '/sales-report',
-                params: { filter, startDate, endDate }
+                method: 'POST',
+                body: { filter, startDate, endDate }
             }),
             providesTags: ['Orders']
         }),
@@ -324,7 +325,6 @@ export const {
     useCreateCouponMutation,
     useDeleteCouponMutation,
     useGetSalesReportQuery,
- 
     useDownloadSalesExcelMutation,
     useDownloadSalesPDFMutation
 } = adminApi;

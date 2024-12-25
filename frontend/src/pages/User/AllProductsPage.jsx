@@ -9,6 +9,7 @@ import { useGetAllProductsQuery } from '../../../App/features/rtkApis/adminApi';
 import { Spinner } from "@material-tailwind/react";
 import {Toaster,toast} from 'sonner'
 import SortSelect from '../../components/SortSelect';
+import Pagination from '../../components/Users/Pagination';
 import { useGetWishlistQuery } from '../../../App/features/rtkApis/userApi';
 
 const AllProductsPage = () => {
@@ -27,16 +28,23 @@ const AllProductsPage = () => {
     brands: [],
     priceRange: null
   });
+  const [showLgFilter, setShowLgFilter] = useState(false);
 
   const { data, isLoading, error } = useGetAllProductsQuery({
     page: currentPage,
-    limit: 12,
+    limit: 6,
     search: searchQuery,
     sort: sortOption,
     categories: filters.categories.join(','),
     brands: filters.brands.join(','),
     priceRange: filters.priceRange
   });
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const { refetch: refetchWishlist } = useGetWishlistQuery(undefined, {
     skip: !user
@@ -62,12 +70,6 @@ const AllProductsPage = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isSidebarOpen]);
-
-  const handleLoadMore = () => {
-    if (data?.hasMore) {
-      setCurrentPage(prev => prev + 1);
-    }
-  };
 
   const handleToast = (message, type) => {
     toast[type](message);
@@ -100,7 +102,7 @@ const AllProductsPage = () => {
     <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
       <div className="flex relative">
         {/* Filter Sidebar */}
-        <div className="hidden lg:block sticky top-[112px]">
+        <div className={`hidden ${showLgFilter ? 'lg:block' : ''} sticky top-[112px]`}>
           <FilterSidebar 
             isOpen={isSidebarOpen} 
             onClose={() => setIsSidebarOpen(false)}
@@ -128,7 +130,8 @@ const AllProductsPage = () => {
               <FunnelIcon className="h-6 w-6" />
             </button>
 
-            <Breadcrumbs className="bg-transparent">
+            <div className='flex justify-between items-center'>
+              <Breadcrumbs className="bg-transparent">
               <Link to="/" className="opacity-60 flex items-center gap-2">
                 <HomeIcon className="h-4 w-4" /> Home
               </Link>
@@ -136,6 +139,10 @@ const AllProductsPage = () => {
                 All Products
               </Link>
             </Breadcrumbs>
+            <button className='hidden lg:block text-sm text-blue-600 hover:text-blue-800' onClick={() => setShowLgFilter(!showLgFilter)}>
+              Filter
+            </button>
+            </div>
             <div className='flex justify-between items-center'>
             <h1 className={`text-3xl font-bold my-6 ${currentTheme.text}`}>All Products</h1>
             <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
@@ -150,6 +157,12 @@ const AllProductsPage = () => {
               </div>
             ) : (
               <>
+                {data?.products.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className={`text-lg ${currentTheme.text}`}>No products found.</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                   {data?.products
                     .filter(product => 
@@ -179,21 +192,13 @@ const AllProductsPage = () => {
                     ))}
                 </div>
 
-                {/* {data?.hasMore && (
-                  <div className="flex justify-center mt-8">
-                    <button
-                      onClick={handleLoadMore}
-                      disabled={isFetching}
-                      className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 disabled:opacity-50"
-                    >
-                      {isFetching ? (
-                        <Spinner className="h-5 w-5" />
-                      ) : (
-                        'Load More'
-                      )}
-                    </button>
-                  </div>
-                )} */}
+                {data?.totalPages > 0 && (
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalPages={data.totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                )}
               </>
             )}
           </div>
