@@ -11,8 +11,10 @@ const CategoriesPage = () => {
 
   const { data, isLoading, isFetching, error } = useGetAllCategoriesQuery({
     page: currentPage,
-    limit: 8
+    limit: 8,
+    isUserView: true
   });
+console.log(data);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -35,15 +37,13 @@ const CategoriesPage = () => {
     );
   }
 
-  const listedCategories = data.categories.filter((cat) => cat.isListed === true);
-
   return (
     <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
       <div className="container mx-auto px-4 py-8">
         <h1 className={`text-3xl font-bold ${currentTheme.text} mb-8`}>Our Categories</h1>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {listedCategories.map((category) => (
+          {data?.categories?.map((category) => (
             <Link 
               to={`/category/${category._id}`} 
               key={category._id}
@@ -64,15 +64,15 @@ const CategoriesPage = () => {
                     {category.name}
                   </h3>
                   <p className={`${currentTheme.textGray} text-sm line-clamp-2`}>
-                    {category.description || 'Explore our collection of tools and equipment'}
+                    {category.desc || 'Explore our collection of tools and equipment'}
                   </p>
                   
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-yellow-500 font-medium">
+                    <span className="text-red-500 font-medium">
                       View Products
                     </span>
                     <svg 
-                      className="w-5 h-5 text-yellow-500 transform group-hover:translate-x-1 transition-transform duration-300" 
+                      className="w-5 h-5 text-red-500 transform group-hover:translate-x-1 transition-transform duration-300" 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"
@@ -91,18 +91,18 @@ const CategoriesPage = () => {
           ))}
         </div>
 
-        {listedCategories.length === 0 && (
+        {(!data?.categories || data.categories.length === 0) && (
           <div className="text-center py-12">
             <p className={`text-lg ${currentTheme.textGray}`}>No categories available at the moment.</p>
           </div>
         )}
 
         {data?.totalPages > 0 && (
-          <Pagination 
-            currentPage={currentPage}
-            totalPages={data.totalPages}
-            onPageChange={handlePageChange}
-          />
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={data.totalPages}
+              onPageChange={handlePageChange}
+            />
         )}
       </div>
     </div>

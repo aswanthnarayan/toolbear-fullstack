@@ -5,6 +5,7 @@ import Cart from "../../models/CartSchema.js";
 import HttpStatusEnum from "../../constants/httpStatus.js";
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import PDFDocument from 'pdfkit';
 
 export const getAllOrders = async (req, res) => {
     try {
@@ -84,20 +85,6 @@ export const createOrder = async (req, res) => {
             paymentStatus: 'Pending'  // Default to pending
         });
 
-        // 3. Update product stock
-        for (const item of products) {
-            await Product.findByIdAndUpdate(
-                item.productId,
-                { $inc: { stock: -item.quantity } }
-            );
-        }
-
-        // 4. Empty the user's cart
-        await Cart.findOneAndUpdate(
-            { user: user._id },
-            { $set: { items: [], totalAmount: 0 } }
-        );
-
         res.status(HttpStatusEnum.CREATED).json(order);
     } catch (error) {
         console.error("Error creating order:", error);
@@ -160,6 +147,21 @@ export const completePayment = async (req, res) => {
                 razorpay_payment_id,
                 razorpay_signature
             };
+
+            // Only update stock and clear cart if payment is confirmed as Paid
+            // Update product stock
+            for (const item of order.products) {
+                await Product.findByIdAndUpdate(
+                    item.productId,
+                    { $inc: { stock: -item.quantity } }
+                );
+            }
+
+            // Empty the user's cart
+            await Cart.findOneAndUpdate(
+                { user: order.userId },
+                { $set: { items: [], totalAmount: 0 } }
+            );
         }
         
         await order.save();
@@ -171,6 +173,127 @@ export const completePayment = async (req, res) => {
         });
     }
 }
+
+export const downloadInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId).populate('products.productId');
+        
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        const doc = new PDFDocument();
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=invoice-${orderId}.pdf`);
+        
+        doc.pipe(res);
+
+        // Add company logo and header
+        doc.fontSize(20).text('ToolBear', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(16).text('Invoice', { align: 'center' });
+        doc.moveDown();
+
+        // Add a horizontal line
+        doc.moveTo(50, doc.y)
+           .lineTo(550, doc.y)
+           .stroke();
+        doc.moveDown();
+
+        // Order information
+        doc.fontSize(12);
+        doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`);
+        doc.text(`Order Date: ${new Date(order.createdAt).toLocaleDateString()}`);
+        doc.text(`Order ID: ${order._id}`);
+        doc.text(`Payment Status: ${order.paymentStatus}`);
+        doc.text(`Payment Method: ${order.paymentMethod}`);
+        doc.moveDown();
+
+        // Billing information
+        doc.fontSize(14).text('Billing Information', { underline: true });
+        doc.fontSize(12);
+        doc.text(order.address.name);
+        doc.text(order.address.phone);
+        doc.text(order.address.address);
+        doc.text(`${order.address.city}, ${order.address.state} ${order.address.pincode}`);
+        doc.moveDown();
+
+        // Items table header
+        doc.fontSize(14).text('Order Items', { underline: true });
+        doc.moveDown();
+        
+        // Table headers
+        let y = doc.y;
+        doc.fontSize(12)
+           .text('Item', 50, y)
+           .text('Quantity', 300, y)
+           .text('Price', 400, y)
+           .text('Total', 500, y);
+
+        // Add a line below headers
+        doc.moveTo(50, doc.y + 5)
+           .lineTo(550, doc.y + 5)
+           .stroke();
+        
+        doc.moveDown();
+        y = doc.y + 10;
+
+        // Items details
+        order.products.forEach((item, index) => {
+            const itemY = y + (index * 25);
+            doc.fontSize(10)
+               .text(item.productId.name, 50, itemY, { width: 240 })
+               .text(item.quantity.toString(), 300, itemY)
+               .text(`₹${item.priceAtPurchase}`, 400, itemY)
+               .text(`₹${item.priceAtPurchase * item.quantity}`, 500, itemY);
+        });
+
+        // Move down after items list
+        doc.moveDown(order.products.length + 2);
+
+        // Add a line above summary
+        doc.moveTo(50, doc.y)
+           .lineTo(550, doc.y)
+           .stroke();
+        doc.moveDown();
+
+        // Summary section
+        const summaryX = 400;
+        doc.fontSize(12)
+           .text('Summary', summaryX, doc.y);
+        doc.moveDown();
+        
+        doc.text('Subtotal:', summaryX)
+           .text(`₹${order.totalAmount - order.shippingAmount}`, 500);
+        
+        doc.text('Shipping:', summaryX)
+           .text(`₹${order.shippingAmount}`, 500);
+        
+        // Final total with bold text
+        doc.fontSize(14)
+           .text('Total:', summaryX, doc.y + 10)
+           .text(`₹${order.totalAmount}`, 500);
+
+        // Footer
+        doc.fontSize(10)
+           .text('Thank you for shopping with ToolBear!', 50, doc.page.height - 50, {
+               align: 'center',
+               width: doc.page.width - 100
+           });
+
+        doc.end();
+    } catch (error) {
+        console.error('Invoice generation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error generating invoice',
+            error: error.message
+        });
+    }
+};
 
 export const getOrderById = async (req, res) => {
     try {

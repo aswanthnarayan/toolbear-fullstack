@@ -19,89 +19,24 @@ const DealsPage = () => {
   return (
     <div className="container mx-auto p-4 pt-[124px]">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <Card className="md:col-span-8 bg-[#002B5C] text-white h-full">
+        <Card className="md:col-span-8 bg-[#002B5C] text-white min-h-[444px] h-full">
           <CardBody className="p-8 flex flex-col justify-between h-full">
-            <div>
-              <div className="flex items-center mb-6">
-                <img src="/bosch-logo.png" alt="BOSCH" className="h-8" />
-              </div>
-              <Typography variant="h4" className="text-2xl font-bold mb-6">
-                DEALS ON CHECKOUT
-              </Typography>
-              <div className="space-y-4 mb-8">
-                <Typography className="text-lg">
-                  ₹ 500 off <span className="text-sm">on Selected products above ₹ 5000</span>
-                </Typography>
-                <Typography className="text-lg">
-                  ₹ 750 off <span className="text-sm">on Selected products above ₹ 8000</span>
-                </Typography>
-                <Typography className="text-lg">
-                  ₹ 1000 off <span className="text-sm">on Selected products above ₹ 8000</span>
-                </Typography>
-              </div>
-            </div>
-            <div className="flex justify-between items-end">
-              <Button 
-                size="lg"
-                color="red"
-                className="bg-red-600 px-8"
-                onClick={() => navigate('/products')}
-              >
-                SHOP NOW
-              </Button>
-              <img src="/bosch-tools.png" alt="Bosch tools" className="h-32" />
-            </div>
+            
           </CardBody>
         </Card>
 
-        <div className="md:col-span-4 space-y-6">
+        <div className="md:col-span-4 space-y-6 min-h-[444px]">
           {/* DEWALT Card */}
-          <Card className="bg-[#FFD600]">
+          <Card className="bg-[#FFD600] min-h-[222px]">
             <CardBody className="p-8">
-              <div className="flex justify-between items-start">
-                <div>
-                  <img src="/dewalt-logo.png" alt="DEWALT" className="h-6 mb-4" />
-                  <Typography variant="h5" color="black" className="mb-2">
-                    SAVE UPTO ₹ 400
-                  </Typography>
-                  <Typography color="black" className="text-sm mb-4">
-                    On Selected Dewalt Products
-                  </Typography>
-                  <Button 
-                    size="sm"
-                    className="bg-black"
-                    onClick={() => navigate('/products')}
-                  >
-                    SHOP NOW
-                  </Button>
-                </div>
-                <img src="/dewalt-tools.png" alt="Dewalt tools" className="h-28" />
-              </div>
+             
             </CardBody>
           </Card>
 
           {/* EGO Card */}
-          <Card className="bg-[#7AB800]">
+          <Card className="bg-[#7AB800] min-h-[222px]">
             <CardBody className="p-8">
-              <div className="flex justify-between items-start">
-                <div>
-                  <img src="/ego-logo.png" alt="EGO" className="h-6 mb-4" />
-                  <Typography variant="h5" color="black" className="mb-2">
-                    GET UPTO 599 off
-                  </Typography>
-                  <Typography color="black" className="text-sm mb-4">
-                    On Selected Chainsaws and blowers
-                  </Typography>
-                  <Button 
-                    size="sm"
-                    className="bg-black"
-                    onClick={() => navigate('/products')}
-                  >
-                    SHOP NOW
-                  </Button>
-                </div>
-                <img src="/ego-tools.png" alt="EGO tools" className="h-28" />
-              </div>
+             
             </CardBody>
           </Card>
         </div>

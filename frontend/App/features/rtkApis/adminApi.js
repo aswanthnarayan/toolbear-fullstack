@@ -49,16 +49,16 @@ export const adminApi = createApi({
             invalidatesTags: ['Categories'],
         }),
         getAllCategories: builder.query({
-            query: ({ page = 1, limit = 10, search = '' }) => ({
+            query: ({ page = 1, limit = 8, search = '', isUserView = false }) => ({
                 url: '/categories',
-                params: { page, limit, search }
+                params: { page, limit, search, isUserView }
             }),
             providesTags: ['Categories'],
             transformResponse: (response) => ({
                 categories: response.categories,
                 currentPage: response.currentPage,
                 totalPages: response.totalPages,
-                totalCategories: response.total,
+                totalCategories: response.totalCategories,
                 hasNextPage: response.hasNextPage,
                 hasPrevPage: response.hasPrevPage
             })
@@ -150,8 +150,6 @@ export const adminApi = createApi({
                 if (categories) params.categories = categories;
                 if (brands) params.brands = brands;
                 if (priceRange) params.priceRange = priceRange;
-
-                console.log('API Query Params:', params);
 
                 return {
                     url: '/products',
@@ -267,14 +265,39 @@ export const adminApi = createApi({
             }),
             invalidatesTags: ['Coupons']
         }),
+        // Top selling items endpoints
+        getTopSellingProducts: builder.query({
+            query: () => ({
+                url: '/sales-report/top-selling',
+                params: { type: 'products' }
+            })
+        }),
+        getTopSellingCategories: builder.query({
+            query: () => ({
+                url: '/sales-report/top-selling',
+                params: { type: 'categories' }
+            })
+        }),
+        getTopSellingBrands: builder.query({
+            query: () => ({
+                url: '/sales-report/top-selling',
+                params: { type: 'brands' }
+            })
+        }),
         //Sales Reports
         getSalesReport: builder.query({
-            query: ({filter, startDate, endDate} = {}) => ({
+            query: ({ page = 1, limit = 10, search = '', filter, startDate, endDate }) => ({
                 url: '/sales-report',
                 method: 'POST',
-                body: { filter, startDate, endDate }
+                body: { filter, startDate, endDate },
+                params: { page, limit, search }
             }),
-            providesTags: ['Orders']
+            providesTags: ['Orders'],
+            transformResponse: (response) => ({
+                salesData: response.salesData,
+                summary: response.summary,
+                pagination: response.pagination
+            })
         }),
         downloadSalesPDF: builder.mutation({
             query: ({filter, startDate, endDate} = {}) => ({
@@ -326,5 +349,8 @@ export const {
     useDeleteCouponMutation,
     useGetSalesReportQuery,
     useDownloadSalesExcelMutation,
-    useDownloadSalesPDFMutation
+    useDownloadSalesPDFMutation,
+    useGetTopSellingProductsQuery,
+    useGetTopSellingCategoriesQuery,
+    useGetTopSellingBrandsQuery,
 } = adminApi;

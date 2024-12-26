@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 import { SalesReportTable } from '../../components/Admin/Tabels/SalesReportTable';
 import { SummaryCards } from '../../components/Admin/SummaryCards';
 import { FilterSection } from '../../components/Admin/FilterSection';
+import SalesChart from '../../components/Admin/SalesChart';
+import TopSelling from '../../components/Admin/TopSelling';
+
 
 const Dashboard = () => {
   const [filterType, setFilterType] = useState('daily');
@@ -185,6 +188,10 @@ const Dashboard = () => {
       {/* Summary Cards */}
       <SummaryCards summaryData={summaryData} />
 
+      <div className="mb-6">
+        <SalesChart salesData={salesReport?.data || []} filterType={filterType} />
+      </div>
+
       {/* Sales Table */}
       <SalesReportTable 
         salesReport={salesReport}
@@ -195,6 +202,10 @@ const Dashboard = () => {
         isPdfLoading={isPdfLoading}
         isExcelLoading={isExcelLoading}
       />
+
+     <div className='my-6'>
+     <TopSelling/>
+     </div>
     </div>
   );
 };

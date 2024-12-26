@@ -11,7 +11,8 @@ import {
     getOrderById, 
     updateOrderStatus,
     getReturnRequests,
-    handleReturnRequest 
+    handleReturnRequest ,
+    
 } from '../controllers/Admin/OrderController.js';
 import { 
     getAllCoupons, 
@@ -21,7 +22,8 @@ import {
 import { 
     getSalesReport,
     downloadSalesPDF,
-    downloadSalesExcel
+    downloadSalesExcel,
+    getTopSellingItems
 } from '../controllers/Admin/salesController.js';
 
 const router = express.Router();
@@ -63,6 +65,7 @@ router.get('/orders', protect, adminOnly, getAllOrders);
 router.post('/sales-report', protect, adminOnly, getSalesReport);
 router.post('/sales-report/pdf', protect, adminOnly, downloadSalesPDF);
 router.post('/sales-report/excel', protect, adminOnly, downloadSalesExcel);
+router.get('/sales-report/top-selling', protect, adminOnly, getTopSellingItems);
 
 // Coupon routes
 router.get('/coupons', protect, adminOnly, getAllCoupons);

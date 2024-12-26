@@ -199,6 +199,14 @@ export const userApi = createApi({
     query: (brandId) => `/products/brand/${brandId}/categories`,
     providesTags: ['Products']
   }),
+  downloadInvoice: builder.mutation({
+    query: (orderId) => ({
+      url: `/orders/${orderId}/invoice`,
+      method: 'GET',
+      responseHandler: (response) => response.blob()
+    }),
+    invalidatesTags: ['Order']
+  }),
 }),
 });
 
@@ -229,5 +237,6 @@ export const {
   useGetWalletQuery,
   useProcessRefundMutation,
   useGetProductByCategoryQuery,
-  useGetAllCategoriesOfBrandQuery
+  useGetAllCategoriesOfBrandQuery,
+  useDownloadInvoiceMutation
 } = userApi

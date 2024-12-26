@@ -34,7 +34,7 @@ export function CategoryTable() {
     search: searchQuery
   }); 
 
-
+  
   const [toggleList, { isLoading: isToggling }] = useToggleListCategoryMutation();
 
   const handleModalOpen = () => setModalOpen(!modalOpen);

@@ -34,6 +34,7 @@ export function BrandTable() {
     search: searchQuery
   });
 
+  
   const [toggleList, { isLoading: isToggling }] = useToggleListBrandMutation();
 
   const handleModalOpen = () => setModalOpen(!modalOpen);

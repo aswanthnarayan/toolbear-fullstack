@@ -45,6 +45,7 @@ import AdminCouponPage from "./pages/Admin/AdminCouponPage";
 import AddCouponPage from "./pages/Admin/AddCouponPage";
 import FilterdCatefgoryOrBrandPage from "./pages/User/FilterdCatefgoryOrBrandPage";
 import BrandStore from "./components/Users/BrandStore";
+import OrderDetailsPage from "./pages/User/OrderDetailsPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -77,6 +78,7 @@ function App() {
         <Route path="/user/checkout" element={<CheckoutPage />} />
         <Route path="/user/checkout/payments" element={<PurchasePaymentPage />} />
         <Route path="/user/checkout/success" element={<OrderCompletePage />} />
+        <Route path="/user/orders/:orderId" element={<OrderDetailsPage />} />
 
           <Route path="/user/profile" element={<UserProfilePage />}>
             <Route index element={<Navigate to="edit" />} />

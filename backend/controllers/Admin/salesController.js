@@ -12,6 +12,9 @@ const parseDateString = (dateStr) => {
 // Get sales report data
 export const getSalesReport = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || "";
         const { filter, startDate, endDate } = req.body;
         
         let dateFilter = {};
@@ -70,13 +73,41 @@ export const getSalesReport = async (req, res) => {
             };
         }
 
-        // Add delivered status to filter
-        dateFilter.status = 'Delivered';
+        // Add delivered status and search filter
+        const query = {
+            ...dateFilter,
+            status: 'Delivered'
+        };
 
-        const orders = await Order.find(dateFilter)
-            .populate('userId', 'name email')
-            .sort({ createdAt: -1 }) // Sort by newest first
-            .lean();
+        // Add search conditions if search term exists
+        if (search) {
+            // First, find user IDs that match the search criteria
+            const matchingUserIds = await User.find({
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } }
+                ]
+            }).select('_id');
+
+            // Add search conditions to the main query
+            query.$or = [
+                { _id: { $regex: search, $options: 'i' } },
+                { userId: { $in: matchingUserIds } }
+            ];
+        }
+
+        const skip = (page - 1) * limit;
+
+        // Get paginated orders with total count
+        const [orders, totalCount] = await Promise.all([
+            Order.find(query)
+                .populate('userId', 'name email')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Order.countDocuments(query)
+        ]);
 
         // Calculate summary statistics based on filtered orders
         const totalSales = orders.length;
@@ -100,57 +131,45 @@ export const getSalesReport = async (req, res) => {
             status: order.status
         }));
 
-        // Calculate period-specific stats based on the filtered data
-        let periodStats = {
-            todaySales: 0,
-            weeklySales: 0,
-            monthlySales: 0
+        // Calculate period-specific stats
+        const periodStats = {
+            todaySales: orders.reduce((sum, order) => 
+                order.createdAt >= startOfDay && order.createdAt <= endOfDay
+                    ? sum + order.totalAmount : sum, 0),
+            weeklySales: orders.reduce((sum, order) => {
+                const weekStartDate = new Date(currentDate);
+                weekStartDate.setDate(currentDate.getDate() - 7);
+                return order.createdAt >= weekStartDate && order.createdAt <= endOfDay
+                    ? sum + order.totalAmount : sum;
+            }, 0),
+            monthlySales: orders.reduce((sum, order) => {
+                const monthStartDate = new Date(currentDate);
+                monthStartDate.setMonth(currentDate.getMonth() - 1);
+                return order.createdAt >= monthStartDate && order.createdAt <= endOfDay
+                    ? sum + order.totalAmount : sum;
+            }, 0)
         };
 
-        // Only calculate period stats if we have orders
-        if (orders.length > 0) {
-            const weekStartDate = new Date(currentDate);
-            weekStartDate.setDate(currentDate.getDate() - 7);
-            weekStartDate.setHours(0, 0, 0, 0);
-            
-            const monthStartDate = new Date(currentDate);
-            monthStartDate.setMonth(currentDate.getMonth() - 1);
-            monthStartDate.setHours(0, 0, 0, 0);
-
-            // Calculate period stats from filtered orders
-            periodStats = {
-                todaySales: orders.reduce((sum, order) => 
-                    order.createdAt >= startOfDay && order.createdAt <= endOfDay
-                        ? sum + order.totalAmount : sum, 0),
-                weeklySales: orders.reduce((sum, order) => 
-                    order.createdAt >= weekStartDate && order.createdAt <= endOfDay
-                        ? sum + order.totalAmount : sum, 0),
-                monthlySales: orders.reduce((sum, order) => 
-                    order.createdAt >= monthStartDate && order.createdAt <= endOfDay
-                        ? sum + order.totalAmount : sum, 0)
-            };
-        }
+        const totalPages = Math.ceil(totalCount / limit);
 
         res.status(200).json({
-            success: true,
-            data: salesData,
+            salesData,
             summary: {
                 totalSales,
                 totalAmount,
                 totalDiscount,
-                ...periodStats
+                periodStats
             },
-            filter: filter || '',
-            startDate: startDate || '',
-            endDate: endDate || ''
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalCount,
+                hasMore: page < totalPages
+            }
         });
     } catch (error) {
-        console.error('Sales Report Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching sales report',
-            error: error.message
-        });
+        console.error("Error generating sales report:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -334,8 +353,8 @@ export const downloadSalesExcel = async (req, res) => {
         }
 
         const orders = await Order.find(dateFilter)
+            .populate('products.productId', 'name category brand')
             .populate('userId', 'name email')
-            .populate('products.productId', 'name price')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -408,6 +427,154 @@ export const downloadSalesExcel = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error exporting sales report',
+            error: error.message
+        });
+    }
+};
+
+// Get top selling items (products, categories, brands)
+export const getTopSellingItems = async (req, res) => {
+    try {
+        const { type = 'products' } = req.query;
+
+        // Debug: Check for delivered orders
+        const deliveredOrders = await Order.find({ status: 'Delivered' })
+            .populate('products.productId', 'name category brand');
+        console.log('Number of delivered orders:', deliveredOrders.length);
+        
+        if (deliveredOrders.length > 0) {
+            console.log('Sample Order Structure:', JSON.stringify({
+                status: deliveredOrders[0].status,
+                products: deliveredOrders[0].products,
+            }, null, 2));
+        }
+        
+        let pipeline = [
+            // Only consider delivered orders
+            { $match: { status: 'Delivered' } },
+            // Unwind the products array to process each product separately
+            { $unwind: '$products' },
+            // Lookup to get product details
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.productId',
+                    foreignField: '_id',
+                    as: 'productDetails'
+                }
+            },
+            // Unwind the productDetails array
+            { $unwind: '$productDetails' },
+            // Lookup to get category details
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'productDetails.category',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
+                }
+            },
+            // Unwind the categoryDetails array
+            { $unwind: '$categoryDetails' },
+            // Lookup to get brand details
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'productDetails.brand',
+                    foreignField: '_id',
+                    as: 'brandDetails'
+                }
+            },
+            // Unwind the brandDetails array
+            { $unwind: '$brandDetails' }
+        ];
+
+        if (type === 'products') {
+            pipeline = [
+                ...pipeline,
+                {
+                    $group: {
+                        _id: '$products.productId',
+                        name: { $first: '$productDetails.name' },
+                        totalQuantity: { $sum: '$products.quantity' },
+                        totalRevenue: { 
+                            $sum: { 
+                                $multiply: ['$products.priceAtPurchase', '$products.quantity'] 
+                            } 
+                        }
+                    }
+                }
+            ];
+        } else if (type === 'categories') {
+            pipeline = [
+                ...pipeline,
+                {
+                    $group: {
+                        _id: '$productDetails.category',
+                        category: { $first: '$categoryDetails.name' }, // Get category name
+                        totalQuantity: { $sum: '$products.quantity' },
+                        totalRevenue: { 
+                            $sum: { 
+                                $multiply: ['$products.priceAtPurchase', '$products.quantity'] 
+                            } 
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        category: 1,
+                        totalQuantity: 1,
+                        totalRevenue: 1
+                    }
+                }
+            ];
+        } else if (type === 'brands') {
+            pipeline = [
+                ...pipeline,
+                {
+                    $group: {
+                        _id: '$productDetails.brand',
+                        brand: { $first: '$brandDetails.name' }, // Get brand name
+                        totalQuantity: { $sum: '$products.quantity' },
+                        totalRevenue: { 
+                            $sum: { 
+                                $multiply: ['$products.priceAtPurchase', '$products.quantity'] 
+                            } 
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        brand: 1,
+                        totalQuantity: 1,
+                        totalRevenue: 1
+                    }
+                }
+            ];
+        }
+
+        // Sort by total quantity and limit to top 10
+        pipeline.push(
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 10 }
+        );
+
+        console.log('Aggregation Pipeline:', JSON.stringify(pipeline, null, 2));
+        const results = await Order.aggregate(pipeline);
+        console.log('Aggregation Results:', JSON.stringify(results, null, 2));
+
+        res.status(200).json({
+            success: true,
+            data: results
+        });
+
+    } catch (error) {
+        console.error('Error in getTopSellingItems:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching top selling items',
             error: error.message
         });
     }

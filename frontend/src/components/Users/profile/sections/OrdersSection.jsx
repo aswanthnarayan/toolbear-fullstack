@@ -19,8 +19,10 @@ import {
 } from '../../../../../App/features/rtkApis/userApi';
 import { toast } from 'sonner';
 import ReturnReasonModal from '../shared/ReturnReasonModal';
+import { useNavigate } from 'react-router-dom';
 
 const OrdersSection = () => {
+  const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [returnModal, setReturnModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -94,6 +96,19 @@ const OrdersSection = () => {
     }
   };
 
+  const handleCompletePayment = (order) => {
+    navigate('/user/checkout/payments', { 
+      state: { 
+        orderId: order._id,
+        fromOrders: true 
+      } 
+    });
+  };
+
+  const handleOrderClick = (orderId) => {
+    navigate(`/user/orders/${orderId}`);
+  };
+
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case 'delivered':
@@ -127,9 +142,13 @@ const OrdersSection = () => {
       
       <div className="space-y-4">
         {orders.map((order) => (
-          <Card key={order._id} className="w-full">
+          <Card 
+            key={order._id} 
+            className="w-full cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleOrderClick(order._id)}
+          >
             <CardBody>
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start">
                 <div>
                   <Typography variant="h6" color="blue-gray">
                     Order #{order._id}
@@ -143,14 +162,30 @@ const OrdersSection = () => {
                     value={order.status}
                     color={getStatusColor(order.status)}
                   />
+                  {order.paymentStatus === 'Pending' && (
+                    <Button
+                      variant="gradient"
+                      color="blue"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        handleCompletePayment(order);
+                      }}
+                    >
+                      Complete Payment
+                    </Button>
+                  )}
                   {order.status !== 'Cancelled' && 
+                   order.status !== 'Delivered' &&
                    !['return requested', 'return approved', 'return rejected'].includes(order.status) && (
                     <Button 
                       variant="outlined" 
                       color="red" 
                       size="sm"
-                      onClick={() => handleCancelClick(order)}
-                      disabled={['Delivered', 'Cancelled'].includes(order.status)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        handleCancelClick(order);
+                      }}
                     >
                       Cancel Order
                     </Button>
@@ -160,41 +195,19 @@ const OrdersSection = () => {
                       size="sm"
                       color="red"
                       variant="outlined"
-                      onClick={() => handleReturnClick(order)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        handleReturnClick(order);
+                      }}
                     >
                       Return Order
                     </Button>
                   )}
                 </div>
               </div>
-
-              <div className="border-t border-b border-gray-200 py-4 my-4">
-                {order.products.map((item) => (
-                  <div key={item.productId._id} className="flex justify-between items-center mb-2">
-                    <div className="flex gap-4">
-                      <img
-                        src={item.productId.mainImage.imageUrl}
-                        alt={item.productId.name}
-                        className="h-20 w-20 object-cover rounded"
-                      />
-                      <div>
-                        <Typography variant="h6">{item.productId.name}</Typography>
-                        <Typography color="gray" className="text-sm">
-                          Quantity: {item.quantity}
-                        </Typography>
-                      </div>
-                    </div>
-                    <Typography variant="h6">₹{item.priceAtPurchase}</Typography>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-between items-center">
-                <Typography variant="h6">Total Amount:</Typography>
-                <Typography variant="h6">
-                  ₹{order.totalAmount}
-                </Typography>
-              </div>
+              <Typography variant="h6" className="mt-2">
+                Total Amount: ₹{order.totalAmount}
+              </Typography>
             </CardBody>
           </Card>
         ))}

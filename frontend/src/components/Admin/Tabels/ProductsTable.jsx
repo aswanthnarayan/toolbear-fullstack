@@ -33,6 +33,7 @@ export function ProductsTable() {
     limit: ITEMS_PER_PAGE,
     search: searchQuery
   });
+  
 
   const [toggleList, { isLoading: isToggling }] = useToggleListProductMutation();
 
@@ -223,7 +224,7 @@ export function ProductsTable() {
             Page {currentPage} of {data?.totalPages}
           </Typography>
           <Typography variant="small" color="blue-gray" className="font-normal">
-            ({data?.totalProducts} total products)
+            ({data?.totalCount} total products)
           </Typography>
         </div>
         <div className="flex gap-2">

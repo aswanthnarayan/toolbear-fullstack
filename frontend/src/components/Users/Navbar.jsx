@@ -45,6 +45,11 @@ function Navbar() {
     }
   }
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    navigate('/user/all-products');
+  };
+
   const handleCartClick = () => {
     if (!user) {
       navigate('/user/signin');
@@ -100,7 +105,20 @@ function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
+                {searchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className={`absolute right-10 top-1/2 transform -translate-y-1/2 ${
+                      isDarkMode
+                        ? "text-gray-400 hover:text-white"
+                        : "text-gray-500 hover:text-gray-700"
+                    } transition-colors duration-200`}
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                )}
                 <button
+                  onClick={handleSearch}
                   className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
                     isDarkMode
                       ? "text-gray-400 hover:text-white"

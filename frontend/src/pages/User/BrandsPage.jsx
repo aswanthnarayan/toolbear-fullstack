@@ -11,7 +11,8 @@ const BrandsPage = () => {
 
   const { data, isLoading, isFetching, error } = useGetAllBrandsQuery({
     page: currentPage,
-    limit: 8
+    limit: 8,
+    isUserView: true
   });
 
   const handlePageChange = (page) => {
@@ -35,17 +36,13 @@ const BrandsPage = () => {
     );
   }
 
-  const listedBrands = data.brands.filter((brand) => brand.isListed === true);
-console.log(listedBrands);
-
-
   return (
     <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
       <div className="container mx-auto px-4 py-8">
         <h1 className={`text-3xl font-bold ${currentTheme.text} mb-8`}>Our Brands</h1>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {listedBrands.map((brand) => (
+          {data?.brands?.map((brand) => (
             <div key={brand._id} className="group">
               <div className={`${currentTheme.secondary} rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1`}>
                 <Link to={`/brand/${brand._id}`}>
@@ -116,7 +113,7 @@ console.log(listedBrands);
           ))}
         </div>
 
-        {listedBrands.length === 0 && (
+        {(!data?.brands || data.brands.length === 0) && (
           <div className="text-center py-12">
             <p className={`text-lg ${currentTheme.textGray}`}>No brands available at the moment.</p>
           </div>

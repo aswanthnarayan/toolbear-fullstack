@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   Typography,
@@ -47,6 +47,8 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
     price: false
   });
 
+  const [filtersApplied, setFiltersApplied] = useState(false);
+
   const toggleAccordion = (section) => {
     setOpenAccordions(prev => ({
       ...prev,
@@ -74,8 +76,25 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
   };
 
   const handleApplyFilter = () => {
-    console.log('Applying filters:', selectedFilters);
-    onApplyFilters(selectedFilters);
+    if (filtersApplied) {
+      // Clear all filters
+      setSelectedFilters({
+        categories: [],
+        brands: [],
+        priceRange: null
+      });
+      onApplyFilters({
+        categories: [],
+        brands: [],
+        priceRange: null
+      });
+      setFiltersApplied(false);
+    } else {
+      // Apply filters
+      onApplyFilters(selectedFilters);
+      setFiltersApplied(true);
+    }
+    
     if (window.innerWidth < 1024) {
       onClose(); // Close sidebar on mobile after applying filters
     }
@@ -207,13 +226,17 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
         </div>
 
         <div className="p-4 border-t mt-auto">
-        <button 
-          onClick={handleApplyFilter}
-          className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition duration-300 font-medium"
-        >
-          Apply Filters
-        </button>
-      </div>
+          <button 
+            onClick={handleApplyFilter}
+            className={`w-full py-3 px-4 rounded-lg transition duration-300 font-medium ${
+              filtersApplied 
+                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+            }`}
+          >
+            {filtersApplied ? 'Clear Filters' : 'Apply Filters'}
+          </button>
+        </div>
         <style jsx global>{`
           /* Custom scrollbar styles */
           .scrollbar-thin::-webkit-scrollbar {

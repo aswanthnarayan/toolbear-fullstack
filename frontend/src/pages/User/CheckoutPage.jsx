@@ -66,7 +66,6 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Find the selected address from addresses
     const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
     if (!selectedAddress) {
       toast.error("Selected address not found");
@@ -74,7 +73,6 @@ const CheckoutPage = () => {
     }
 
     try {
-      // Create order with pending payment status
       const orderResponse = await createOrder({
         products: cart.items.map(item => ({
           productId: item.product._id,
@@ -83,16 +81,14 @@ const CheckoutPage = () => {
         })),
         address: selectedAddress,
         totalAmount: calculateFinalAmount(),
-        shippingAmount: 0 // Free shipping
+        shippingAmount: calculateShippingCost()
       }).unwrap();
 
-      // Store order ID and amount in Redux for payment page
       dispatch(setCheckoutData({
         orderId: orderResponse._id,
         amount: calculateFinalAmount()
       }));
 
-      // Navigate to payment page with orderId in state
       navigate('/user/checkout/payments', {
         state: { orderId: orderResponse._id }
       });
@@ -108,13 +104,11 @@ const CheckoutPage = () => {
     }
 
     try {
-      // Check if the coupon exists in available coupons
       const existingCoupon = availableCoupons.find(
         coupon => coupon.code === couponCode
       );
 
       if (existingCoupon) {
-        // Check minimum purchase requirement
         if (cart?.totalAmount < existingCoupon.minimumPurchase) {
           toast.error(`Minimum purchase of ₹${existingCoupon.minimumPurchase} required to use this coupon`);
           setAppliedCoupon(null);
@@ -126,7 +120,6 @@ const CheckoutPage = () => {
         return;
       }
 
-      // If not found in available coupons, validate through API
       const result = await validateCoupon();
       const coupon = result.data?.coupon;
       
@@ -136,7 +129,6 @@ const CheckoutPage = () => {
         return;
       }
 
-      // Check minimum purchase requirement
       if (cart?.totalAmount < coupon.minimumPurchase) {
         toast.error(`Minimum purchase of ₹${coupon.minimumPurchase} required to use this coupon`);
         setAppliedCoupon(null);
@@ -152,7 +144,6 @@ const CheckoutPage = () => {
   };
 
   const handleCouponSelect = (coupon) => {
-    // Check minimum purchase requirement before setting coupon
     if (cart?.totalAmount < coupon.minimumPurchase) {
       toast.error(`Minimum purchase of ₹${coupon.minimumPurchase} required to use this coupon`);
       return;
@@ -169,21 +160,25 @@ const CheckoutPage = () => {
     toast.success("Coupon removed");
   };
 
+  const calculateShippingCost = () => {
+    return cart?.totalAmount >= 1000 ? 0 : 50;
+  };
+
   const calculateFinalAmount = () => {
-    if (!appliedCoupon || !cart?.totalAmount) return cart?.totalAmount || 0;
+    const subtotal = cart?.totalAmount || 0;
+    const shippingCost = calculateShippingCost();
+    let finalAmount = subtotal + shippingCost;
 
-    const { discountType, discountAmount, maxDiscount } = appliedCoupon;
-    let discount = 0;
-
-    if (discountType === 'percentage') {
-      // Calculate percentage discount and cap it at maxDiscount
-      discount = Math.min((cart.totalAmount * discountAmount) / 100, maxDiscount);
-    } else {
-      // For fixed discount, use the discountAmount directly
-      discount = discountAmount;
+    if (appliedCoupon) {
+      if (appliedCoupon.discountType === 'percentage') {
+        const discount = (subtotal * appliedCoupon.discountAmount) / 100;
+        finalAmount = finalAmount - discount;
+      } else {
+        finalAmount = finalAmount - appliedCoupon.discountAmount;
+      }
     }
 
-    return Math.max(cart.totalAmount - discount, 0); // Ensure total doesn't go below 0
+    return Math.max(0, finalAmount);
   };
 
   if (cartLoading || addressLoading) {
@@ -420,14 +415,19 @@ const CheckoutPage = () => {
                     <div className="flex justify-between text-green-600">
                       <Typography>Coupon Discount</Typography>
                       <Typography>
-                        - ₹{calculateFinalAmount() - totalAmount}
+                        - ₹{calculateFinalAmount() - totalAmount - calculateShippingCost()}
                       </Typography>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <Typography color="gray">Shipping</Typography>
-                    <Typography>Free</Typography>
+                    <Typography>{totalAmount >= 1000 ? 'Free' : '₹50'}</Typography>
                   </div>
+                  {totalAmount > 0 && totalAmount < 1000 && (
+                    <Typography color="gray" className="text-sm text-center">
+                      Add ₹{1000 - totalAmount} more for free shipping
+                    </Typography>
+                  )}
                   <hr className="my-2" />
                   <div className="flex justify-between">
                     <Typography variant="h6">Total</Typography>

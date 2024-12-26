@@ -75,7 +75,7 @@ export function SalesReportTable({
           <div className="flex justify-center items-center p-4">
             <Typography>Loading sales data...</Typography>
           </div>
-        ) : !salesReport?.data || salesReport.data.length === 0 ? (
+        ) : !salesReport?.salesData || salesReport.salesData.length === 0 ? (
           <div className="flex justify-center items-center p-4">
             <Typography>No sales data found for the selected period.</Typography>
           </div>
@@ -106,7 +106,7 @@ export function SalesReportTable({
               </tr>
             </thead>
             <tbody>
-              {salesReport?.data?.map((sale, index) => (
+              {salesReport?.salesData?.map((sale, index) => (
                 <tr key={sale.orderId} className={index % 2 === 0 ? "bg-blue-gray-50/50" : ""}>
                   <td className="p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
@@ -165,10 +165,10 @@ export function SalesReportTable({
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
         <div className="flex items-center gap-2">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {salesReport?.currentPage} of {salesReport?.totalPages}
+            Page {salesReport?.pagination?.currentPage} of {salesReport?.pagination?.totalPages}
           </Typography>
           <Typography variant="small" color="blue-gray" className="font-normal">
-            ({salesReport?.totalSales} total sales)
+            ({salesReport?.pagination?.totalCount} total sales)
           </Typography>
         </div>
         <div className="flex gap-2">
@@ -184,7 +184,7 @@ export function SalesReportTable({
             variant="outlined"
             size="sm"
             onClick={handleNextPage}
-            disabled={currentPage === salesReport?.totalPages || isLoading}
+            disabled={currentPage === salesReport?.pagination?.totalPages || isLoading}
           >
             Next
           </Button>

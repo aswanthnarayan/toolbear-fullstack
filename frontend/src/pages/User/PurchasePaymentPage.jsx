@@ -37,8 +37,9 @@ const PurchasePaymentPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   
+  // Get orderId from either location state or search params
   const orderId = location.state?.orderId || searchParams.get('orderId');
-  console.log('OrderId:', orderId); // Debug orderId
+  const fromOrders = location.state?.fromOrders || false;
   
   const { data: order, isLoading: isLoadingOrder, error: orderError } = useGetOrderByIdQuery(orderId, {
     skip: !orderId
@@ -47,7 +48,7 @@ const PurchasePaymentPage = () => {
   console.log('Order:', order); // Debug order data
   console.log('Order Error:', orderError); // Debug any errors
 
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('COD');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('RAZORPAY'); // Default to Razorpay for pending payments
   const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
   const [completePayment] = useCompletePaymentMutation();
 
@@ -58,9 +59,15 @@ const PurchasePaymentPage = () => {
   useEffect(() => {
     if (!orderId) {
       toast.error('No order found');
-      navigate('/user/cart');
+      navigate(fromOrders ? '/user/profile/orders' : '/user/cart');
     }
-  }, [orderId, navigate]);
+  }, [orderId, navigate, fromOrders]);
+
+  // After successful payment
+  const handleSuccessfulPayment = () => {
+    toast.success('Payment completed successfully!');
+    navigate(fromOrders ? '/user/checkout/success':'/user/profile/orders'  );
+  };
 
   const handlePayment = async () => {
     try {
@@ -75,7 +82,7 @@ const PurchasePaymentPage = () => {
         } else {
           toast.success('Order placed successfully!');
         }
-        navigate('/user/checkout/success');
+        handleSuccessfulPayment();
       } else {
         console.log('Creating Razorpay order...');
         const razorpayResponse = await createRazorpayOrder({
@@ -111,7 +118,7 @@ const PurchasePaymentPage = () => {
             } else {
               toast.success('Payment successful!');
             }
-            navigate('/user/checkout/success');
+            handleSuccessfulPayment();
           },
           prefill: {
             name: order?.address?.name || "",
@@ -177,7 +184,7 @@ const PurchasePaymentPage = () => {
               <div className="border-t mt-4 pt-4 space-y-2">
                 <div className="flex justify-between">
                   <Typography>Subtotal:</Typography>
-                  <Typography>₹{order?.totalAmount || 0}</Typography>
+                  <Typography>₹{(order?.totalAmount - (order?.shippingAmount || 0))}</Typography>
                 </div>
                 <div className="flex justify-between">
                   <Typography>Shipping:</Typography>
@@ -185,7 +192,7 @@ const PurchasePaymentPage = () => {
                 </div>
                 <div className="flex justify-between font-bold pt-2 border-t">
                   <Typography>Total:</Typography>
-                  <Typography>₹{(order?.totalAmount + (order?.shippingAmount || 0)) || 0}</Typography>
+                  <Typography>₹{(order?.totalAmount )}</Typography>
                 </div>
               </div>
 
@@ -220,10 +227,16 @@ const PurchasePaymentPage = () => {
                     color="blue"
                     checked={selectedPaymentMethod === 'COD'}
                     onChange={() => setSelectedPaymentMethod('COD')}
+                    disabled={order?.totalAmount < 1000}
                   />
                   <div>
                     <Typography variant="h6">Cash on Delivery</Typography>
                     <Typography variant="small" color="gray">Pay when you receive the tools</Typography>
+                    {order?.totalAmount < 1000 && (
+                      <Typography variant="small" color="red" className="mt-1">
+                        COD available only on orders above ₹1,000
+                      </Typography>
+                    )}
                   </div>
                 </div>
 
@@ -244,7 +257,7 @@ const PurchasePaymentPage = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between mb-4">
                   <Typography>Amount to Pay:</Typography>
-                  <Typography variant="h6">₹{(order?.totalAmount + (order?.shippingAmount || 0)) || 0}</Typography>
+                  <Typography variant="h6">₹{order?.totalAmount || 0}</Typography>
                 </div>
 
                 <Button

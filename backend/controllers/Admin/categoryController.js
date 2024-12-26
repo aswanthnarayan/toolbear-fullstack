@@ -59,14 +59,25 @@ export const createCategory = async (req, res) => {
 export const getAllCategories = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 8;
     const search = req.query.search || "";
+    const isUserView = req.query.isUserView === 'true';
 
     const query = {
-      $or: [
-        { name: { $regex: search, $options: 'i' } },
-      ],
+      $and: [
+        {
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { desc: { $regex: search, $options: 'i' } }
+          ]
+        }
+      ]
     };
+
+    // Add isListed filter for user view
+    if (isUserView) {
+      query.$and.push({ isListed: true });
+    }
 
     const skip = (page - 1) * limit;
 
@@ -77,13 +88,14 @@ export const getAllCategories = async (req, res) => {
         .select('name desc offerPercentage isListed image cloudinary_id createdAt'),
       Category.countDocuments(query)
     ]);
+    
     const totalPages = Math.ceil(total / limit);
     
     res.status(HttpStatusEnum.OK).json({
       categories,
       currentPage: page,
       totalPages,
-      totalUsers: total,
+      totalCategories: total,
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1
     });

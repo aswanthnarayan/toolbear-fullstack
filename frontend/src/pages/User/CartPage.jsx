@@ -239,13 +239,18 @@ const CartPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <Typography color="gray">Shipping</Typography>
-                  <Typography>Free</Typography>
+                  <Typography>{totalAmount >= 1000 ? 'Free' : '₹50'}</Typography>
                 </div>
                 <hr className="my-4" />
                 <div className="flex justify-between">
                   <Typography variant="h6">Total</Typography>
-                  <Typography variant="h6">₹{totalAmount}</Typography>
+                  <Typography variant="h6">₹{totalAmount >= 1000 ? totalAmount : totalAmount + 50}</Typography>
                 </div>
+                {totalAmount > 0 && totalAmount < 1000 && (
+                  <Typography color="gray" className="text-sm text-center mt-2">
+                    Add ₹{1000 - totalAmount} more for free shipping
+                  </Typography>
+                )}
               </div>
               <Button
                 color="blue"
