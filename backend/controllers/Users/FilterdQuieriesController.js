@@ -71,3 +71,34 @@ export const getAllCategoriesOfBrand = async (req, res) => {
         });
     }
 };
+
+export const getPopularProductOfBrand = async (req, res) => {
+    try {
+        const { brandId } = req.params;
+        if (!brandId) {
+            return res.status(HttpStatusEnum.BAD_REQUEST).json({ 
+                message: 'Brand ID is required' 
+            });
+        }
+
+        const products = await Product.find({ 
+            brand: brandId,
+            isListed: true
+        }).sort({ views: -1 }).limit(5).populate('category');
+
+        if (!products) {
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+                message: 'No products found for this brand' 
+            });
+        }    
+
+        res.status(HttpStatusEnum.OK).json(products);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR 
+        });
+    }
+
+    }
+    

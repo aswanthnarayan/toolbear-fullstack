@@ -36,9 +36,14 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
       setIsInCart(true);
       toastMsg("Product added to cart", "success");
     } catch (error) {
-      console.error("Failed to add to cart:", error);
+      console.error('Failed to add to cart:', error);
+      if(error?.status === 401) {
+          toastMsg('Login to add product to cart', "error");
+      }else
+      {
       toastMsg(error.data.message, "error");
-    }
+      }
+  }
   };
 
   const handleGoToCart = (e) => {
@@ -56,8 +61,12 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
         toastMsg("Added to wishlist", "success");
       }
     } catch (error) {
-      toastMsg(error.data?.message || "Failed to update wishlist", "error");
-    }
+      if(error?.status === 401) {
+          toastMsg('Login to add product to wishlist', "error");
+      } else {
+          toastMsg(error.data?.message || 'Wishlist operation failed', "error");
+      }
+  }
   };
 
   const renderRating = (rating) => {

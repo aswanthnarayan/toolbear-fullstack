@@ -9,16 +9,19 @@ import {
   Spinner,
 } from "@material-tailwind/react";
 import { CameraIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import {useGetUserQuery,useUpdateProfileMutation} from '../../../../../App/features/rtkApis/userApi'
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from 'sonner';
-
 
 const EditProfileSection = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const {data, isLoading, error} = useGetUserQuery();
   const [updateProfile, {error: updateError, isLoading: updateLoading}] = useUpdateProfileMutation();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -81,13 +84,15 @@ const EditProfileSection = () => {
         reset({
           currentPassword: '',
           newPassword: '',
-          confirmPassword: ''
+          confirmPassword: '',
+          name: data.name,
+          phone: data.phone
         });
         setShowPasswordSection(false);
       }
       toast.success('Profile Updated Successfully')
     } catch (err) {
-      toast.error('Something went wrong. Try again')
+      toast.error(err?.data?.message || 'Something went wrong. Try again')
       console.error('Update failed:', err);
     }
   };
@@ -106,7 +111,7 @@ const EditProfileSection = () => {
         Edit Profile
       </Typography>
 
-      <div className="mb-8 flex flex-col items-center">
+      {/* <div className="mb-8 flex flex-col items-center">
         <div className="relative">
           <Avatar
             size="xxl"
@@ -126,7 +131,7 @@ const EditProfileSection = () => {
         <Typography color="gray" className="mt-2">
           Change Profile Picture
         </Typography>
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -203,58 +208,84 @@ const EditProfileSection = () => {
                 Change Password
               </Typography>
 
-              <div>
-              <Input
-                label="Current Password"
-                type="password"
-                {...register("currentPassword", {
-                  required: "Current password is required"
-                })}
-                error={errors.currentPassword?.message}
-              />
-              <p className='text-sm text-red-500'>{errors.currentPassword?.message}</p>
+              <div className="relative">
+                <Input
+                  label="Current Password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  {...register("currentPassword", {
+                    required: "Current password is required"
+                  })}
+                  error={errors.currentPassword?.message}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                >
+                  {showCurrentPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+                <p className='text-sm text-red-500'>{errors.currentPassword?.message}</p>
               </div>
-              <div>
-              <Input
-                label="New Password"
-                type="password"
-                {...register("newPassword", {
-                  required: "New password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters long"
-                  },
-                  // pattern: {
-                  //   value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-                  //   message: "Password must contain at least one letter and one number"
-                  // }
-                })}
-                error={errors.newPassword?.message}
-              />
-              <p className='text-sm text-red-500'>{errors.newPassword?.message}</p>
+
+              <div className="relative">
+                <Input
+                  label="New Password"
+                  type={showNewPassword ? "text" : "password"}
+                  {...register("newPassword", {
+                    required: "New password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters long"
+                    }
+                  })}
+                  error={errors.newPassword?.message}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                >
+                  {showNewPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+                <p className='text-sm text-red-500'>{errors.newPassword?.message}</p>
               </div>
-              <div>
-              <Input
-                label="Confirm New Password"
-                type="password"
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (value) => value === watch('newPassword') || "Passwords do not match"
-                })}
-                error={errors.confirmPassword?.message}
-              />
-              <p className='text-sm text-red-500'>{errors.confirmPassword?.message}</p>
+
+              <div className="relative">
+                <Input
+                  label="Confirm New Password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) => value === watch('newPassword') || "Passwords do not match"
+                  })}
+                  error={errors.confirmPassword?.message}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+                <p className='text-sm text-red-500'>{errors.confirmPassword?.message}</p>
               </div>
             </CardBody>
           </Card>
         )}
 
         <div className="flex justify-end gap-4">
-          {(updateError || error) && (
-            <Typography color="red" className="text-sm">
-              {updateError?.data?.message || error?.data?.message || "An error occurred"}
-            </Typography>
-          )}
           <Button 
             type="submit" 
             variant="gradient" 

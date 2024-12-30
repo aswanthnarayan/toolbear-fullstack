@@ -15,7 +15,7 @@ const ASPECT_RATIOS = {
 
 const EasyCropperModal = ({ image, onClose, onCropComplete }) => {
   const cropperRef = useRef(null);
-  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [aspectRatio, setAspectRatio] = useState('Free');
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
@@ -127,9 +127,9 @@ const EasyCropperModal = ({ image, onClose, onCropComplete }) => {
           <span className="text-sm">Zoom:</span>
           <input
             type="range"
-            min="0.1"
+            min="0"
             max="3"
-            step="0.1"
+            step="0"
             value={zoom}
             onChange={(e) => handleZoomChange(e.target.value)}
             className="w-32"

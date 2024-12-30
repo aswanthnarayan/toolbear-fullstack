@@ -101,7 +101,7 @@ function ProductCard({
                     />
                 </div>
                 <div className="p-4">
-                    <h2 className={`text-lg font-bold mb-2 line-clamp-1 hover:line-clamp-none ${
+                    <h2 className={`text-lg font-bold mb-2 line-clamp-1 ${
                         currentTheme.text
                     }`}>{name}</h2>
                     <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -142,7 +142,7 @@ function ProductCard({
                             </span>
                         )}
                     </div>
-                    <p className={`text-xs mb-3 line-clamp-2 hover:line-clamp-none ${
+                    <p className={`text-xs mb-3 line-clamp-2 ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
                         {description}

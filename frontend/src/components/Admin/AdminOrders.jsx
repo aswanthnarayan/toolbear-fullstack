@@ -177,22 +177,33 @@ const AdminOrders = () => {
                     </div>
                   </td>
                   <td className="p-4">
-                    {!['return requested', 'return approved', 'return rejected'].includes(order.status) ? (
-                      <OrderUpdateSelect 
-                        order={order}
-                        onUpdateStatus={handleStatusUpdate}
-                      />
-                    ) : (
-                      <Chip
-                        variant="gradient"
-                        color={
-                          order.status === 'return requested' ? 'amber' : 
-                          order.status === 'return approved' ? 'green' : 'red'
-                        }
-                        value={order.status}
-                        className="py-0.5 px-2 text-[11px] font-medium"
-                      />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {!['return requested', 'return approved', 'return rejected'].includes(order.status) ? (
+                        <>
+                          <OrderUpdateSelect 
+                            order={order}
+                            onUpdateStatus={handleStatusUpdate}
+                          />
+                          <Button
+                            size="sm"
+                            variant="outlined"
+                            onClick={() => navigate(`/admin/orders/${order._id}`)}
+                          >
+                            View
+                          </Button>
+                        </>
+                      ) : (
+                        <Chip
+                          variant="gradient"
+                          color={
+                            order.status === 'return requested' ? 'amber' : 
+                            order.status === 'return approved' ? 'green' : 'red'
+                          }
+                          value={order.status}
+                          className="py-0.5 px-2 text-[11px] font-medium"
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

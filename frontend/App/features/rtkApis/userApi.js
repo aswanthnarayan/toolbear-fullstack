@@ -1,19 +1,29 @@
 import { fetchBaseQuery, createApi } from "@reduxjs/toolkit/query/react";
-import { getAllCategoriesOfBrand } from "../../../../backend/controllers/Users/FilterdQuieriesController";
+import { logout } from "../slices/authSlice";
 
+const baseQuery = fetchBaseQuery({ 
+    baseUrl: '/api/user',
+    credentials: 'include',
+    prepareHeaders: (headers) => {
+        if (headers.get('Content-Type')?.includes('multipart/form-data')) {
+            headers.delete('Content-Type');
+        }
+        return headers;
+    }
+});
+
+const baseQueryWithLogout = async (args, api, extraOptions) => {
+    const result = await baseQuery(args, api, extraOptions);
+    if (result.error && result.error.status === 403) {
+        // User is blocked or unauthorized, dispatch logout
+        api.dispatch(logout());
+    }
+    return result;
+};
 
 export const userApi = createApi({
     reducerPath: 'userApi',
-    baseQuery: fetchBaseQuery({ 
-        baseUrl: '/api/user',
-        credentials: 'include',
-        prepareHeaders: (headers) => {
-            if (headers.get('Content-Type')?.includes('multipart/form-data')) {
-                headers.delete('Content-Type');
-            }
-            return headers;
-        }
-    }),
+    baseQuery: baseQueryWithLogout,
     tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet"],
     endpoints: (builder) => ({
         // Address endpoints
@@ -170,7 +180,7 @@ export const userApi = createApi({
   }),
   // Coupon endpoints
   getAvailableCoupons: builder.query({
-    query: () => '/coupons',
+    query: ({ page = 1, limit = 5 }) => `/coupons?page=${page}&limit=${limit}`,
     providesTags: ['Coupons']
   }),
   validateCoupon: builder.query({
@@ -179,7 +189,7 @@ export const userApi = createApi({
   }),
   // Wallet endpoints
   getWallet: builder.query({
-    query: () => '/wallet',
+    query: ({ page = 1, limit = 10 }) => `/wallet?page=${page}&limit=${limit}`,
     providesTags: ['Wallet']
   }),
   processRefund: builder.mutation({

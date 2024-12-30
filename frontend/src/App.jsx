@@ -46,6 +46,8 @@ import AddCouponPage from "./pages/Admin/AddCouponPage";
 import FilterdCatefgoryOrBrandPage from "./pages/User/FilterdCatefgoryOrBrandPage";
 import BrandStore from "./components/Users/BrandStore";
 import OrderDetailsPage from "./pages/User/OrderDetailsPage";
+import AdminSingleOrderPage from "./pages/Admin/AdminSingleOrderPage";
+import AdminBannerPage from "./pages/Admin/AdminBannerPage";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -106,9 +108,12 @@ function App() {
           <Route path="products/new" element={<AddProductPage/>} />
           <Route path="products/edit/:id" element={<EditProductPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/:orderId" element={<AdminSingleOrderPage />} />
           <Route path="orders/return" element={<ReturnedRequestPage />} />
           <Route path="coupons" element={<AdminCouponPage />} />
           <Route path="/admin/coupons/new" element={<AddCouponPage />} />
+          <Route path="/admin/banners" element={<AdminBannerPage />} />
+
 
         </Route>
       </Route>

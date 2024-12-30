@@ -9,12 +9,14 @@ import {
   Spinner,
   List,
   ListItem,
-  ListItemPrefix
+  ListItemPrefix,
+  Alert
 } from "@material-tailwind/react";
 import { 
   useGetOrderByIdQuery,
   useCreateRazorpayOrderMutation,
-  useCompletePaymentMutation
+  useCompletePaymentMutation,
+  useGetWalletQuery
 } from '../../../App/features/rtkApis/userApi';
 import { toast } from 'sonner';
 
@@ -48,9 +50,12 @@ const PurchasePaymentPage = () => {
   console.log('Order:', order); // Debug order data
   console.log('Order Error:', orderError); // Debug any errors
 
+  const { data: wallet } = useGetWalletQuery({ page: 1, limit: 1 });
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('RAZORPAY'); // Default to Razorpay for pending payments
   const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
   const [completePayment] = useCompletePaymentMutation();
+
+  const insufficientWalletBalance = wallet?.balance < (order?.totalAmount || 0);
 
   useEffect(() => {
     loadRazorpayScript();
@@ -66,7 +71,7 @@ const PurchasePaymentPage = () => {
   // After successful payment
   const handleSuccessfulPayment = () => {
     toast.success('Payment completed successfully!');
-    navigate(fromOrders ? '/user/checkout/success':'/user/profile/orders'  );
+    navigate('/user/checkout/success');
   };
 
   const handlePayment = async () => {
@@ -81,6 +86,19 @@ const PurchasePaymentPage = () => {
           toast.info('Order is already processed');
         } else {
           toast.success('Order placed successfully!');
+        }
+        handleSuccessfulPayment();
+      } else if (selectedPaymentMethod === 'WALLET') {
+        // Handle wallet payment
+        const result = await completePayment({
+          orderId,
+          paymentMethod: 'WALLET'
+        }).unwrap();
+
+        if (result.message === "Order already processed") {
+          toast.info('Order is already processed');
+        } else {
+          toast.success('Payment successful using wallet balance!');
         }
         handleSuccessfulPayment();
       } else {
@@ -135,7 +153,7 @@ const PurchasePaymentPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error(error.data?.error || 'Payment failed');
+      toast.error(error?.data?.message || 'Payment failed. Please try again.');
     }
   };
 
@@ -235,6 +253,27 @@ const PurchasePaymentPage = () => {
                     {order?.totalAmount < 1000 && (
                       <Typography variant="small" color="red" className="mt-1">
                         COD available only on orders above ₹1,000
+                      </Typography>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                  <Radio
+                    name="payment"
+                    color="blue"
+                    checked={selectedPaymentMethod === 'WALLET'}
+                    onChange={() => setSelectedPaymentMethod('WALLET')}
+                    disabled={insufficientWalletBalance}
+                  />
+                  <div>
+                    <Typography variant="h6">Pay using Wallet</Typography>
+                    <Typography variant="small" color="gray">
+                      Available Balance: ₹{wallet?.balance || 0}
+                    </Typography>
+                    {insufficientWalletBalance && (
+                      <Typography variant="small" color="red">
+                        Insufficient balance
                       </Typography>
                     )}
                   </div>

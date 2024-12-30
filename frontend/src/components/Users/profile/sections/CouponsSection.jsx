@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Typography,
   Card,
@@ -7,9 +7,14 @@ import {
   Spinner
 } from "@material-tailwind/react";
 import { useGetAvailableCouponsQuery } from '../../../../../App/features/rtkApis/userApi';
+import Pagination from '../../Pagination';
 
 const CouponsSection = () => {
-  const { data: coupons, isLoading, error } = useGetAvailableCouponsQuery();
+  const [page, setPage] = useState(1);
+  const { data, isLoading, error } = useGetAvailableCouponsQuery({ 
+    page, 
+    limit: 5 
+  });
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
@@ -34,72 +39,61 @@ const CouponsSection = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <Typography variant="h6" color="blue-gray" className="mb-4">
         Available Coupons
       </Typography>
 
-      <div className="grid gap-4">
-        {!coupons || coupons.length === 0 ? (
-          <Card>
-            <CardBody>
-              <Typography>No coupons available at the moment.</Typography>
-            </CardBody>
-          </Card>
-        ) : (
-          coupons.map((coupon) => (
-            <Card key={coupon._id} className="hover:shadow-lg transition-shadow">
-              <CardBody>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <Typography variant="h6" color="blue-gray" className="font-bold">
-                      {coupon.code}
-                    </Typography>
-                    <Typography variant="small" color="gray" className="font-normal">
-                      {coupon.description}
-                    </Typography>
-                  </div>
-                  <Chip
-                    size="sm"
-                    variant="gradient"
-                    value={coupon.discountType === 'percentage' ? `${coupon.discountAmount}% OFF` : `₹${coupon.discountAmount} OFF`}
-                    color="green"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-                  <div>
-                    <Typography variant="small" color="gray" className="font-semibold">
-                      Min. Purchase
-                    </Typography>
-                    <Typography variant="small" className="font-normal">
-                      ₹{coupon.minimumPurchase}
-                    </Typography>
-                  </div>
-                  {coupon.maxDiscount > 0 && (
-                    <div>
-                      <Typography variant="small" color="gray" className="font-semibold">
-                        Max Discount
-                      </Typography>
-                      <Typography variant="small" className="font-normal">
-                        ₹{coupon.maxDiscount}
-                      </Typography>
-                    </div>
-                  )}
-                  <div className="col-span-2">
-                    <Typography variant="small" color="gray" className="font-semibold">
-                      Valid Till
-                    </Typography>
-                    <Typography variant="small" className="font-normal">
-                      {formatDate(coupon.expiryDate)}
-                    </Typography>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          ))
-        )}
-      </div>
+      {data?.coupons?.map((coupon) => (
+        <Card key={coupon._id} className="mb-4">
+          <CardBody>
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <Typography variant="h5" color="blue-gray">
+                  {coupon.code}
+                </Typography>
+                <Typography color="gray" className="text-sm mb-2">
+                  {coupon.description}
+                </Typography>
+              </div>
+              <Chip
+                value={`${coupon.discountType === 'percentage' ? coupon.discountAmount + '%' : '₹' + coupon.discountAmount} OFF`}
+                color="green"
+              />
+            </div>
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <div>
+                Min. Purchase: ₹{coupon.minimumPurchase}
+              </div>
+              <div>
+                Expires: {formatDate(coupon.expiryDate)}
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      ))}
+
+      {/* Pagination */}
+      {data?.coupons?.length > 0 && (
+        <div className="mt-4">
+          <Pagination
+            currentPage={page}
+            totalPages={data?.pagination?.totalPages}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo(0, 0);
+            }}
+          />
+        </div>
+      )}
+
+      {data?.coupons?.length === 0 && (
+        <Card>
+          <CardBody>
+            <Typography className="text-center">No coupons available at the moment.</Typography>
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 };

@@ -162,7 +162,7 @@ const OrdersSection = () => {
                     value={order.status}
                     color={getStatusColor(order.status)}
                   />
-                  {order.paymentStatus === 'Pending' && (
+                  {order.paymentStatus === 'Pending' && order.status !== 'Cancelled' && order.paymentMethod !== 'COD' && (
                     <Button
                       variant="gradient"
                       color="blue"

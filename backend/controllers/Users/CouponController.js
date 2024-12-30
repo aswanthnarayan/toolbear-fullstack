@@ -3,14 +3,34 @@ import HttpStatusEnum from "../../constants/httpStatus.js";
 
 export const getAvailableCoupons = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+        
         const currentDate = new Date();
         
-        // Fetch active coupons that are currently valid
-        const coupons = await Coupon.find({ // Start date is less than or equal to current date
-            expiryDate: { $gt: currentDate }   // Expiry date is greater than current date
-        }).sort({ createdAt: -1 });  // Sort by newest first
+        // Get total count of coupons
+        const totalCoupons = await Coupon.countDocuments({
+            expiryDate: { $gt: currentDate }
+        });
+        
+        // Fetch paginated active coupons
+        const coupons = await Coupon.find({
+            expiryDate: { $gt: currentDate }
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
-        res.status(HttpStatusEnum.OK).json(coupons);
+        res.status(HttpStatusEnum.OK).json({
+            coupons,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCoupons / limit),
+                totalCoupons,
+                hasMore: skip + limit < totalCoupons
+            }
+        });
     } catch (error) {
         console.error("Error fetching available coupons:", error);
         res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 

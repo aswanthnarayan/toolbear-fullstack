@@ -63,6 +63,14 @@ export function Sidebar() {
               Coupons
             </NavLink>
           </ListItem>
+          <ListItem>
+            <NavLink to="/admin/banners" className="flex items-center p-2 w-full">
+              <ListItemPrefix>
+                {/* Coupons Icon */}
+              </ListItemPrefix>
+              Banners
+            </NavLink>
+          </ListItem>
         </List>
       </div>
     </React.Fragment>

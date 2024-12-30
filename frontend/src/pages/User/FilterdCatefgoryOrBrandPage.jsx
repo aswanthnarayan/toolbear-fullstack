@@ -10,7 +10,7 @@ import {
   useGetBrandByIdQuery 
 } from '../../../App/features/rtkApis/adminApi';
 import { Spinner } from "@material-tailwind/react";
-import {Toaster} from 'sonner'
+import {Toaster,toast} from 'sonner'
 import SortSelect from '../../components/SortSelect';
 import { useGetWishlistQuery } from '../../../App/features/rtkApis/userApi';
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CustomInput from "../CustomInput.jsx";
 import CustomButton from "../CustomButton.jsx";
 import googleIcon from "../../assets/google.png";
@@ -8,11 +8,13 @@ import { useSignInMutation, useSignUpGoogleMutation } from '../../../App/feature
 import { useSelector } from 'react-redux';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config.js';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const SignIn = () => {
   const [signIn, { isLoading }] = useSignInMutation();
   const [signUpGoogle] = useSignUpGoogleMutation();
   const [generalError, setGeneralError] = React.useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const theme = useSelector((state) => state.theme.theme);
@@ -32,19 +34,16 @@ const SignIn = () => {
       const { user } = result;
       
       try {
-        // Try to sign in or sign up with Google
         const response = await signUpGoogle({
           email: user.email,
           name: user.displayName,
         }).unwrap();
         
         if (response.message === 'New user created' && response.isNewUser) {
-          // New user - redirect to complete profile
           navigate('/user/complete-signup', { 
             state: { email: user.email }
           });
         } else {
-          // Existing user - navigate based on role
           if (response.user.role === "admin") {
             navigate("/admin/dashboard");
           } else {
@@ -121,7 +120,7 @@ const SignIn = () => {
         </div>
       )}
       
-      <form className="space-y-5" >
+      <form className="space-y-5">
         <div className="space-y-5">
           <div className="transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
@@ -139,11 +138,11 @@ const SignIn = () => {
             />
           </div>
 
-          <div className="transform transition-all duration-300 hover:translate-x-1">
+          <div className="relative transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
               label="Password"
               placeholder="Enter your password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -153,6 +152,17 @@ const SignIn = () => {
               })}
               error={errors.password?.message}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className={`absolute right-3 top-[31px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${currentTheme.text}`}
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="h-5 w-5" />
+              ) : (
+                <EyeIcon className="h-5 w-5" />
+              )}
+            </button>
           </div>
 
           <div className="flex justify-end">

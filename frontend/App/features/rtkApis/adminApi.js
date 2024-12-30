@@ -1,18 +1,20 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const baseQuery = fetchBaseQuery({ 
+    baseUrl: '/api/admin',
+    credentials: 'include',
+    prepareHeaders: (headers) => {
+        if (headers.get('Content-Type')?.includes('multipart/form-data')) {
+            headers.delete('Content-Type');
+        }
+        return headers;
+    }
+});
+
 export const adminApi = createApi({
     reducerPath: 'adminApi',
-    baseQuery: fetchBaseQuery({ 
-        baseUrl: '/api/admin',
-        credentials: 'include',
-        prepareHeaders: (headers) => {
-            if (headers.get('Content-Type')?.includes('multipart/form-data')) {
-                headers.delete('Content-Type');
-            }
-            return headers;
-        }
-    }),
-    tagTypes: ['Users', 'Categories', 'Brands', 'Products', 'Orders', 'Coupons'],
+    baseQuery,
+    tagTypes: ['Users', 'Categories', 'Brands', 'Products', 'Orders', 'Coupons', 'Banners'],
     endpoints: (builder) => ({
         //User management
         getUsers: builder.query({
@@ -315,8 +317,20 @@ export const adminApi = createApi({
                 responseHandler: (response) => response.blob()
             })
         }),
-        //Sales management
-   
+        // Banner Management
+        getBanners: builder.query({
+            query: () => '/banners',
+            providesTags: ['Banners']
+        }),
+        updateBanners: builder.mutation({
+            query: (formData) => ({
+                url: '/banners/update',
+                method: 'POST',
+                body: formData,
+                formData: true
+            }),
+            invalidatesTags: ['Banners']
+        }),
     })
 });
 
@@ -353,4 +367,6 @@ export const {
     useGetTopSellingProductsQuery,
     useGetTopSellingCategoriesQuery,
     useGetTopSellingBrandsQuery,
+    useGetBannersQuery,
+    useUpdateBannersMutation,
 } = adminApi;

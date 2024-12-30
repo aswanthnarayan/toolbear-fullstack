@@ -5,7 +5,8 @@ import { authApi } from '../rtkApis/authApi.js';
 const extractMinimalUserData = (user) => ({
   // _id: user._id,
   role: user.role,
-  isVerified: user.isVerified
+  isVerified: user.isVerified,
+  isBlocked: user.isBlocked
 });
 
 const authSlice = createSlice({
@@ -16,6 +17,9 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      // Clear any stored auth data
+      localStorage.removeItem('user');
+      
     },
   },
   extraReducers: (builder) => {

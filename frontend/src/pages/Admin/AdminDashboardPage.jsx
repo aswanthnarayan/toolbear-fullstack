@@ -189,7 +189,7 @@ const Dashboard = () => {
       <SummaryCards summaryData={summaryData} />
 
       <div className="mb-6">
-        <SalesChart salesData={salesReport?.data || []} filterType={filterType} />
+        <SalesChart salesData={salesReport?.salesData || []} filterType={filterType} />
       </div>
 
       {/* Sales Table */}

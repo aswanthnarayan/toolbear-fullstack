@@ -12,11 +12,14 @@ const ORDER_STATUSES = [
     "Order Placed",
     "Processing",
     "Shipped",
-    "Out for delivery",
     "Delivered",
     "Cancelled",
     "Returned"
 ];
+
+const getStatusIndex = (status) => {
+    return ORDER_STATUSES.indexOf(status);
+};
 
 const OrderUpdateSelect = ({ order, onUpdateStatus }) => {
     
@@ -47,7 +50,14 @@ const OrderUpdateSelect = ({ order, onUpdateStatus }) => {
                 disabled={order.status === "Delivered"||order.status === "Cancelled"}
             >
                 {ORDER_STATUSES.map((status) => (
-                    <option key={status} value={status} disabled={status === order.status}>
+                    <option 
+                        key={status} 
+                        value={status} 
+                        disabled={
+                            status === order.status || 
+                            getStatusIndex(status) < getStatusIndex(order.status)
+                        }
+                    >
                         {status}
                     </option>
                 ))}

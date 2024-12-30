@@ -2,6 +2,7 @@ import Order from "../../models/OrderSchema.js";
 import User from "../../models/UserSchema.js";
 import { Product } from "../../models/ProductSchema.js";
 import Cart from "../../models/CartSchema.js"; 
+import Wallet from "../../models/WalletSchema.js"; // Import Wallet model
 import HttpStatusEnum from "../../constants/httpStatus.js";
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
@@ -120,6 +121,54 @@ export const completePayment = async (req, res) => {
             order.paymentMethod = 'COD';
             order.paymentStatus = 'Pending';  
             order.status = 'Order Placed';    
+        } else if (paymentMethod === 'WALLET') {
+            try {
+                // First check if wallet has sufficient balance
+                const wallet = await Wallet.findOne({ userId: req.user._id });
+                if (!wallet || wallet.balance < order.totalAmount) {
+                    return res.status(400).json({ message: 'Insufficient wallet balance' });
+                }
+
+                // First update the order status
+                order.paymentStatus = 'Paid';
+                order.orderStatus = 'Order Placed';
+                order.paymentMethod = 'WALLET';
+                await order.save();
+
+                // Then update wallet balance
+                try {
+                    await Wallet.findOneAndUpdate(
+                        { userId: req.user._id },
+                        {
+                            $inc: { balance: -order.totalAmount },
+                            $push: {
+                                transactions: {
+                                    type: 'debit',
+                                    amount: order.totalAmount,
+                                    description: `Payment for order #${orderId}`,
+                                    orderId: orderId,
+                                    date: new Date()
+                                }
+                            }
+                        },
+                        { new: true }
+                    );
+                } catch (walletError) {
+                    // If wallet update fails, revert order status
+                    order.paymentStatus = 'Failed';
+                    order.orderStatus = 'Payment Failed';
+                    order.paymentMethod = 'PENDING';
+                    await order.save();
+                    throw new Error('Wallet update failed');
+                }
+
+                return res.status(200).json({ message: 'Payment completed successfully' });
+            } catch (error) {
+                console.error('Wallet payment error:', error);
+                return res.status(500).json({ 
+                    message: error.message || 'Payment failed. Please try again.' 
+                });
+            }
         } else {
             // Verify Razorpay payment
             const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentDetails;

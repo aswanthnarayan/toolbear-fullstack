@@ -3,7 +3,7 @@ import { getAllUsers, toggleBlockUser } from '../controllers/Admin/userControlle
 import { createCategory, getAllCategories, updateCategory, toggleListCategory, getCategoryById } from '../controllers/Admin/categoryController.js';
 import { createBrand, getAllBrands, updateBrand, toggleListBrand, getBrandById } from '../controllers/Admin/brandController.js';
 import { createProduct, getAllProducts, updateProduct, toggleListProduct, getProductById } from '../controllers/Admin/productController.js';
-import { handleSingleUpload, handleBrandUpload, handleProductUpload } from '../middleware/multerMiddleWare.js';
+import { handleSingleUpload, handleBrandUpload, handleProductUpload,handleBannerUpload } from '../middleware/multerMiddleWare.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
 import { 
     getAllOrders, 
@@ -25,6 +25,11 @@ import {
     downloadSalesExcel,
     getTopSellingItems
 } from '../controllers/Admin/salesController.js';
+
+import {
+    getBanners,
+    updateBanners
+} from '../controllers/Admin/bannerController.js';
 
 const router = express.Router();
 
@@ -72,6 +77,10 @@ router.get('/coupons', protect, adminOnly, getAllCoupons);
 router.post('/coupons/new', protect, adminOnly, createCoupon);
 router.delete('/coupons/:couponId', protect, adminOnly, deleteCoupon);
 // router.patch('/coupons/:couponId/toggle-status', protect, adminOnly, toggleCouponStatus);
+
+
+router.get('/banners', getBanners);
+router.post('/banners/update', protect, adminOnly, handleBannerUpload, updateBanners);
 
 
 export default router;

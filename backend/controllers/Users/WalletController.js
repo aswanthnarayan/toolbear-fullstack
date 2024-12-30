@@ -5,13 +5,33 @@ import Order from '../../models/OrderSchema.js';
 export const getWallet = async (req, res) => {
   try {
     const userId = req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     let wallet = await Wallet.findOne({ userId });
     
     if (!wallet) {
       wallet = await Wallet.create({ userId, balance: 0 });
     }
 
-    res.status(200).json(wallet);
+    // Get total count of transactions
+    const totalTransactions = wallet.transactions.length;
+
+    // Get paginated transactions in reverse order
+    const reversedTransactions = [...wallet.transactions].reverse();
+    const paginatedTransactions = reversedTransactions.slice(skip, skip + limit);
+
+    res.status(200).json({
+      balance: wallet.balance,
+      transactions: paginatedTransactions,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalTransactions / limit),
+        totalTransactions,
+        hasMore: skip + limit < totalTransactions
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching wallet details', error: error.message });
   }

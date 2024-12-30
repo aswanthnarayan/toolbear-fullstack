@@ -5,39 +5,134 @@ import {
   Typography,
   Button,
 } from "@material-tailwind/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { 
   UserGroupIcon, 
   BuildingStorefrontIcon,
   PhoneIcon,
   TrophyIcon 
 } from "@heroicons/react/24/solid";
+import { useGetBannersQuery } from '../../../App/features/rtkApis/adminApi';
 
 const DealsPage = () => {
   const navigate = useNavigate();
+  const { data: bannersData, isLoading: isLoadingBanners } = useGetBannersQuery();
+
+  if (isLoadingBanners) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-[124px]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    );
+  }
+
+  // Create a copy of the array before sorting
+  const sortedBanners = bannersData?.banners ? [...bannersData.banners].sort((a, b) => a.position - b.position) : [];
 
   return (
     <div className="container mx-auto p-4 pt-[124px]">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <Card className="md:col-span-8 bg-[#002B5C] text-white min-h-[444px] h-full">
-          <CardBody className="p-8 flex flex-col justify-between h-full">
-            
-          </CardBody>
+        {/* Main Banner */}
+        <Card className="md:col-span-8 bg-[#002B5C] h-[444px] overflow-hidden">
+          {sortedBanners[0] ? (
+            <Link to={`/brand/${sortedBanners[0].brandId?._id}`} className="h-full">
+              <CardBody className="p-0 h-full relative">
+                <img
+                  src={sortedBanners[0].imageUrl}
+                  alt={sortedBanners[0].brandId?.name || "Featured Brand"}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/30 p-8 flex flex-col justify-end">
+                  <Typography variant="h2" className="text-white mb-2">
+                    {sortedBanners[0].brandId?.name || "Featured Brand"}
+                  </Typography>
+                  <Typography variant="lead" className="text-white/80 mb-4">
+                    {sortedBanners[0].brandId?.description || "Explore our collection of quality tools"}
+                  </Typography>
+                  <Button 
+                    size="lg" 
+                    color="yellow"
+                    className="w-fit hover:shadow-lg hover:shadow-yellow-500/40"
+                  >
+                    Shop Now
+                  </Button>
+                </div>
+              </CardBody>
+            </Link>
+          ) : (
+            <CardBody className="h-full flex items-center justify-center">
+              <Typography variant="h3" className="text-white">
+                Featured Brand Coming Soon
+              </Typography>
+            </CardBody>
+          )}
         </Card>
 
-        <div className="md:col-span-4 space-y-6 min-h-[444px]">
-          {/* DEWALT Card */}
-          <Card className="bg-[#FFD600] min-h-[222px]">
-            <CardBody className="p-8">
-             
-            </CardBody>
+        <div className="md:col-span-4 grid grid-rows-2 gap-6 h-[444px]">
+          {/* Second Banner */}
+          <Card className="bg-[#FFD600] h-[214px] overflow-hidden">
+            {sortedBanners[1] ? (
+              <Link to={`/brand/${sortedBanners[1].brandId?._id}`} className="h-full">
+                <CardBody className="p-0 h-full relative">
+                  <img
+                    src={sortedBanners[1].imageUrl}
+                    alt={sortedBanners[1].brandId?.name || "Featured Brand"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 p-6 flex flex-col justify-end">
+                    <Typography variant="h4" className="text-white mb-2">
+                      {sortedBanners[1].brandId?.name || "Featured Brand"}
+                    </Typography>
+                    <Button 
+                      size="sm" 
+                      color="white"
+                      className="w-fit hover:shadow-lg"
+                    >
+                      Shop Now
+                    </Button>
+                  </div>
+                </CardBody>
+              </Link>
+            ) : (
+              <CardBody className="h-full flex items-center justify-center">
+                <Typography variant="h5">
+                  Featured Brand Coming Soon
+                </Typography>
+              </CardBody>
+            )}
           </Card>
 
-          {/* EGO Card */}
-          <Card className="bg-[#7AB800] min-h-[222px]">
-            <CardBody className="p-8">
-             
-            </CardBody>
+          {/* Third Banner */}
+          <Card className="bg-[#7AB800] h-[214px] overflow-hidden">
+            {sortedBanners[2] ? (
+              <Link to={`/brand/${sortedBanners[2].brandId?._id}`} className="h-full">
+                <CardBody className="p-0 h-full relative">
+                  <img
+                    src={sortedBanners[2].imageUrl}
+                    alt={sortedBanners[2].brandId?.name || "Featured Brand"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 p-6 flex flex-col justify-end">
+                    <Typography variant="h4" className="text-white mb-2">
+                      {sortedBanners[2].brandId?.name || "Featured Brand"}
+                    </Typography>
+                    <Button 
+                      size="sm" 
+                      color="white"
+                      className="w-fit hover:shadow-lg"
+                    >
+                      Shop Now
+                    </Button>
+                  </div>
+                </CardBody>
+              </Link>
+            ) : (
+              <CardBody className="h-full flex items-center justify-center">
+                <Typography variant="h5">
+                  Featured Brand Coming Soon
+                </Typography>
+              </CardBody>
+            )}
           </Card>
         </div>
       </div>

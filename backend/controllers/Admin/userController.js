@@ -52,20 +52,22 @@ export const getAllUsers = async (req, res) => {
 export const toggleBlockUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findById(userId);
 
+        // Find user and get current blocked status
+        const user = await User.findById(userId);
         if (!user) {
-            return res.status(HttpStatusEnum.NOT_FOUND).json({
-                message: MessageEnum.Admin.USER_NOT_FOUND
+            return res.status(HttpStatusEnum.NOT_FOUND).json({ 
+                message: 'User not found' 
             });
         }
 
-        // Toggle isBlocked status
+        // Toggle the blocked status
         user.isBlocked = !user.isBlocked;
         await user.save();
 
         res.status(HttpStatusEnum.OK).json({
-            message: user.isBlocked ? MessageEnum.Admin.USER_BLOCKED : MessageEnum.Admin.USER_UNBLOCKED,
+            message: user.isBlocked ? 'User blocked successfully' : 'User unblocked successfully',
+            userId: user._id,
             isBlocked: user.isBlocked
         });
     } catch (error) {

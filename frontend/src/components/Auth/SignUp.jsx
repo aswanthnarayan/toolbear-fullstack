@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from 'react-redux';
@@ -8,7 +8,7 @@ import googleIcon from '../../assets/google.png';
 import { useSignUpGoogleMutation, useVerifyEmailMutation } from '../../../App/features/rtkApis/authApi';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config.js';
-
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const SignUp = () => {
   const [sendOtp, { isLoading: isOtpLoading },] = useVerifyEmailMutation();
@@ -17,6 +17,8 @@ const SignUp = () => {
   const theme = useSelector((state) => state.theme.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [signUpGoogle] = useSignUpGoogleMutation();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRePassword, setShowRePassword] = useState(false);
 
   const {
     register,
@@ -178,26 +180,36 @@ const SignUp = () => {
             />
           </div>
           
-          <div className="transform transition-all duration-300 hover:translate-x-1">
+          <div className="relative transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
               label="Password"
               placeholder="Enter your password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               {...register("password", {
                 required: "Password is required",
                 minLength: { value: 6, message: "Password must be at least 6 characters long" },
                 validate: (value) => value.trim() !== "" || "Password cannot be empty or spaces only"
-
               })}
               error={errors.password?.message}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className={`absolute right-3 top-[31px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${currentTheme.text}`}
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="h-5 w-5" />
+              ) : (
+                <EyeIcon className="h-5 w-5" />
+              )}
+            </button>
           </div>
           
-          <div className="transform transition-all duration-300 hover:translate-x-1">
+          <div className="relative transform transition-all duration-300 hover:translate-x-1">
             <CustomInput
               label="Re-Enter Password"
               placeholder="Re-Enter your password"
-              type="password"
+              type={showRePassword ? "text" : "password"}
               {...register("reEnterPassword", {
                 required: "Please re-enter your password",
                 validate: {
@@ -209,6 +221,17 @@ const SignUp = () => {
               })}
               error={errors.reEnterPassword?.message}
             />
+            <button
+              type="button"
+              onClick={() => setShowRePassword(!showRePassword)}
+              className={`absolute right-3 top-[31px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${currentTheme.text}`}
+            >
+              {showRePassword ? (
+                <EyeSlashIcon className="h-5 w-5" />
+              ) : (
+                <EyeIcon className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
 

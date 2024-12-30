@@ -6,6 +6,7 @@ import { useGetAllCategoriesOfBrandQuery } from '../../../App/features/rtkApis/u
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import RelatedProducts from './RelatedProducts';
+import ScrollableContainer from './ScrollableContainer';
 
 const BrandStore = () => {
   const { id } = useParams();
@@ -131,59 +132,34 @@ const BrandStore = () => {
         <div className="relative px-4 py-8">
           <h2 className={`text-2xl font-bold mb-6 ${currentTheme.text}`}>Shop by Category</h2>
           
-          {/* Categories Container */}
-          <div className="relative">
-            <div className="overflow-x-auto scrollbar-hide scroll-smooth" style={{ scrollBehavior: 'smooth' }}>
-              <div className="flex space-x-6 pb-4">
-                {categories?.map((category) => (
-                  <Link 
-                    key={category._id} 
-                    to={`/category/${category._id}?brand=${id}`}
-                    className="flex-none"
-                  >
-                    <div className={`w-48 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ${currentTheme.cardBg}`}>
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={category.image || 'https://via.placeholder.com/200'} 
-                          alt={category.name}
-                          className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className={`text-lg font-semibold truncate ${currentTheme.text}`}>
-                          {category.name}
-                        </h3>
-                        <p className={`text-sm mt-1 ${currentTheme.textSecondary}`}>
-                          {category.description || 'Explore products'}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Navigation Buttons */}
-            <button
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-0"
-              onClick={() => {
-                const container = document.querySelector('.overflow-x-auto');
-                container.scrollBy({ left: -300, behavior: 'smooth' });
-              }}
-            >
-              <ChevronLeftIcon className="h-6 w-6 text-gray-800" />
-            </button>
-            
-            <button
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-0"
-              onClick={() => {
-                const container = document.querySelector('.overflow-x-auto');
-                container.scrollBy({ left: 300, behavior: 'smooth' });
-              }}
-            >
-              <ChevronRightIcon className="h-6 w-6 text-gray-800" />
-            </button>
-          </div>
+          <ScrollableContainer>
+            {categories?.map((category) => (
+              <Link 
+                key={category._id} 
+                to={`/category/${category._id}?brand=${id}`}
+                className="flex-none group"
+              >
+                <div className={`w-52 rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 ${currentTheme.cardBg}`}>
+                  <div className="h-52 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-all duration-300 z-10"></div>
+                    <img
+                      src={category.image || 'https://via.placeholder.com/200'} 
+                      alt={category.name}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-all duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className={`text-lg font-semibold truncate ${currentTheme.text} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300`}>
+                      {category.name}
+                    </h3>
+                    <p className={`text-sm mt-1 ${currentTheme.textSecondary} opacity-75 group-hover:opacity-100 transition-opacity duration-300`}>
+                      {category.description || 'Explore products'}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </ScrollableContainer>
         </div>
 
         {/* About Section with Accordion */}
