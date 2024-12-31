@@ -119,19 +119,19 @@ const FilterdCatefgoryOrBrandPage = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
+    <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
       <div className="flex relative">
         {/* Main Content */}
         <div className="flex-1">
           <div className="max-w-[1920px] mx-auto px-4 py-8">
             <div className='flex justify-between items-center'>
-              <Breadcrumbs className="bg-transparent">
-                <Link to="/" className="opacity-60 flex items-center gap-2">
+              <Breadcrumbs className="bg-transparent p-0">
+                <Link to="/" className={`${currentTheme.text} opacity-60 flex items-center gap-2 hover:text-blue-500`}>
                   <HomeIcon className="h-4 w-4" /> Home
                 </Link>
                 <Link 
                   to={filterType === 'category' ? "/user/categories" : "/user/brands"} 
-                  className="opacity-60"
+                  className={`${currentTheme.text} opacity-60 hover:text-blue-500`}
                 >
                   {filterType === 'category' ? 'Categories' : 'Brands'}
                 </Link>
@@ -150,10 +150,10 @@ const FilterdCatefgoryOrBrandPage = () => {
 
             {productsLoading ? (
               <div className="flex justify-center items-center min-h-[400px]">
-                <Spinner className="h-12 w-12" />
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
               </div>
             ) : error ? (
-              <div className="text-center text-red-500 my-8">
+              <div className={`text-center ${currentTheme.accent} my-8`}>
                 Error loading products. Please try again later.
               </div>
             ) : (
@@ -161,21 +161,22 @@ const FilterdCatefgoryOrBrandPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {productsData?.products.map((product) => (
                     <ProductCard
-                    id={product._id}
-                    image={product.mainImage?.imageUrl || product.mainImage}
-                    name={product.name}
-                    brand={product.brand?.name || 'Unknown Brand'}
-                    rating={4.5}
-                    reviews={128}
-                    price={product.price}
-                    maxOfferPercentage={product.maxOfferPercentage}
-                    sellingPrice={product.sellingPrice}
-                    description={product.desc}
-                    stock={product.stock}
-                    isInWishlist={isProductInWishlist(product._id)}
-                    onWishlistChange={handleWishlistChange}
-                    toastMsg={handleToast}
-                  />
+                      key={product._id}
+                      id={product._id}
+                      image={product.mainImage?.imageUrl || product.mainImage}
+                      name={product.name}
+                      brand={product.brand?.name || 'Unknown Brand'}
+                      rating={4.5}
+                      reviews={128}
+                      price={product.price}
+                      maxOfferPercentage={product.maxOfferPercentage}
+                      sellingPrice={product.sellingPrice}
+                      description={product.desc}
+                      stock={product.stock}
+                      isInWishlist={isProductInWishlist(product._id)}
+                      onWishlistChange={handleWishlistChange}
+                      toastMsg={handleToast}
+                    />
                   ))}
                 </div>
 
@@ -191,7 +192,7 @@ const FilterdCatefgoryOrBrandPage = () => {
                   <div className="text-center mt-8">
                     <button
                       onClick={handleLoadMore}
-                      className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition-colors"
+                      className={`${currentTheme.button} ${currentTheme.buttonHover} text-black px-6 py-2 rounded-md transition-colors`}
                     >
                       Load More
                     </button>
@@ -202,9 +203,9 @@ const FilterdCatefgoryOrBrandPage = () => {
           </div>
         </div>
       </div>
-      <Toaster position="top-right" richColors />
+      <Toaster richColors position="top-right" />
     </div>
-  )
+  );
 }
 
 export default FilterdCatefgoryOrBrandPage

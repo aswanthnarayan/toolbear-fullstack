@@ -8,8 +8,11 @@ import {
 } from "@material-tailwind/react";
 import { useGetAvailableCouponsQuery } from '../../../../../App/features/rtkApis/userApi';
 import Pagination from '../../Pagination';
+import { useSelector } from 'react-redux';
 
 const CouponsSection = () => {
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useGetAvailableCouponsQuery({ 
     page, 
@@ -30,29 +33,31 @@ const CouponsSection = () => {
 
   if (error) {
     return (
-      <Card className="mt-4">
+      <Card className={`mt-4 ${currentTheme.secondary}`}>
         <CardBody>
-          <Typography color="red">Failed to load coupons. Please try again later.</Typography>
+          <Typography className="text-red-500">
+            Failed to load coupons. Please try again later.
+          </Typography>
         </CardBody>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <Typography variant="h6" color="blue-gray" className="mb-4">
+    <div className={`space-y-4 ${currentTheme.primary}`}>
+      <Typography variant="h6" className={`mb-4 ${currentTheme.text}`}>
         Available Coupons
       </Typography>
 
       {data?.coupons?.map((coupon) => (
-        <Card key={coupon._id} className="mb-4">
+        <Card key={coupon._id} className={`mb-4 ${currentTheme.secondary} hover:shadow-lg transition-shadow duration-300`}>
           <CardBody>
             <div className="flex justify-between items-start mb-2">
               <div>
-                <Typography variant="h5" color="blue-gray">
+                <Typography variant="h5" className={currentTheme.text}>
                   {coupon.code}
                 </Typography>
-                <Typography color="gray" className="text-sm mb-2">
+                <Typography className={`text-sm mb-2 ${currentTheme.textGray}`}>
                   {coupon.description}
                 </Typography>
               </div>
@@ -61,7 +66,7 @@ const CouponsSection = () => {
                 color="green"
               />
             </div>
-            <div className="flex justify-between items-center text-sm text-gray-600">
+            <div className={`flex justify-between items-center text-sm ${currentTheme.textGray}`}>
               <div>
                 Min. Purchase: ₹{coupon.minimumPurchase}
               </div>
@@ -83,14 +88,17 @@ const CouponsSection = () => {
               setPage(newPage);
               window.scrollTo(0, 0);
             }}
+            theme={currentTheme}
           />
         </div>
       )}
 
       {data?.coupons?.length === 0 && (
-        <Card>
+        <Card className={currentTheme.secondary}>
           <CardBody>
-            <Typography className="text-center">No coupons available at the moment.</Typography>
+            <Typography className={`text-center ${currentTheme.text}`}>
+              No coupons available at the moment.
+            </Typography>
           </CardBody>
         </Card>
       )}

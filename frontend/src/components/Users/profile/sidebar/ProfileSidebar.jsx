@@ -10,8 +10,12 @@ import {
   ArrowLeftOnRectangleIcon,
   XMarkIcon
 } from "@heroicons/react/24/solid";
+import { useSelector } from 'react-redux';
 
 const ProfileSidebar = ({ activeSection, onSectionChange }) => {
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
+
   const menuItems = [
     { id: 'edit', label: 'Edit Profile', icon: UserCircleIcon },
     { id: 'orders', label: 'Your Orders', icon: ShoppingBagIcon },
@@ -21,14 +25,14 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
   ];
 
   return (
-    <div className="h-full flex flex-col">
+    <div className={`h-full flex flex-col ${currentTheme.secondary}`}>
       {/* Mobile Header */}
-      <div className="lg:hidden p-4 border-b border-gray-200">
+      <div className={`lg:hidden p-4 border-b ${currentTheme.border}`}>
         <div className="flex items-center justify-between">
-          <Typography variant="h5" color="blue-gray">
+          <Typography variant="h5" className={currentTheme.text}>
             Menu
           </Typography>
-          <button onClick={() => onSectionChange(activeSection)} className="p-2">
+          <button onClick={() => onSectionChange(activeSection)} className={`p-2 ${currentTheme.text} hover:${currentTheme.textGray}`}>
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
@@ -41,14 +45,20 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
             key={item.id}
             selected={activeSection === item.id}
             onClick={() => onSectionChange(item.id)}
-            className={`cursor-pointer hover:bg-gray-100 ${
-              activeSection === item.id ? 'bg-gray-100 text-blue-500' : ''
+            className={`cursor-pointer ${
+              activeSection === item.id 
+                ? `${currentTheme.hover} text-blue-500` 
+                : `hover:${currentTheme.hover} ${currentTheme.text}`
             }`}
           >
             <ListItemPrefix>
-              <item.icon className={`h-5 w-5 ${activeSection === item.id ? 'text-blue-500' : ''}`} />
+              <item.icon className={`h-5 w-5 ${
+                activeSection === item.id ? 'text-blue-500' : currentTheme.text
+              }`} />
             </ListItemPrefix>
-            <Typography color={activeSection === item.id ? 'blue' : 'blue-gray'}>
+            <Typography className={
+              activeSection === item.id ? 'text-blue-500' : currentTheme.text
+            }>
               {item.label}
             </Typography>
           </ListItem>
@@ -56,8 +66,8 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
       </List>
       
       {/* Sign Out Button */}
-      <List className="mt-auto border-t border-gray-200">
-        <ListItem className="cursor-pointer hover:bg-gray-100 text-red-500">
+      <List className={`mt-auto border-t ${currentTheme.border}`}>
+        <ListItem className={`cursor-pointer hover:${currentTheme.hover} text-red-500`}>
           <ListItemPrefix>
             <ArrowLeftOnRectangleIcon className="h-5 w-5" />
           </ListItemPrefix>

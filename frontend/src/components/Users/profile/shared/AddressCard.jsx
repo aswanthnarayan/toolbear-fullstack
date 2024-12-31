@@ -4,7 +4,7 @@ import DefaultBadge from './DefaultBadge';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { AlertModal } from '../../../../components/AlertModal';
 
-const AddressCard = ({ address, onSetDefault, onDelete, onEdit }) => {
+const AddressCard = ({ address, onSetDefault, onDelete, onEdit, theme }) => {
   const { _id, fullName, address: streetAddress, area, phone, city, state, pincode, isDefault } = address;
   const [openAlert, setOpenAlert] = useState(false);
   
@@ -16,19 +16,19 @@ const AddressCard = ({ address, onSetDefault, onDelete, onEdit }) => {
   };
   
   return (
-    <Card className="relative">
+    <Card className={`relative ${theme.secondary} hover:shadow-lg transition-shadow duration-300`}>
       <CardBody className="p-4">
         {isDefault && (
           <div className="absolute top-2 right-2">
-            <DefaultBadge />
+            <DefaultBadge theme={theme} />
           </div>
         )}
         
-        <Typography variant="h6" color="blue-gray" className="mb-2">
+        <Typography variant="h6" className={`mb-2 ${theme.text}`}>
           {fullName}
         </Typography>
         
-        <div className="space-y-1 text-gray-700 mb-4">
+        <div className={`space-y-1 mb-4 ${theme.textGray}`}>
           <Typography>{streetAddress}</Typography>
           <Typography>{area}</Typography>
           <Typography>{phone}</Typography>
@@ -39,32 +39,26 @@ const AddressCard = ({ address, onSetDefault, onDelete, onEdit }) => {
           {!isDefault && (
             <Button
               size="sm"
-              variant="outlined"
-              color="green"
+              className={`flex-1 ${theme.button} ${theme.buttonHover} text-black`}
               onClick={() => onSetDefault(_id)}
-              className="flex-1"
             >
               Set as Default
             </Button>
           )}
           <div className="flex gap-1">
             <IconButton
-              variant="text"
-              color="blue-gray"
               size="sm"
               onClick={() => onEdit(address)}
-              className="rounded-full"
+              className={`rounded-full ${theme.iconButton}`}
             >
-              <PencilSquareIcon className="h-4 w-4" />
+              <PencilSquareIcon className={`h-4 w-4 ${theme.text}`} />
             </IconButton>
             <IconButton
-              variant="text"
-              color="red"
               size="sm"
               onClick={handleOpenAlert}
-              className="rounded-full"
+              className={`rounded-full ${theme.iconButton}`}
             >
-              <TrashIcon className="h-4 w-4" />
+              <TrashIcon className="h-4 w-4 text-red-500" />
             </IconButton>
           </div>
         </div>
@@ -77,6 +71,7 @@ const AddressCard = ({ address, onSetDefault, onDelete, onEdit }) => {
         confirmText="Delete"
         confirmColor="red"
         onConfirm={handleDelete}
+        theme={theme}
       />
     </Card>
   );

@@ -23,7 +23,7 @@ const themeSlice = createSlice({
           buttonHover: 'hover:bg-yellow-600'
         },
         light: {
-          primary: 'bg-white',
+          primary: 'bg-neutral-300',
           secondary: 'bg-white bg-opacity-95',
           text: 'text-gray-800',
           search: {

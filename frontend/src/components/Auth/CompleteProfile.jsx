@@ -22,8 +22,7 @@ const CompleteProfile = () => {
   }
   const [completeGoogleSignup] = useCompleteGoogleSignupMutation();
   
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-  const theme = useSelector((state) => state.theme.theme);
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,8 +46,7 @@ const CompleteProfile = () => {
   };
 
   return (
-    <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
-      p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`${currentTheme.secondary} rounded-xl shadow-2xl p-8 md:p-10 backdrop-blur-sm bg-opacity-95`}>
       <div className="mb-8 text-center relative">
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
@@ -58,7 +56,7 @@ const CompleteProfile = () => {
         <h1 className={`text-3xl md:text-4xl font-bold ${currentTheme.text} mb-3`}>
           Complete Your Profile
         </h1>
-        <p className={`text-sm ${currentTheme.text} text-opacity-70`}>
+        <p className={`text-sm ${currentTheme.textGray}`}>
           Add your phone number to complete the Google sign-up process
         </p>
       </div>
@@ -71,6 +69,7 @@ const CompleteProfile = () => {
             type="number"
             name="phone"
             id="phone"
+            theme={currentTheme}
             {...register("phone", {
               required: "Phone number is required",
               minLength: { value: 10, message: "Phone number must be at least 10 digits" },
@@ -94,13 +93,14 @@ const CompleteProfile = () => {
             height="h-12"
             onClick={handleSubmit(onSubmit)}
             disabled={isSubmitting}
-            className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
+            theme={currentTheme}
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />
         </div>
 
         <div className="mt-6">
-          <p className={`text-xs ${currentTheme.text} text-opacity-70 text-center leading-relaxed`}>
+          <p className={`text-xs ${currentTheme.textGray} text-center leading-relaxed`}>
             By continuing, you agree to ToolBear's{" "}
             <a href="#" className={`text-yellow-500 hover:text-yellow-600 underline decoration-dotted`}>
               Terms of Service

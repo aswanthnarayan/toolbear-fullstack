@@ -20,9 +20,12 @@ import {
 import { toast } from 'sonner';
 import ReturnReasonModal from '../shared/ReturnReasonModal';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const OrdersSection = () => {
   const navigate = useNavigate();
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [cancelModal, setCancelModal] = useState(false);
   const [returnModal, setReturnModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -39,10 +42,8 @@ const OrdersSection = () => {
 
   const handleCancelOrder = async () => {
     try {
-      // First cancel the order
       await cancelOrder(selectedOrder._id).unwrap();
       
-      // Then process refund if payment method is not COD
       if (selectedOrder.paymentMethod !== 'COD') {
         try {
           await processRefund({
@@ -77,7 +78,6 @@ const OrdersSection = () => {
         reason
       }).unwrap();
 
-      // Process refund for returned order
       try {
         await processRefund({
           orderId: selectedOrder._id,
@@ -130,13 +130,33 @@ const OrdersSection = () => {
     }
   };
 
-  if (isLoading) return <div className="flex justify-center"><Spinner /></div>;
-  if (error) return <div>Error loading orders</div>;
-  if (!orders?.length) return <div>No orders found</div>;
+  if (isLoading) {
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <Typography className={currentTheme.text}>Error loading orders</Typography>
+      </div>
+    );
+  }
+
+  if (!orders?.length) {
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <Typography className={currentTheme.text}>No orders found</Typography>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full">
-      <Typography variant="h6" color="blue-gray" className="mb-4">
+    <div className={`w-full ${currentTheme.primary}`}>
+      <Typography variant="h6" className={`mb-4 ${currentTheme.text}`}>
         Order History
       </Typography>
       
@@ -144,16 +164,16 @@ const OrdersSection = () => {
         {orders.map((order) => (
           <Card 
             key={order._id} 
-            className="w-full cursor-pointer hover:shadow-lg transition-shadow"
+            className={`w-full cursor-pointer hover:shadow-lg transition-shadow ${currentTheme.secondary}`}
             onClick={() => handleOrderClick(order._id)}
           >
             <CardBody>
               <div className="flex justify-between items-start">
                 <div>
-                  <Typography variant="h6" color="blue-gray">
+                  <Typography variant="h6" className={currentTheme.text}>
                     Order #{order._id}
                   </Typography>
-                  <Typography color="gray" className="text-sm">
+                  <Typography className={`text-sm ${currentTheme.textGray}`}>
                     Placed on {new Date(order.createdAt).toLocaleDateString()}
                   </Typography>
                 </div>
@@ -164,11 +184,10 @@ const OrdersSection = () => {
                   />
                   {order.paymentStatus === 'Pending' && order.status !== 'Cancelled' && order.paymentMethod !== 'COD' && (
                     <Button
-                      variant="gradient"
-                      color="blue"
+                      className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click
+                        e.stopPropagation();
                         handleCompletePayment(order);
                       }}
                     >
@@ -183,7 +202,7 @@ const OrdersSection = () => {
                       color="red" 
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click
+                        e.stopPropagation();
                         handleCancelClick(order);
                       }}
                     >
@@ -193,10 +212,10 @@ const OrdersSection = () => {
                   {order.status.toLowerCase() === 'delivered' && (
                     <Button
                       size="sm"
-                      color="red"
+                      color="blue"
                       variant="outlined"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click
+                        e.stopPropagation();
                         handleReturnClick(order);
                       }}
                     >
@@ -205,7 +224,7 @@ const OrdersSection = () => {
                   )}
                 </div>
               </div>
-              <Typography variant="h6" className="mt-2">
+              <Typography variant="h6" className={`mt-2 ${currentTheme.text}`}>
                 Total Amount: ₹{order.totalAmount}
               </Typography>
             </CardBody>
@@ -214,23 +233,25 @@ const OrdersSection = () => {
       </div>
 
       {/* Cancel Order Modal */}
-      <Dialog open={cancelModal} handler={() => setCancelModal(false)}>
-        <DialogHeader>Cancel Order</DialogHeader>
-        <DialogBody>
+      <Dialog 
+        open={cancelModal} 
+        handler={() => setCancelModal(false)}
+        className={currentTheme.secondary}
+      >
+        <DialogHeader className={currentTheme.text}>Cancel Order</DialogHeader>
+        <DialogBody className={currentTheme.text}>
           Are you sure you want to cancel this order?
         </DialogBody>
         <DialogFooter>
           <Button
             variant="text"
-            color="gray"
+            className={currentTheme.text}
             onClick={() => setCancelModal(false)}
-            className="mr-1"
           >
             No
           </Button>
           <Button
-            variant="gradient"
-            color="red"
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
             onClick={handleCancelOrder}
             disabled={isCancelling}
           >
@@ -245,6 +266,7 @@ const OrdersSection = () => {
         handleOpen={() => setReturnModal(false)}
         onSubmit={handleReturnSubmit}
         isLoading={isReturning}
+        theme={currentTheme}
       />
     </div>
   );

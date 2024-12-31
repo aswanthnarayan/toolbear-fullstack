@@ -16,8 +16,7 @@ const SignIn = () => {
   const [generalError, setGeneralError] = React.useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-  const theme = useSelector((state) => state.theme.theme);
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
 
   const {
@@ -97,8 +96,7 @@ const SignIn = () => {
   };
 
   return (
-    <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
-      p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`${currentTheme.secondary} rounded-xl shadow-2xl p-8 md:p-10 backdrop-blur-sm bg-opacity-95`}>
       <div className="mb-8 text-center relative">
         {/* Tool-themed decorative elements */}
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
@@ -109,7 +107,7 @@ const SignIn = () => {
         <h1 className={`text-3xl md:text-4xl font-bold ${currentTheme.text} mb-3`}>
           Welcome to ToolBear
         </h1>
-        <p className={`text-sm ${currentTheme.text} text-opacity-70`}>
+        <p className={`text-sm ${currentTheme.textGray}`}>
           Your trusted source for quality tools
         </p>
       </div>
@@ -127,6 +125,7 @@ const SignIn = () => {
               label="Email"
               placeholder="Enter your email"
               type="email"
+              theme={currentTheme}
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -143,6 +142,7 @@ const SignIn = () => {
               label="Password"
               placeholder="Enter your password"
               type={showPassword ? "text" : "password"}
+              theme={currentTheme}
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -155,7 +155,7 @@ const SignIn = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className={`absolute right-3 top-[31px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${currentTheme.text}`}
+              className={`absolute right-3 top-[31px] p-1 rounded-full ${currentTheme.hover} ${currentTheme.text}`}
             >
               {showPassword ? (
                 <EyeSlashIcon className="h-5 w-5" />
@@ -185,13 +185,14 @@ const SignIn = () => {
             height="h-12"
             onClick={handleSubmit(onSubmit)}
             disabled={isLoading}
-            className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
+            theme={currentTheme}
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />
           
           <div className="relative flex items-center justify-center my-6">
-            <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
-            <span className={`relative px-4 ${currentTheme.secondary} ${currentTheme.text} text-sm bg-white dark:bg-gray-800`}>
+            <div className={`absolute w-full h-0.5 ${currentTheme.border}`}></div>
+            <span className={`relative px-4 ${currentTheme.secondary} ${currentTheme.text} text-sm`}>
               or continue with
             </span>
           </div>
@@ -204,13 +205,14 @@ const SignIn = () => {
             width="w-full"
             height="h-12"
             onClick={handleGoogleSignIn}
-            className={`border-2 border-gray-300 hover:border-gray-400 
+            theme={currentTheme}
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />
         </div>
 
         <div className="mt-8 space-y-4">
-          <p className={`text-xs ${currentTheme.text} text-opacity-70 text-center leading-relaxed`}>
+          <p className={`text-xs ${currentTheme.textGray} text-center leading-relaxed`}>
             By signing in, you agree to ToolBear's{" "}
             <a href="#" className="text-yellow-600 hover:text-yellow-700 underline decoration-dotted">
               Terms of Service

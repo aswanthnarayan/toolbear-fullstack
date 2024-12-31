@@ -119,7 +119,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
       className={`${currentTheme.secondary} rounded-lg shadow-lg p-4 lg:p-6`}
     >
       <div className="flex justify-end mb-2">
-        <Button variant="text" className="p-2">
+        <Button variant="text" className={`p-2 ${currentTheme.text}`}>
           <ShareIcon className="h-5 w-5" />
         </Button>
       </div>
@@ -167,15 +167,15 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
         {/* Product Info */}
         <div className="lg:w-[45%] lg:pt-8">
           <div className="flex flex-col mb-1">
-            <Typography variant="h4" color="blue-gray">
+            <Typography variant="h4" className={currentTheme.text}>
               {product.name}
             </Typography>
-            <p className="text-gray-600">{product.brand?.name}</p>
+            <p className={currentTheme.textGray}>{product.brand?.name}</p>
           </div>
 
           <div className="flex items-center gap-2 mb-6">
             {renderRating(4.5)}
-            <Typography color="blue-gray" className="font-normal">
+            <Typography className={`font-normal ${currentTheme.textGray}`}>
               (0 reviews)
             </Typography>
           </div>
@@ -184,18 +184,18 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
           <div className="flex items-baseline gap-2 mb-4">
             {product.maxOfferPercentage > 0 ? (
               <>
-                <Typography variant="h4" color="blue-gray">
+                <Typography variant="h4" className={currentTheme.text}>
                   ₹{product.sellingPrice}
                 </Typography>
-                <Typography color="gray" className="line-through">
+                <Typography className={`line-through ${currentTheme.textGray}`}>
                   ₹{product.price}
                 </Typography>
-                <Typography color="green" className="text-sm">
+                <Typography className="text-sm text-green-500">
                   {product.maxOfferPercentage}% off
                 </Typography>
               </>
             ) : (
-              <Typography variant="h4" color="blue-gray">
+              <Typography variant="h4" className={currentTheme.text}>
                 ₹{product.price}
               </Typography>
             )}
@@ -203,7 +203,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
 
           {/* Description */}
           <div className="mb-6">
-            <Typography color="blue-gray" className="font-normal">
+            <Typography className={`font-normal ${currentTheme.text}`}>
               {product.desc}
             </Typography>
           </div>
@@ -213,9 +213,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
             {product.stock > 0 ? (
               isInCart ? (
                 <Button
-                  color="blue"
-                  variant="outlined"
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
                   onClick={handleGoToCart}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
@@ -224,7 +222,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
               ) : (
                 <Button
                   size="lg"
-                  className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600"
+                  className={`flex items-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
                   onClick={handleAddToCart}
                   disabled={isAdding}
                 >
@@ -233,7 +231,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
                 </Button>
               )
             ) : (
-              <Typography variant="h5" color="red">
+              <Typography variant="h5" className="text-red-500">
                 Out of Stock
               </Typography>
             )}

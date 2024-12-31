@@ -22,7 +22,7 @@ const BrandsPage = () => {
 
   if (isLoading || isFetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
@@ -30,14 +30,14 @@ const BrandsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-yellow-500">Error loading brands. Please try again later.</p>
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
+        <p className={currentTheme.accent}>Error loading brands. Please try again later.</p>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
+    <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
       <div className="container mx-auto px-4 py-8">
         <h1 className={`text-3xl font-bold ${currentTheme.text} mb-8`}>Our Brands</h1>
         
@@ -69,7 +69,7 @@ const BrandsPage = () => {
                   <div className="flex items-center justify-between gap-4">
                     <Link 
                       to={`/brand/${brand._id}`}
-                      className="flex items-center text-yellow-500 font-medium hover:text-yellow-600"
+                      className="flex items-center text-blue-500 font-medium hover:text-blue-600"
                     >
                       View Products
                       <svg 

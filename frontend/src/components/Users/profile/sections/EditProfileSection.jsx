@@ -10,11 +10,14 @@ import {
 } from "@material-tailwind/react";
 import { CameraIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import {useGetUserQuery,useUpdateProfileMutation} from '../../../../../App/features/rtkApis/userApi'
+import { useGetUserQuery, useUpdateProfileMutation } from '../../../../../App/features/rtkApis/userApi';
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from 'sonner';
+import { useSelector } from 'react-redux';
 
 const EditProfileSection = () => {
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const {data, isLoading, error} = useGetUserQuery();
@@ -29,7 +32,6 @@ const EditProfileSection = () => {
     formState: { errors },
     reset,
     watch,
-
   } = useForm({
     defaultValues: {
       name: data?.name || '',
@@ -40,7 +42,6 @@ const EditProfileSection = () => {
     }
   });
 
-  // Update form default values when data is loaded
   useEffect(() => {
     if (data) {
       reset({
@@ -53,7 +54,6 @@ const EditProfileSection = () => {
   const onSubmit = async (formData) => {
     try {
       if (isEditing) {
-        // Update profile information
         const response = await updateProfile({
           name: formData.name,
           phone: formData.phone
@@ -65,7 +65,6 @@ const EditProfileSection = () => {
       }
 
       if (showPasswordSection) {
-        // Validate password fields
         if (formData.newPassword !== formData.confirmPassword) {
           errors.confirmPassword = {
             type: 'manual',
@@ -74,13 +73,11 @@ const EditProfileSection = () => {
           return;
         }
 
-        // Update password
         await updateProfile({
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword
         }).unwrap();
         
-        // Reset password fields and close section
         reset({
           currentPassword: '',
           newPassword: '',
@@ -98,52 +95,38 @@ const EditProfileSection = () => {
   };
 
   if (isLoading) {
-    return <Spinner className="mx-auto" />;
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error loading profile data</div>;
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <Typography className={currentTheme.text}>Error loading profile data</Typography>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Typography variant="h4" color="blue-gray" className="mb-6">
+    <div className={`max-w-3xl mx-auto ${currentTheme.primary}`}>
+      <Typography variant="h4" className={`mb-6 ${currentTheme.text}`}>
         Edit Profile
       </Typography>
 
-      {/* <div className="mb-8 flex flex-col items-center">
-        <div className="relative">
-          <Avatar
-            size="xxl"
-            variant="circular"
-            className="cursor-pointer border-2 border-blue-500"
-            src="https://docs.material-tailwind.com/img/face-2.jpg"
-            alt="avatar"
-          />
-          <Button
-            size="sm"
-            color="blue-gray"
-            className="absolute bottom-0 right-0 rounded-full p-2"
-          >
-            <CameraIcon className="h-4 w-4" />
-          </Button>
-        </div>
-        <Typography color="gray" className="mt-2">
-          Change Profile Picture
-        </Typography>
-      </div> */}
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
+        <Card className={currentTheme.secondary}>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <Typography variant="h6" color="blue-gray">
+              <Typography variant="h6" className={currentTheme.text}>
                 Personal Information
               </Typography>
               <Button 
                 size="sm" 
                 variant="text" 
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${currentTheme.text}`}
                 onClick={() => setIsEditing(!isEditing)}
               >
                 <PencilIcon className="h-4 w-4" />
@@ -151,40 +134,46 @@ const EditProfileSection = () => {
               </Button>
             </div>
             <div>
-            <Input
-              label="Name"
-              {...register("name", {
-                required: "Name is required",
-                minLength: { value: 3, message: "Name must be at least 3 characters long" },
-                pattern: {
-                  value: /^[a-zA-Z\s]+$/,
-                  message: "Name can only contain letters and spaces"
-                },
-                validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only",
-              })}
-              error={errors.name?.message}
-              disabled={!isEditing}
-            />
-              <p className='text-sm text-red-500 '>{errors.name?.message}</p>
+              <Input
+                label="Name"
+                {...register("name", {
+                  required: "Name is required",
+                  minLength: { value: 3, message: "Name must be at least 3 characters long" },
+                  pattern: {
+                    value: /^[a-zA-Z\s]+$/,
+                    message: "Name can only contain letters and spaces"
+                  },
+                  validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only",
+                })}
+                className={currentTheme.input}
+                labelProps={{ className: currentTheme.label }}
+                error={errors.name?.message}
+                disabled={!isEditing}
+              />
+              <p className='text-sm text-red-500'>{errors.name?.message}</p>
             </div>
             <Input
               label="Email"
               value={data?.email}
+              className={currentTheme.input}
+              labelProps={{ className: currentTheme.label }}
               disabled={true}
             />
             <div>
-            <Input
-              label="Phone"
-              {...register("phone", {
-                required: "Phone number is required",
-                pattern: {
-                  value: /^[0-9]{10}$/,
-                  message: "Please enter a valid 10-digit phone number"
-                }
-              })}
-              error={errors.phone?.message}
-              disabled={!isEditing}
-            />
+              <Input
+                label="Phone"
+                {...register("phone", {
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Please enter a valid 10-digit phone number"
+                  }
+                })}
+                className={currentTheme.input}
+                labelProps={{ className: currentTheme.label }}
+                error={errors.phone?.message}
+                disabled={!isEditing}
+              />
               <p className='text-sm text-red-500'>{errors.phone?.message}</p>
             </div>
           </CardBody>
@@ -193,8 +182,7 @@ const EditProfileSection = () => {
         <div className="flex justify-between items-center">
           <Button
             variant="text"
-            color="blue"
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${currentTheme.text}`}
             onClick={() => setShowPasswordSection(!showPasswordSection)}
           >
             {showPasswordSection ? 'Cancel' : 'Change Password ?'}
@@ -202,9 +190,9 @@ const EditProfileSection = () => {
         </div>
 
         {showPasswordSection && (
-          <Card>
+          <Card className={currentTheme.secondary}>
             <CardBody className="space-y-4">
-              <Typography variant="h6" color="blue-gray" className="mb-4">
+              <Typography variant="h6" className={`mb-4 ${currentTheme.text}`}>
                 Change Password
               </Typography>
 
@@ -215,12 +203,14 @@ const EditProfileSection = () => {
                   {...register("currentPassword", {
                     required: "Current password is required"
                   })}
+                  className={currentTheme.input}
+                  labelProps={{ className: currentTheme.label }}
                   error={errors.currentPassword?.message}
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                  className={`absolute right-3 top-[6px] p-1 rounded-full ${currentTheme.iconButton}`}
                 >
                   {showCurrentPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -242,12 +232,14 @@ const EditProfileSection = () => {
                       message: "Password must be at least 6 characters long"
                     }
                   })}
+                  className={currentTheme.input}
+                  labelProps={{ className: currentTheme.label }}
                   error={errors.newPassword?.message}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                  className={`absolute right-3 top-[6px] p-1 rounded-full ${currentTheme.iconButton}`}
                 >
                   {showNewPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -266,12 +258,14 @@ const EditProfileSection = () => {
                     required: "Please confirm your password",
                     validate: (value) => value === watch('newPassword') || "Passwords do not match"
                   })}
+                  className={currentTheme.input}
+                  labelProps={{ className: currentTheme.label }}
                   error={errors.confirmPassword?.message}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-[6px] p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-600"
+                  className={`absolute right-3 top-[6px] p-1 rounded-full ${currentTheme.iconButton}`}
                 >
                   {showConfirmPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -288,8 +282,7 @@ const EditProfileSection = () => {
         <div className="flex justify-end gap-4">
           <Button 
             type="submit" 
-            variant="gradient" 
-            color="blue" 
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
             disabled={(!isEditing && !showPasswordSection) || updateLoading}
           >
             {updateLoading ? "Saving..." : "Save Changes"}
@@ -297,7 +290,6 @@ const EditProfileSection = () => {
         </div>
       </form>
       <Toaster richColors position="top-right" />
-
     </div>
   );
 };

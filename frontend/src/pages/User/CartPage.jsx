@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { AlertModal } from '../../components/AlertModal';
 import { Toaster, toast } from 'sonner';
+import { useSelector } from 'react-redux';
 import {
   useGetCartQuery,
   useRemoveFromCartMutation,
@@ -24,6 +25,9 @@ const CartPage = () => {
   const [updateQuantity] = useUpdateCartQuantityMutation();
   const cartItems = cart?.items || [];  
   const totalAmount = cart?.totalAmount || 0;
+  
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   
   const [openAlert, setOpenAlert] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -120,150 +124,156 @@ const CartPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Spinner className="h-12 w-12" />
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Typography variant="h5" color="red" className="text-center">
-          Error loading cart. Please try again later.
-        </Typography>
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
+        <p className={currentTheme.accent}>Error loading cart. Please try again later.</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-[112px]">
-      <Typography variant="h3" className="mb-6">Shopping Cart</Typography>
-      
-      {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <Typography color="amber" className="font-medium">
-            Some items in your cart are currently unavailable
-          </Typography>
-          <Typography color="gray" className="text-sm">
-            Please remove these items before proceeding to checkout
-          </Typography>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          {cartItems.length === 0 ? (
-            <Card>
-              <CardBody className="flex flex-col items-center justify-center py-8">
-                <Typography variant="h5" className="mb-2">Your cart is empty</Typography>
-                <Typography color="gray" className="mb-4">Add some items to your cart to get started!</Typography>
-                <Button 
-                  color="blue"
+    <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className={`text-3xl font-bold ${currentTheme.text} mb-8`}>Your Cart</h1>
+        
+        {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) && (
+          <div className={`mb-4 p-4 ${currentTheme.warning} rounded-lg`}>
+            <Typography className="font-medium text-yellow-800">
+              Some items in your cart are currently unavailable
+            </Typography>
+            <Typography className="text-sm text-yellow-700">
+              Please remove these items before proceeding to checkout
+            </Typography>
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-4">
+            {cartItems.length === 0 ? (
+              <div className={`${currentTheme.secondary} rounded-lg shadow-md p-8 text-center`}>
+                <p className={`${currentTheme.text} text-xl mb-4`}>Your cart is empty</p>
+                <Button
                   onClick={() => navigate('/user/all-products')}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
                 >
                   Continue Shopping
                 </Button>
-              </CardBody>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {cartItems.map((item) => (
-                <Card 
-                  key={item.product._id} 
-                  className={`overflow-hidden ${!item.product.isListed ? 'opacity-75' : ''}`}
-                >
-                  <CardBody className="p-4">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={item.product.mainImage.imageUrl}
-                        alt={item.product.name}
-                        className="h-24 w-24 object-cover rounded-lg"
-                      />
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <Typography variant="h6">{item.product.name}</Typography>
-                          {!item.product.isListed && (
-                            <span className="px-2 py-1 text-xs bg-red-50 text-red-500 rounded">
-                              Unavailable
-                            </span>
-                          )}
-                        </div>
-                        <Typography color="gray" className="mb-2">₹{item.price}</Typography>
-                        <div className="flex items-center gap-2">
-                          <IconButton
-                            size="sm"
-                            variant="outlined"
-                            onClick={() => handleQuantityChange(item.product._id, item.quantity, -1)}
-                            disabled={!item.product.isListed}
-                          >
-                            <MinusIcon className="h-4 w-4" />
-                          </IconButton>
-                          <Typography className="w-12 text-center">{item.quantity}</Typography>
-                          <IconButton
-                            size="sm"
-                            variant="outlined"
-                            onClick={() => handleQuantityChange(item.product._id, item.quantity, 1)}
-                            disabled={!item.product.isListed}
-                          >
-                            <PlusIcon className="h-4 w-4" />
-                          </IconButton>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Typography variant="h6">₹{item.price * item.quantity}</Typography>
+              </div>
+            ) : (
+              cartItems.map((item) => (
+                <Card key={item.product._id} className={`${currentTheme.secondary} shadow-md hover:shadow-xl transition-shadow duration-300`}>
+                  <CardBody className="flex flex-col sm:flex-row items-center gap-4">
+                    <img
+                      src={item.product.mainImage.imageUrl}
+                      alt={item.product.name}
+                      className="w-32 h-32 object-cover rounded-lg"
+                    />
+                    <div className="flex-1 space-y-2">
+                      <Typography variant="h5" className={currentTheme.text}>
+                        {item.product.name}
+                      </Typography>
+                      <Typography className={`${currentTheme.text} text-sm`}>
+                        Price: ₹{item.price}
+                      </Typography>
+                      {!item.product.isListed && (
+                        <Typography className="text-red-500">
+                          This product is no longer available
+                        </Typography>
+                      )}
+                      {item.product.stock === 0 && (
+                        <Typography className="text-red-500">
+                          Out of stock
+                        </Typography>
+                      )}
+                      {item.quantity > item.product.stock && (
+                        <Typography className="text-red-500">
+                          Only {item.product.stock} units available
+                        </Typography>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-2">
                         <IconButton
-                          color="red"
                           variant="text"
-                          onClick={() => handleOpenAlert(item.product._id)}
+                          className={currentTheme.text}
+                          onClick={() => handleQuantityChange(item.product._id, item.quantity, -1)}
+                          disabled={!item.product.isListed}
                         >
-                          <TrashIcon className="h-5 w-5" />
+                          <MinusIcon className="h-4 w-4" />
+                        </IconButton>
+                        <Typography className={currentTheme.text}>
+                          {item.quantity}
+                        </Typography>
+                        <IconButton
+                          variant="text"
+                          className={currentTheme.text}
+                          onClick={() => handleQuantityChange(item.product._id, item.quantity, 1)}
+                          disabled={!item.product.isListed}
+                        >
+                          <PlusIcon className="h-4 w-4" />
                         </IconButton>
                       </div>
+                      <IconButton
+                        variant="text"
+                        color="red"
+                        onClick={() => handleOpenAlert(item.product._id)}
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </IconButton>
                     </div>
                   </CardBody>
                 </Card>
-              ))}
-            </div>
-          )}
-        </div>
+              ))
+            )}
+          </div>
 
-        <div className="lg:col-span-1">
-          <Card>
-            <CardBody className="p-4">
-              <Typography variant="h5" className="mb-4">Order Summary</Typography>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Typography color="gray">Subtotal</Typography>
-                  <Typography>₹{totalAmount}</Typography>
+          <div className="lg:col-span-1">
+            <Card className={`${currentTheme.secondary} shadow-md sticky top-24`}>
+              <CardBody>
+                <Typography variant="h5" className={`${currentTheme.text} mb-4`}>
+                  Order Summary
+                </Typography>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Typography className={currentTheme.textGray}>Subtotal:</Typography>
+                    <Typography className={currentTheme.text}>₹{totalAmount}</Typography>
+                  </div>
+                  <div className="flex justify-between">
+                    <Typography className={currentTheme.textGray}>Shipping:</Typography>
+                    <Typography className={currentTheme.text}>{totalAmount >= 1000 ? 'Free' : '₹50'}</Typography>
+                  </div>
+                  <div className="border-t border-gray-200 my-4"></div>
+                  <div className="flex justify-between">
+                    <Typography className={`${currentTheme.text} font-bold`}>Total:</Typography>
+                    <Typography className={`${currentTheme.text} font-bold`}>₹{totalAmount >= 1000 ? totalAmount : totalAmount + 50}</Typography>
+                  </div>
+                  {totalAmount > 0 && totalAmount < 1000 && (
+                    <Typography className={`text-sm text-center mt-2 ${currentTheme.textGray}`}>
+                      Add ₹{1000 - totalAmount} more for free shipping
+                    </Typography>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <Typography color="gray">Shipping</Typography>
-                  <Typography>{totalAmount >= 1000 ? 'Free' : '₹50'}</Typography>
-                </div>
-                <hr className="my-4" />
-                <div className="flex justify-between">
-                  <Typography variant="h6">Total</Typography>
-                  <Typography variant="h6">₹{totalAmount >= 1000 ? totalAmount : totalAmount + 50}</Typography>
-                </div>
-                {totalAmount > 0 && totalAmount < 1000 && (
-                  <Typography color="gray" className="text-sm text-center mt-2">
-                    Add ₹{1000 - totalAmount} more for free shipping
-                  </Typography>
-                )}
-              </div>
-              <Button
-                color="blue"
-                size="lg"
-                fullWidth
-                className="mt-4"
-                disabled={cartItems.length === 0 || hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock}
-                onClick={handleCheckout}
-              >
-                {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) ? 'Remove Unavailable Items to Checkout' : 'Proceed to Checkout'}
-              </Button>
-            </CardBody>
-          </Card>
+                <Button
+                  fullWidth
+                  className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black"
+                  onClick={handleCheckout}
+                  disabled={cartItems.length === 0 || hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock}
+                >
+                  {(hasUnlistedItems || hasOutOfStockItems || hasInsufficientStock) 
+                    ? 'Remove Unavailable Items' 
+                    : 'Proceed to Checkout'
+                  }
+                </Button>
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -277,7 +287,7 @@ const CartPage = () => {
         confirmColor="red"
         onConfirm={handleRemoveItem}
       />
-      <Toaster richColors position="top-right" />
+      <Toaster position="top-right" richColors />
     </div>
   );
 };

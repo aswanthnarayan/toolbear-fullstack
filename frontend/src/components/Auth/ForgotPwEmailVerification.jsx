@@ -7,8 +7,7 @@ import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
 
 const ForgotPwEmailVerification = () => {
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-  const theme = useSelector((state) => state.theme.theme);
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const navigate = useNavigate();
   
@@ -42,8 +41,7 @@ const ForgotPwEmailVerification = () => {
   };
 
   return (
-    <div className={`${currentTheme.secondary} rounded-lg shadow-lg bg-opacity-95 
-      p-8 md:p-10 border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`${currentTheme.secondary} rounded-xl shadow-2xl p-8 md:p-10 backdrop-blur-sm bg-opacity-95`}>
       <div className="mb-8 text-center relative">
         <div className="absolute -top-4 -left-4 w-8 h-8 border-t-4 border-l-4 border-yellow-500"></div>
         <div className="absolute -top-4 -right-4 w-8 h-8 border-t-4 border-r-4 border-yellow-500"></div>
@@ -53,22 +51,23 @@ const ForgotPwEmailVerification = () => {
         <h1 className={`text-3xl md:text-4xl font-bold ${currentTheme.text} mb-3`}>
           Reset Password
         </h1>
-        <p className={`text-sm ${currentTheme.text} text-opacity-70`}>
+        <p className={`text-sm ${currentTheme.textGray}`}>
           Enter your email address and we'll send you a one-time password to verify your identity
         </p>
       </div>
       
       {errors.general && (
-    <div className="mb-4 text-red-500 text-sm text-center">
-      {errors.general.message}
-    </div>
-  )}
+        <div className="mb-4 text-red-500 text-sm text-center">
+          {errors.general.message}
+        </div>
+      )}
 
-      <form  className="space-y-6">
+      <form className="space-y-6">
         <div className="transform transition-all duration-300 hover:translate-x-1">
           <CustomInput
             label="Email"
             type="email"
+            theme={currentTheme}
             {...register('email', {
               required: 'Email is required',
               pattern: {
@@ -87,7 +86,8 @@ const ForgotPwEmailVerification = () => {
             disabled={isLoading}
             width="w-full"
             height="h-12"
-            className={`bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold 
+            theme={currentTheme}
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black font-semibold 
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
           />
         </div>

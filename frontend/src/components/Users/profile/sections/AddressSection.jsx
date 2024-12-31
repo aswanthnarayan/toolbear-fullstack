@@ -7,8 +7,11 @@ import {
   useSetDefaultAddressMutation,
   useDeleteAddressMutation 
 } from '../../../../../App/features/rtkApis/userApi';
+import { useSelector } from 'react-redux';
 
 const AddressSection = () => {
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   const { data: addresses, isLoading } = useGetAddressesQuery();
   const [setDefaultAddress] = useSetDefaultAddressMutation();
   const [deleteAddress] = useDeleteAddressMutation();
@@ -48,23 +51,28 @@ const AddressSection = () => {
   };
 
   if (isLoading) {
-    return <Spinner className="mx-auto" />
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${currentTheme.primary}`}>
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-900">Your Addresses</h2>
+        <h2 className={`text-2xl font-semibold ${currentTheme.text}`}>
+          Your Addresses
+        </h2>
         {addresses?.length < 5 ? (
           <Button
-            className="flex items-center gap-2"
+            className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
             onClick={handleOpenModal}
-            variant="gradient"
           >
             Add New Address
           </Button>
         ) : (
-          <Typography color="red" className="text-sm">
+          <Typography className="text-sm text-red-500">
             Maximum address limit (5) reached
           </Typography>
         )}
@@ -74,6 +82,7 @@ const AddressSection = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         editAddress={editingAddress}
+        theme={currentTheme}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -84,6 +93,7 @@ const AddressSection = () => {
             onSetDefault={() => handleSetDefault(address._id)}
             onDelete={() => handleDelete(address._id)}
             onEdit={handleEdit}
+            theme={currentTheme}
           />
         ))}
       </div>

@@ -7,16 +7,15 @@ import SecondaryFooter from "../../components/Users/SecondaryFooter";
 import { useLocation } from "react-router-dom";
 
 const ForgotPwOtpConfirmPage = () => {
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-  const theme = useSelector((state) => state.theme.theme);
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const location = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${currentTheme.primary}`}>
       <ToolThemeBackground>
         {/* Main content */}
-        <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col items-center relative z-10">
           <div className="w-full max-w-md">
             <div className="mb-8 text-center">
               <Logo className="mx-auto transform hover:scale-105 transition-transform duration-300" />
@@ -25,7 +24,7 @@ const ForgotPwOtpConfirmPage = () => {
           </div>
         </div>
       </ToolThemeBackground>
-      <SecondaryFooter />
+      <SecondaryFooter theme={currentTheme} />
     </div>
   );
 };

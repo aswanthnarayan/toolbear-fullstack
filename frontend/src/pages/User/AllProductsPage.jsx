@@ -99,7 +99,7 @@ const AllProductsPage = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
+    <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
       <div className="flex relative">
         {/* Filter Sidebar */}
         <div className={`hidden ${showLgFilter ? 'lg:block' : ''} sticky top-[112px]`}>
@@ -125,41 +125,44 @@ const AllProductsPage = () => {
             {/* Filter button for mobile */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden fixed bottom-4 right-4 z-30 bg-yellow-500 text-white p-3 rounded-full shadow-lg"
+              className="lg:hidden fixed bottom-4 right-4 z-30 bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200"
             >
               <FunnelIcon className="h-6 w-6" />
             </button>
 
             <div className='flex justify-between items-center'>
-              <Breadcrumbs className="bg-transparent">
-              <Link to="/" className="opacity-60 flex items-center gap-2">
-                <HomeIcon className="h-4 w-4" /> Home
-              </Link>
-              <Link to="#" className={currentTheme.text}>
-                All Products
-              </Link>
-            </Breadcrumbs>
-            <button className='hidden lg:block text-sm text-blue-600 hover:text-blue-800' onClick={() => setShowLgFilter(!showLgFilter)}>
-              Filter
-            </button>
+              <Breadcrumbs className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
+                <Link to="/" className={`opacity-60 flex items-center gap-2 ${currentTheme.text}`}>
+                  <HomeIcon className="h-4 w-4" /> Home
+                </Link>
+                <Link to="#" className={`${currentTheme.text}`}>
+                  All Products
+                </Link>
+              </Breadcrumbs>
+              <button 
+                className={`hidden lg:block text-sm ${currentTheme.accent} ${currentTheme.accentHover}`} 
+                onClick={() => setShowLgFilter(!showLgFilter)}
+              >
+                Filter
+              </button>
             </div>
             <div className='flex justify-between items-center'>
-            <h1 className={`text-3xl font-bold my-6 ${currentTheme.text}`}>All Products</h1>
-            <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
+              <h1 className={`text-3xl font-bold my-6 ${currentTheme.text}`}>All Products</h1>
+              <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
             </div>
             {isLoading ? (
               <div className="flex justify-center items-center min-h-[400px]">
                 <Spinner className="h-12 w-12" />
               </div>
             ) : error ? (
-              <div className="text-center text-red-500">
+              <div className={`text-center ${currentTheme.text} bg-opacity-50 p-4 rounded-lg`}>
                 Error loading products. Please try again later.
               </div>
             ) : (
               <>
                 {data?.products.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className={`text-lg ${currentTheme.text}`}>No products found.</p>
+                  <div className={`text-center py-12 ${currentTheme.text}`}>
+                    <p className="text-lg">No products found.</p>
                   </div>
                 )}
 
@@ -193,11 +196,13 @@ const AllProductsPage = () => {
                 </div>
 
                 {data?.totalPages > 0 && (
-                  <Pagination 
-                    currentPage={currentPage}
-                    totalPages={data.totalPages}
-                    onPageChange={handlePageChange}
-                  />
+                  <div className="mt-8">
+                    <Pagination 
+                      currentPage={currentPage}
+                      totalPages={data.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
                 )}
               </>
             )}

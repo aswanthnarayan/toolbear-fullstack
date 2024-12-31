@@ -119,12 +119,12 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
         } flex flex-col overflow-hidden !rounded-none`}
       >
         <div className={`p-4 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} border-b bg-inherit z-10`}>
-          <Typography variant="h5" color="blue-gray" className="lg:text-center">
+          <Typography variant="h5" className={`lg:text-center ${currentTheme.text}`}>
             Filters
           </Typography>
           <button 
             onClick={onClose} 
-            className="lg:hidden absolute right-4 top-4"
+            className={`lg:hidden absolute right-4 top-4 ${currentTheme.text}`}
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
@@ -136,7 +136,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             {/* Categories Accordion */}
             <ListItem className="flex-col items-start">
               <button
-                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('categories')}
               >
                 <span>Categories</span>
@@ -154,7 +154,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                         checked={selectedFilters.categories.includes(category._id)}
                         onChange={() => handleCheckboxChange('categories', category._id)}
                       />
-                      <label htmlFor={category._id} className="ml-2 text-gray-700">
+                      <label htmlFor={category._id} className={`ml-2 ${currentTheme.text}`}>
                         {category.name}
                       </label>
                     </ListItemPrefix>
@@ -166,7 +166,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             {/* Brands Accordion */}
             <ListItem className="flex-col items-start">
               <button
-                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('brands')}
               >
                 <span>Brands</span>
@@ -184,7 +184,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                         checked={selectedFilters.brands.includes(brand._id)}
                         onChange={() => handleCheckboxChange('brands', brand._id)}
                       />
-                      <label htmlFor={brand._id} className="ml-2 text-gray-700">
+                      <label htmlFor={brand._id} className={`ml-2 ${currentTheme.text}`}>
                         {brand.name}
                       </label>
                     </div>
@@ -196,7 +196,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             {/* Price Range Accordion */}
             <ListItem className="flex-col items-start">
               <button
-                className="flex justify-between items-center w-full text-left font-medium text-gray-700 mb-2"
+                className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('price')}
               >
                 <span>Price Range</span>
@@ -214,7 +214,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                         checked={selectedFilters.priceRange === range.id}
                         onChange={() => handleCheckboxChange('priceRange', range.id)}
                       />
-                      <label htmlFor={range.id} className="ml-2 text-gray-700">
+                      <label htmlFor={range.id} className={`ml-2 ${currentTheme.text}`}>
                         {range.label}
                       </label>
                     </div>
@@ -230,8 +230,8 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             onClick={handleApplyFilter}
             className={`w-full py-3 px-4 rounded-lg transition duration-300 font-medium ${
               filtersApplied 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                ? 'bg-red-500 hover:bg-red-600 text-black' 
+                : `${currentTheme.button} ${currentTheme.buttonHover} text-black`
             }`}
           >
             {filtersApplied ? 'Clear Filters' : 'Apply Filters'}

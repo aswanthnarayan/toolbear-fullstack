@@ -14,7 +14,6 @@ const CategoriesPage = () => {
     limit: 8,
     isUserView: true
   });
-console.log(data);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -23,22 +22,22 @@ console.log(data);
 
   if (isLoading || isFetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500"></div>
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Error loading categories. Please try again later.</p>
+      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
+        <p className={currentTheme.accent}>Error loading categories. Please try again later.</p>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen pt-[112px] ${currentTheme.bg}`}>
+    <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
       <div className="container mx-auto px-4 py-8">
         <h1 className={`text-3xl font-bold ${currentTheme.text} mb-8`}>Our Categories</h1>
         
@@ -68,11 +67,11 @@ console.log(data);
                   </p>
                   
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-red-500 font-medium">
+                    <span className="text-blue-500 font-medium">
                       View Products
                     </span>
                     <svg 
-                      className="w-5 h-5 text-red-500 transform group-hover:translate-x-1 transition-transform duration-300" 
+                      className="w-5 h-5 text-blue-500 transform group-hover:translate-x-1 transition-transform duration-300" 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"
@@ -98,15 +97,15 @@ console.log(data);
         )}
 
         {data?.totalPages > 0 && (
-            <Pagination 
-              currentPage={currentPage}
-              totalPages={data.totalPages}
-              onPageChange={handlePageChange}
-            />
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={data.totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export default CategoriesPage

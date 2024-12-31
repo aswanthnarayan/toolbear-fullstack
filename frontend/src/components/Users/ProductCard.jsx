@@ -89,115 +89,97 @@ function ProductCard({
     return (
         <div className={`w-full mx-auto rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 ${
             isDarkMode 
-                ? `${currentTheme.secondary} shadow-gray-700`
-                : 'bg-white shadow-lg'
+                ? `${currentTheme.secondary} shadow-md shadow-gray-800/50`
+                : 'bg-white shadow-lg hover:shadow-xl'
         }`}>
             <Link to={`/user/products/${id}`}>
                 <div className="relative">
                     <img
-                        className="w-full h-48 object-cover hover:opacity-95 transition-opacity"
+                        className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
                         src={image}
                         alt={`Image of ${name}`}
                     />
                 </div>
                 <div className="p-4">
-                    <h2 className={`text-lg font-bold mb-2 line-clamp-1 ${
-                        currentTheme.text
-                    }`}>{name}</h2>
+                    <h2 className={`text-lg font-bold mb-2 line-clamp-1 ${currentTheme.text}`}>
+                        {name}
+                    </h2>
                     <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         {brand}
                     </p>
                     <div className="flex items-center mb-2">
-                        <div className="flex text-yellow-400 mr-2">
-                            {Array.from({ length: 5 }, (_, i) => (
-                                <span key={i} className="w-4 h-4">
-                                    {i < Math.floor(rating) ? (
-                                        <StarSolid className="w-full h-full" />
-                                    ) : (
-                                        <StarOutline className="w-full h-full" />
-                                    )}
-                                </span>
-                            ))}
-                        </div>
-                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {rating} · {reviews} reviews
+                        {[...Array(5)].map((_, index) => (
+                            index < Math.floor(rating) ? (
+                                <StarSolid key={index} className="h-4 w-4 text-yellow-500" />
+                            ) : (
+                                <StarOutline key={index} className="h-4 w-4 text-yellow-500" />
+                            )
+                        ))}
+                        <span className={`ml-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            ({reviews})
                         </span>
                     </div>
-                    <div className="flex items-baseline mb-2">
-                        {maxOfferPercentage > 0 ? (
-                            <div className="flex items-center gap-2">
-                                <span className={`text-xl font-bold ${currentTheme.text}`}>
-                                    ₹{sellingPrice}
-                                </span>
-                                <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} line-through`}>
+                    <div className="flex items-baseline gap-2 mb-3">
+                        <span className={`text-lg font-bold ${currentTheme.text}`}>
+                            ₹{sellingPrice}
+                        </span>
+                        {maxOfferPercentage > 0 && (
+                            <span className="flex items-center gap-1">
+                                <span className={`text-sm line-through ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>
                                     ₹{price}
                                 </span>
-                                <span className="text-xs text-green-600 font-medium">
+                                <span className="text-sm text-green-500 font-medium">
                                     {maxOfferPercentage}% off
                                 </span>
-                            </div>
-                        ) : (
-                            <span className={`text-xl font-bold ${currentTheme.text}`}>
-                                ₹{price}
                             </span>
                         )}
                     </div>
-                    <p className={`text-xs mb-3 line-clamp-2 ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
+                    <p className={`text-xs mb-3 line-clamp-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         {description}
                     </p>
-                    <div className="mt-4 flex justify-between items-center h-10 gap-2">
+                    <div className="flex gap-2 mt-4">
                         {stock > 0 ? (
-                            <>
+                            isInCart ? (
                                 <Button
-                                    color={isInWishlist ? "red" : "gray"}
-                                    variant="outlined"
-                                    className="flex items-center justify-center gap-2 min-w-[40px] p-2"
-                                    onClick={handleWishlist}
+                                    size="sm"
+                                    className={`flex-1 ${currentTheme.button} ${currentTheme.buttonHover} text-white gap-2 flex items-center justify-center`}
+                                    onClick={handleGoToCart}
                                 >
-                                    {isInWishlist ? (
-                                        <HeartSolid className="w-5 h-5 text-red-500" />
-                                    ) : (
-                                        <HeartOutline className="w-5 h-5" />
-                                    )}
+                                    <ShoppingCartIcon className="h-4 w-4" />
+                                    Go to Cart
                                 </Button>
-                                <div className="flex-1">
-                                    {isInCart ? (
-                                        <Button
-                                            color="blue"
-                                            variant="outlined"
-                                            className="flex items-center justify-center gap-2 w-full py-2"
-                                            onClick={handleGoToCart}
-                                            disabled={isLoading}
-                                        >
-                                            <ShoppingCartIcon className="w-4 h-4" />
-                                            Go to Cart
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            color="blue"
-                                            variant="gradient"
-                                            className="flex items-center justify-center gap-2 w-full py-2"
-                                            onClick={handleAddToCart}
-                                            disabled={isLoading}
-                                        >
-                                            <ShoppingCartIcon className="w-4 h-4" />
-                                            Add to Cart
-                                        </Button>
-                                    )}
-                                </div>
-                            </>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    className={`flex-1 ${currentTheme.button} ${currentTheme.buttonHover} text-black gap-2 flex items-center justify-center`}
+                                    onClick={handleAddToCart}
+                                    disabled={isLoading}
+                                >
+                                    <ShoppingCartIcon className="h-4 w-4" />
+                                    Add to Cart
+                                </Button>
+                            )
                         ) : (
                             <Button
-                                color="red"
-                                variant="text"
-                                className="w-full py-2"
+                                size="sm"
                                 disabled
+                                className="flex-1 bg-gray-300 text-gray-600 gap-2 flex items-center justify-center cursor-not-allowed"
                             >
                                 Out of Stock
                             </Button>
                         )}
+                        <Button
+                            size="sm"
+                            variant="text"
+                            className={`p-2 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                            onClick={handleWishlist}
+                        >
+                            {isInWishlist ? (
+                                <HeartSolid className="h-5 w-5 text-red-500" />
+                            ) : (
+                                <HeartOutline className="h-5 w-5" />
+                            )}
+                        </Button>
                     </div>
                 </div>
             </Link>

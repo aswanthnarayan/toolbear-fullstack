@@ -7,8 +7,11 @@ import {
 } from "@material-tailwind/react";
 import { useGetWalletQuery } from '../../../../../App/features/rtkApis/userApi';
 import Pagination from '../../Pagination';
+import { useSelector } from 'react-redux';
 
 const WalletSection = () => {
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [page, setPage] = useState(1);
   const { data: wallet, isLoading } = useGetWalletQuery({ 
     page, 
@@ -16,9 +19,12 @@ const WalletSection = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    );
   }
-
 
   const getTransactionColor = (transaction) => {
     if (transaction.type === 'credit' || transaction.description.toLowerCase().includes('refund')) {
@@ -35,31 +41,36 @@ const WalletSection = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${currentTheme.primary}`}>
       {/* Wallet Balance */}
-      <Card>
+      <Card className={currentTheme.secondary}>
         <CardBody>
-          <Typography variant="h5" color="blue-gray" className="mb-4">
+          <Typography variant="h5" className={`mb-4 ${currentTheme.text}`}>
             Wallet Balance
           </Typography>
-          <Typography variant="h3" color="blue-gray">
+          <Typography variant="h3" className={currentTheme.text}>
             ₹{wallet?.balance || 0}
           </Typography>
         </CardBody>
       </Card>
 
       {/* Transaction History */}
-      <Card>
+      <Card className={currentTheme.secondary}>
         <CardBody>
-          <Typography variant="h5" color="blue-gray" className="mb-4">
+          <Typography variant="h5" className={`mb-4 ${currentTheme.text}`}>
             Transaction History
           </Typography>
           <div className="space-y-4">
             {wallet?.transactions?.map((transaction, index) => (
-              <div key={index} className="flex justify-between items-center p-4 border rounded-lg">
+              <div 
+                key={index} 
+                className={`flex justify-between items-center p-4 rounded-lg ${currentTheme.hover} transition-colors duration-200`}
+              >
                 <div>
-                  <Typography variant="h6">{transaction.description}</Typography>
-                  <Typography color="gray" className="text-sm">
+                  <Typography variant="h6" className={currentTheme.text}>
+                    {transaction.description}
+                  </Typography>
+                  <Typography className={`text-sm ${currentTheme.textGray}`}>
                     {new Date(transaction.date).toLocaleDateString()}
                   </Typography>
                 </div>
@@ -81,6 +92,7 @@ const WalletSection = () => {
                   setPage(newPage);
                   window.scrollTo(0, 0);
                 }}
+                theme={currentTheme}
               />
             </div>
           )}

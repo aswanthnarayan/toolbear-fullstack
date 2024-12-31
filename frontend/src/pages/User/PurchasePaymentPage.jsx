@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Card,
   CardBody,
@@ -38,6 +39,8 @@ const PurchasePaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   
   // Get orderId from either location state or search params
   const orderId = location.state?.orderId || searchParams.get('orderId');
@@ -166,150 +169,174 @@ const PurchasePaymentPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-[132px]">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Order Summary Card */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardBody className="p-6">
-              <Typography variant="h5" className="mb-6">Order Summary</Typography>
-              
-              {/* Products List */}
-              <List>
-                {order?.products.map((item) => (
-                  <ListItem key={item.productId._id} className="py-4">
-                    <ListItemPrefix>
-                      <img 
-                        src={item.productId.additionalImages[0].imageUrl} 
-                        alt={item.productId.name}
-                        className="h-16 w-16 object-cover rounded"
-                      />
-                    </ListItemPrefix>
-                    <div className="flex flex-col flex-1 ml-4">
-                      <Typography variant="h6">{item.productId.name}</Typography>
-                      <Typography color="gray" className="text-sm">
-                        Quantity: {item.quantity} × ₹{item.priceAtPurchase}
-                      </Typography>
-                      <Typography className="font-semibold mt-1">
-                        ₹{item.quantity * item.priceAtPurchase}
-                      </Typography>
-                    </div>
-                  </ListItem>
-                ))}
-              </List>
+    <div className={`min-h-screen ${currentTheme.primary} pt-[132px]`}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Order Summary Card */}
+          <div className="lg:col-span-2">
+            <Card className={currentTheme.secondary}>
+              <CardBody className="p-6">
+                <Typography variant="h5" className={`mb-6 ${currentTheme.text}`}>Order Summary</Typography>
+                
+                {/* Products List */}
+                <List>
+                  {order?.products.map((item) => (
+                    <ListItem key={item.productId._id} className={`py-4 ${currentTheme.secondary} hover:${currentTheme.secondary}`}>
+                      <ListItemPrefix>
+                        <img 
+                          src={item.productId.additionalImages[0].imageUrl} 
+                          alt={item.productId.name}
+                          className="h-16 w-16 object-cover rounded"
+                        />
+                      </ListItemPrefix>
+                      <div className="flex flex-col flex-1 ml-4">
+                        <Typography variant="h6" className={currentTheme.text}>{item.productId.name}</Typography>
+                        <Typography className={`text-sm ${currentTheme.textGray}`}>
+                          Quantity: {item.quantity} × ₹{item.priceAtPurchase}
+                        </Typography>
+                        <Typography className={`font-semibold mt-1 ${currentTheme.text}`}>
+                          ₹{item.quantity * item.priceAtPurchase}
+                        </Typography>
+                      </div>
+                    </ListItem>
+                  ))}
+                </List>
 
-              {/* Price Breakdown */}
-              <div className="border-t mt-4 pt-4 space-y-2">
-                <div className="flex justify-between">
-                  <Typography>Subtotal:</Typography>
-                  <Typography>₹{(order?.totalAmount - (order?.shippingAmount || 0))}</Typography>
-                </div>
-                <div className="flex justify-between">
-                  <Typography>Shipping:</Typography>
-                  <Typography>₹{order?.shippingAmount || 0}</Typography>
-                </div>
-                <div className="flex justify-between font-bold pt-2 border-t">
-                  <Typography>Total:</Typography>
-                  <Typography>₹{(order?.totalAmount )}</Typography>
-                </div>
-              </div>
-
-              {/* Delivery Address */}
-              <div className="mt-6 border-t pt-4">
-                <Typography variant="h6" className="mb-2">Delivery Address</Typography>
-                <div className="bg-gray-50 p-4 rounded">
-                  <Typography>{order?.address.name}</Typography>
-                  <Typography className="text-sm text-gray-600">
-                    {order?.address.street}, {order?.address.city}
-                    <br />
-                    {order?.address.state}, {order?.address.pinCode}
-                    <br />
-                    Phone: {order?.address.mobile}
-                  </Typography>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-
-        {/* Payment Method Card */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardBody className="p-6">
-              <Typography variant="h5" className="mb-6">Select Payment Method</Typography>
-
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                  <Radio
-                    name="payment"
-                    color="blue"
-                    checked={selectedPaymentMethod === 'COD'}
-                    onChange={() => setSelectedPaymentMethod('COD')}
-                    disabled={order?.totalAmount < 1000}
-                  />
-                  <div>
-                    <Typography variant="h6">Cash on Delivery</Typography>
-                    <Typography variant="small" color="gray">Pay when you receive the tools</Typography>
-                    {order?.totalAmount < 1000 && (
-                      <Typography variant="small" color="red" className="mt-1">
-                        COD available only on orders above ₹1,000
-                      </Typography>
-                    )}
+                {/* Price Breakdown */}
+                <div className={`border-t mt-4 pt-4 space-y-2 ${currentTheme.border}`}>
+                  <div className="flex justify-between">
+                    <Typography className={currentTheme.text}>Subtotal:</Typography>
+                    <Typography className={currentTheme.text}>₹{(order?.totalAmount - (order?.shippingAmount || 0))}</Typography>
+                  </div>
+                  <div className="flex justify-between">
+                    <Typography className={currentTheme.text}>Shipping:</Typography>
+                    <Typography className={currentTheme.text}>₹{order?.shippingAmount || 0}</Typography>
+                  </div>
+                  <div className={`flex justify-between font-bold pt-2 border-t ${currentTheme.border}`}>
+                    <Typography className={currentTheme.text}>Total:</Typography>
+                    <Typography className={currentTheme.text}>₹{(order?.totalAmount)}</Typography>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                  <Radio
-                    name="payment"
-                    color="blue"
-                    checked={selectedPaymentMethod === 'WALLET'}
-                    onChange={() => setSelectedPaymentMethod('WALLET')}
-                    disabled={insufficientWalletBalance}
-                  />
-                  <div>
-                    <Typography variant="h6">Pay using Wallet</Typography>
-                    <Typography variant="small" color="gray">
-                      Available Balance: ₹{wallet?.balance || 0}
+                {/* Delivery Address */}
+                <div className={`mt-6 border-t pt-4 ${currentTheme.border}`}>
+                  <Typography variant="h6" className={`mb-2 ${currentTheme.text}`}>Delivery Address</Typography>
+                  <div className={`${currentTheme.secondary} p-4 rounded`}>
+                    <Typography className={currentTheme.text}>{order?.address.name}</Typography>
+                    <Typography className={`text-sm ${currentTheme.textGray}`}>
+                      {order?.address.street}, {order?.address.city}
+                      <br />
+                      {order?.address.state}, {order?.address.pinCode}
+                      <br />
+                      Phone: {order?.address.mobile}
                     </Typography>
-                    {insufficientWalletBalance && (
-                      <Typography variant="small" color="red">
-                        Insufficient balance
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Payment Method Card */}
+          <div className="lg:col-span-1">
+            <Card className={currentTheme.secondary}>
+              <CardBody className="p-6">
+                <Typography variant="h5" className={`mb-6 ${currentTheme.text}`}>Select Payment Method</Typography>
+
+                <div className="space-y-4 mb-6">
+                  <div 
+                    className={`flex items-center space-x-3 p-4 border rounded-lg 
+                      ${order?.totalAmount >= 1000 ? 'cursor-pointer' : 'opacity-60'} 
+                      ${selectedPaymentMethod === 'COD' 
+                        ? `${currentTheme.secondary} border-2 border-yellow-200` 
+                        : `${currentTheme.secondary} hover:shadow-md`}`}
+                    onClick={() => order?.totalAmount >= 1000 && setSelectedPaymentMethod('COD')}
+                  >
+                    <Radio
+                      name="payment"
+                      color="yellow"
+                      checked={selectedPaymentMethod === 'COD'}
+                      onChange={() => {}}
+                      disabled={order?.totalAmount < 1000}
+                      className="pointer-events-none"
+                    />
+                    <div>
+                      <Typography variant="h6" className={currentTheme.text}>Cash on Delivery</Typography>
+                      <Typography variant="small" className={currentTheme.textGray}>Pay when you receive the tools</Typography>
+                      {order?.totalAmount < 1000 && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          COD available only on orders above ₹1,000
+                        </Typography>
+                      )}
+                    </div>
+                  </div>
+
+                  <div 
+                    className={`flex items-center space-x-3 p-4 border rounded-lg 
+                      ${!insufficientWalletBalance ? 'cursor-pointer' : 'opacity-60'}
+                      ${selectedPaymentMethod === 'WALLET' 
+                        ? `${currentTheme.secondary} border-2 border-yellow-200` 
+                        : `${currentTheme.secondary} hover:shadow-md`}`}
+                    onClick={() => !insufficientWalletBalance && setSelectedPaymentMethod('WALLET')}
+                  >
+                    <Radio
+                      name="payment"
+                      color="yellow"
+                      checked={selectedPaymentMethod === 'WALLET'}
+                      onChange={() => {}}
+                      disabled={insufficientWalletBalance}
+                      className="pointer-events-none"
+                    />
+                    <div>
+                      <Typography variant="h6" className={currentTheme.text}>Pay using Wallet</Typography>
+                      <Typography variant="small" className={currentTheme.textGray}>
+                        Available Balance: ₹{wallet?.balance || 0}
                       </Typography>
-                    )}
+                      {insufficientWalletBalance && (
+                        <Typography variant="small" className="text-red-500">
+                          Insufficient balance
+                        </Typography>
+                      )}
+                    </div>
+                  </div>
+
+                  <div 
+                    className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer
+                      ${selectedPaymentMethod === 'RAZORPAY' 
+                        ? `${currentTheme.secondary} border-2 border-yellow-200` 
+                        : `${currentTheme.secondary} hover:shadow-md`}`}
+                    onClick={() => setSelectedPaymentMethod('RAZORPAY')}
+                  >
+                    <Radio
+                      name="payment"
+                      color="yellow"
+                      checked={selectedPaymentMethod === 'RAZORPAY'}
+                      onChange={() => {}}
+                      className="pointer-events-none"
+                    />
+                    <div>
+                      <Typography variant="h6" className={currentTheme.text}>Online Payment</Typography>
+                      <Typography variant="small" className={currentTheme.textGray}>Pay securely with Razorpay</Typography>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                  <Radio
-                    name="payment"
-                    color="blue"
-                    checked={selectedPaymentMethod === 'RAZORPAY'}
-                    onChange={() => setSelectedPaymentMethod('RAZORPAY')}
-                  />
-                  <div>
-                    <Typography variant="h6">Online Payment</Typography>
-                    <Typography variant="small" color="gray">Pay securely with Razorpay</Typography>
+                <div className={`border-t pt-4 ${currentTheme.border}`}>
+                  <div className="flex justify-between mb-4">
+                    <Typography className={currentTheme.text}>Amount to Pay:</Typography>
+                    <Typography variant="h6" className={currentTheme.text}>₹{order?.totalAmount || 0}</Typography>
                   </div>
-                </div>
-              </div>
 
-              <div className="border-t pt-4">
-                <div className="flex justify-between mb-4">
-                  <Typography>Amount to Pay:</Typography>
-                  <Typography variant="h6">₹{order?.totalAmount || 0}</Typography>
+                  <Button
+                    className={`w-full ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
+                    size="lg"
+                    onClick={handlePayment}
+                  >
+                    Proceed to Pay
+                  </Button>
                 </div>
-
-                <Button
-                  color="blue"
-                  size="lg"
-                  fullWidth
-                  onClick={handlePayment}
-                >
-                  Proceed to Pay
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

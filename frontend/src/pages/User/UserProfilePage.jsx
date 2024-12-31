@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ProfileSidebar from '../../components/Users/profile/sidebar/ProfileSidebar';
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { useSelector } from 'react-redux';
 
 const UserProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
   
   // Get active section from the current path
   const activeSection = location.pathname.split('/').pop();
@@ -23,10 +26,10 @@ const UserProfilePage = () => {
   }, [isSidebarOpen]);
 
   return (
-    <div className={`min-h-screen pt-[112px] w-full`}>
+    <div className={`min-h-screen pt-[112px] w-full ${currentTheme.primary}`}>
       <div className="flex relative w-full">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-72 h-[calc(100vh-112px)] sticky top-[112px] border-r border-gray-200">
+        <div className={`hidden lg:block w-72 h-[calc(100vh-112px)] sticky top-[112px] border-r ${currentTheme.border} ${currentTheme.secondary}`}>
           <ProfileSidebar 
             activeSection={activeSection}
             onSectionChange={(section) => navigate(`/user/profile/${section}`)}
@@ -41,7 +44,7 @@ const UserProfilePage = () => {
 
         {/* Mobile Sidebar - Content */}
         <div className={`
-          lg:hidden fixed left-0 top-0 h-full w-72 bg-white z-50 transform transition-transform duration-300
+          lg:hidden fixed left-0 top-0 h-full w-72 ${currentTheme.secondary} z-50 transform transition-transform duration-300
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           <ProfileSidebar 
@@ -54,7 +57,7 @@ const UserProfilePage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-h-[calc(100vh-112px)] bg-gray-50">
+        <div className={`flex-1 min-h-[calc(100vh-112px)] ${currentTheme.primary}`}>
           <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
@@ -63,7 +66,7 @@ const UserProfilePage = () => {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-4 right-4 z-30 bg-blue-500 text-white p-3 rounded-full shadow-lg"
+          className={`lg:hidden fixed bottom-4 right-4 z-30 ${currentTheme.button} ${currentTheme.buttonHover} text-black p-3 rounded-full shadow-lg`}
         >
           <UserCircleIcon className="h-6 w-6" />
         </button>
