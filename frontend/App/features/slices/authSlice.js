@@ -6,7 +6,8 @@ const extractMinimalUserData = (user) => ({
   // _id: user._id,
   role: user.role,
   isVerified: user.isVerified,
-  isBlocked: user.isBlocked
+  isBlocked: user.isBlocked,
+  provider: user.provider 
 });
 
 const authSlice = createSlice({
@@ -19,8 +20,7 @@ const authSlice = createSlice({
       state.user = null;
       // Clear any stored auth data
       localStorage.removeItem('user');
-      
-    },
+    }
   },
   extraReducers: (builder) => {
     builder

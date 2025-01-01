@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-const OtpComponent = ({ length = 6, onComplete }) => {
+const OtpComponent = ({ length = 6, onComplete, reset }) => {
   const [otp, setOtp] = useState(new Array(length).fill(""));
   const inputRefs = useRef([]);
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
@@ -13,6 +13,15 @@ const OtpComponent = ({ length = 6, onComplete }) => {
       inputRefs.current[0].focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (reset) {
+      setOtp(new Array(length).fill(""));
+      if (inputRefs.current[0]) {
+        inputRefs.current[0].focus();
+      }
+    }
+  }, [reset, length]);
 
   const handleChange = (e, index) => {
     const value = e.target.value;

@@ -136,7 +136,8 @@ export const postSignIn = async (req, res) => {
         phone: user.phone,
         isVerified: user.isVerified,
         role: user.role,
-        isBlocked: user.isBlocked
+        isBlocked: user.isBlocked,
+        provider: user.provider
       },
     });
   } catch (error) {

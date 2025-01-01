@@ -25,6 +25,7 @@ const EditProfileSection = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
   const {
     register,
@@ -178,7 +179,8 @@ const EditProfileSection = () => {
             </div>
           </CardBody>
         </Card>
-
+        {user?.provider === 'local' && (
+          <>
         <div className="flex justify-between items-center">
           <Button
             variant="text"
@@ -277,6 +279,8 @@ const EditProfileSection = () => {
               </div>
             </CardBody>
           </Card>
+            )}
+          </>
         )}
 
         <div className="flex justify-end gap-4">

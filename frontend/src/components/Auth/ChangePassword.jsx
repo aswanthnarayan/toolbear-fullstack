@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import CustomInput from '../CustomInput';
 import CustomButton from '../CustomButton';
 import { useCreateNewPwMutation } from '../../../App/features/rtkApis/authApi';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const ChangePassword = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -12,7 +13,9 @@ const ChangePassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   if(!email) {
     return <Navigate to="/no-access" replace />;
   }
@@ -71,11 +74,11 @@ const ChangePassword = () => {
       )}
       
       <form className="space-y-6">
-        <div className="transform transition-all duration-300 hover:translate-x-1">
+        <div className="transform transition-all duration-300 hover:translate-x-1 relative">
           <CustomInput
             label="Password"
             placeholder="Enter your password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             theme={currentTheme}
             {...register("password", {
               required: "Password is required",
@@ -87,13 +90,24 @@ const ChangePassword = () => {
             })}
             error={errors.password?.message}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className={`absolute right-3 top-[31px] p-1 rounded-full ${currentTheme.hover} ${currentTheme.text}`}
+          >
+            {showPassword ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
 
-        <div className="transform transition-all duration-300 hover:translate-x-1">
+        <div className="transform transition-all duration-300 hover:translate-x-1 relative">
           <CustomInput
             label="Confirm Password"
             placeholder="Confirm your password"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             theme={currentTheme}
             {...register("confirmPassword", {
               required: "Please confirm your password",
@@ -102,6 +116,17 @@ const ChangePassword = () => {
             })}
             error={errors.confirmPassword?.message}
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className={`absolute right-3 top-[31px] p-1 rounded-full ${currentTheme.hover} ${currentTheme.text}`}
+          >
+            {showConfirmPassword ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
 
         <div className="mt-8">
