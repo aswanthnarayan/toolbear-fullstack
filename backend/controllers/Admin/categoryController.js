@@ -7,11 +7,16 @@ export const createCategory = async (req, res) => {
   try {
     const { name, desc, offerPercentage, isListed } = req.body;
 
-    const existingCategory = await Category.findOne({ 
-      name: { $regex: new RegExp(`^${name}$`, 'i') }
-    });
-    
-    if (existingCategory) {
+      // Remove all spaces and special characters for comparison
+      const normalizedNewName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+      const existingCategory = await Category.find({});
+      const exists = existingCategory.some(category => {
+        const normalizedExistingName = category.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedExistingName === normalizedNewName;
+      });
+      
+      if (exists) {
       return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
         message: MessageEnum.Admin.CATEGORY_EXISTS 
@@ -111,12 +116,15 @@ export const updateCategory = async (req, res) => {
     const { name, desc, offerPercentage, isListed } = req.body;
     
     // Check if another category with the same name exists (excluding current category)
-    const existingCategory = await Category.findOne({ 
-      name: { $regex: new RegExp(`^${name}$`, 'i') }, 
-      _id: { $ne: categoryId } 
-    });
-    
-    if (existingCategory) {
+    const normalizedNewName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+      const existingCategory = await Category.find({ _id: { $ne: categoryId } });
+      const exists = existingCategory.some(category => {
+        const normalizedExistingName = category.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedExistingName === normalizedNewName;
+      });
+      
+      if (exists) {
       return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
         message: MessageEnum.Admin.CATEGORY_EXISTS 

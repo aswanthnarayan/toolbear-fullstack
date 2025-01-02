@@ -123,11 +123,11 @@ const AdminBannerPage = () => {
           <CardBody>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[0, 1, 2].map((index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <Typography variant="h6" className="mb-2">
+                <div key={index} className="flex flex-col space-y-4">
+                  <Typography variant="h6" className="text-center">
                     Banner {index + 1}
                   </Typography>
-                  <div className="relative w-full aspect-[16/9] mb-2">
+                  <div className="relative w-full h-[200px]">
                     {bannerPreviews[index] ? (
                       <>
                         <img
@@ -139,14 +139,14 @@ const AdminBannerPage = () => {
                           size="sm"
                           color="red"
                           variant="text"
-                          className="absolute top-2 right-2"
+                          className="!absolute top-2 right-2 bg-white/80 hover:bg-white"
                           onClick={() => handleRemoveImage(index)}
                         >
                           <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+                      <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
                         <input
                           type="file"
                           accept="image/*"
@@ -159,11 +159,12 @@ const AdminBannerPage = () => {
                       </div>
                     )}
                   </div>
-                  <div className="w-full mt-2">
+                  <div className="w-full">
                     <Select
                       label="Select Brand"
                       value={selectedBrands[index]}
                       onChange={(value) => handleBrandChange(value, index)}
+                      className="bg-white"
                     >
                       {activeBrands.map((brand) => (
                         <Option key={brand._id} value={brand._id}>

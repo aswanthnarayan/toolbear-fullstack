@@ -131,8 +131,9 @@ export const completePayment = async (req, res) => {
 
                 // First update the order status
                 order.paymentStatus = 'Paid';
-                order.orderStatus = 'Order Placed';
+                order.status = 'Order Placed';  
                 order.paymentMethod = 'WALLET';
+                
                 await order.save();
 
                 // Then update wallet balance
@@ -153,10 +154,18 @@ export const completePayment = async (req, res) => {
                         },
                         { new: true }
                     );
+
+                    // Clear the cart after successful wallet payment
+                    await Cart.findOneAndUpdate(
+                        { user: order.userId },
+                        { $set: { items: [], totalAmount: 0 } }
+                    );
+
+                    return res.status(200).json({ message: 'Payment completed successfully' });
                 } catch (walletError) {
                     // If wallet update fails, revert order status
                     order.paymentStatus = 'Failed';
-                    order.orderStatus = 'Payment Failed';
+                    order.status = 'Payment Pending';  
                     order.paymentMethod = 'PENDING';
                     await order.save();
                     throw new Error('Wallet update failed');

@@ -7,8 +7,9 @@ import {
   Button,
   Select,
   Option,
+  Spinner,
 } from "@material-tailwind/react";
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import CustomInput from '../../components/CustomInput';
 import { useCreateCouponMutation } from '../../../App/features/rtkApis/adminApi';
 import { toast } from 'sonner';
@@ -19,10 +20,11 @@ const AddCouponPage = () => {
   const [createCoupon, { isLoading }] = useCreateCouponMutation();
 
   const { 
-    control, 
+    register, 
     handleSubmit,
     formState: { errors },
-    watch 
+    watch,
+    setValue 
   } = useForm({
     defaultValues: {
       code: '',
@@ -68,61 +70,65 @@ const AddCouponPage = () => {
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <form className="mt-8 mb-2 w-full max-w-screen-lg px-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4 flex flex-col gap-6">
-              <Controller
-                name="code"
-                control={control}
-                rules={{ 
+              <CustomInput
+                size="lg"
+                label="Coupon Code"
+                error={errors.code?.message}
+                {...register("code", {
                   required: 'Coupon code is required',
-                  pattern: {
-                    value: /^[A-Za-z0-9]+$/,
-                    message: 'Only letters and numbers are allowed'
-                  }
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    size="lg"
-                    label="Coupon Code"
-                    error={errors.code?.message}
-                    {...field}
-                  />
-                )}
+                  minLength: 3,
+                  maxLength: 10,
+                  validate:{
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Coupon code cannot be empty or spaces only",
+                    Alphanumeric: (value) => {
+                      const regex = /^[A-Za-z0-9]+$/;
+                      return regex.test(value) || 'Coupon code must be alphanumeric';
+                    },
+                  },
+                })}
               />
 
-              <Controller
-                name="description"
-                control={control}
-                rules={{ required: 'Description is required' }}
-                render={({ field }) => (
-                  <CustomInput
-                    size="lg"
-                    label="Description"
-                    error={errors.description?.message}
-                    {...field}
-                  />
-                )}
+              <CustomInput
+                size="lg"
+                label="Description"
+                error={errors.description?.message}
+                {...register("description", {
+                  required: 'Description is required',
+                  minLength: {
+                    value: 10,
+                    message: "Description must be at least 10 characters"
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: "Description must not exceed 500 characters"
+                  },
+                  validate: {
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Description cannot be empty or spaces only",
+                    firstThreeNotSpecial: (value) =>
+                      /^[a-zA-Z]{3}/.test(value.trim()) || "The first three characters must be letters",
+                  }
+                })}
               />
 
               <div className="w-72">
-                <Controller
-                  name="discountType"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      label="Discount Type"
-                      value={field.value}
-                      onChange={(value) => field.onChange(value)}
-                    >
-                      <Option value="percentage">Percentage</Option>
-                      <Option value="fixed">Fixed Amount</Option>
-                    </Select>
-                  )}
-                />
+                <Select
+                  label="Discount Type"
+                  value={discountType}
+                  onChange={(value) => setValue('discountType', value)}
+                >
+                  <Option value="percentage">Percentage</Option>
+                  <Option value="fixed">Fixed Amount</Option>
+                </Select>
               </div>
 
-              <Controller
-                name="discountAmount"
-                control={control}
-                rules={{
+              <CustomInput
+                type="number"
+                size="lg"
+                label={`Discount ${discountType === 'percentage' ? 'Percentage' : 'Amount'}`}
+                error={errors.discountAmount?.message}
+                {...register("discountAmount", {
                   required: 'Discount amount is required',
                   min: {
                     value: 0,
@@ -132,97 +138,72 @@ const AddCouponPage = () => {
                     value: discountType === 'percentage' ? 100 : 100000,
                     message: discountType === 'percentage' ? 'Percentage cannot exceed 100%' : 'Amount too high'
                   }
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    type="number"
-                    size="lg"
-                    label={`Discount ${discountType === 'percentage' ? 'Percentage' : 'Amount'}`}
-                    error={errors.discountAmount?.message}
-                    {...field}
-                  />
-                )}
+                })}
               />
 
-              <Controller
-                name="minimumPurchase"
-                control={control}
-                rules={{
+              <CustomInput
+                type="number"
+                size="lg"
+                label="Minimum Purchase Amount"
+                error={errors.minimumPurchase?.message}
+                {...register("minimumPurchase", {
                   required: 'Minimum purchase amount is required',
                   min: {
                     value: 0,
                     message: 'Amount must be positive'
                   }
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    type="number"
-                    size="lg"
-                    label="Minimum Purchase Amount"
-                    error={errors.minimumPurchase?.message}
-                    {...field}
-                  />
-                )}
+                })}
               />
 
-              <Controller
-                name="maxDiscount"
-                control={control}
-                rules={{
+              <CustomInput
+                type="number"
+                size="lg"
+                label="Maximum Discount Amount"
+                error={errors.maxDiscount?.message}
+                {...register("maxDiscount", {
                   required: 'Maximum discount amount is required',
                   min: {
                     value: 0,
                     message: 'Amount must be positive'
+                  },
+                  validate: {
+                    notMoreThanMinPurchase: (value) => {
+                      const minPurchase = watch('minimumPurchase');
+                      return (
+                        !minPurchase || 
+                        Number(value) <= Number(minPurchase) || 
+                        'Maximum discount cannot be more than minimum purchase amount'
+                      );
+                    }
                   }
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    type="number"
-                    size="lg"
-                    label="Maximum Discount Amount"
-                    error={errors.maxDiscount?.message}
-                    {...field}
-                  />
-                )}
+                })}
               />
 
-              <Controller
-                name="startDate"
-                control={control}
-                rules={{
+              <CustomInput
+                type="datetime-local"
+                size="lg"
+                label="Start Date"
+                error={errors.startDate?.message}
+                step="60"
+                {...register("startDate", {
                   required: 'Start date is required',
                   validate: value => 
                     new Date(value) >= new Date() || 'Start date cannot be in the past'
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    type="datetime-local"
-                    size="lg"
-                    label="Start Date"
-                    error={errors.startDate?.message}
-                    {...field}
-                  />
-                )}
+                })}
               />
 
-              <Controller
-                name="expiryDate"
-                control={control}
-                rules={{
+              <CustomInput
+                type="datetime-local"
+                size="lg"
+                label="Expiry Date"
+                error={errors.expiryDate?.message}
+                step="60"
+                {...register("expiryDate", {
                   required: 'Expiry date is required',
                   validate: value => 
                     !startDate || new Date(value) > new Date(startDate) || 
                     'Expiry date must be after start date'
-                }}
-                render={({ field }) => (
-                  <CustomInput
-                    type="datetime-local"
-                    size="lg"
-                    label="Expiry Date"
-                    error={errors.expiryDate?.message}
-                    {...field}
-                  />
-                )}
+                })}
               />
 
             </div>
@@ -233,7 +214,13 @@ const AddCouponPage = () => {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating...' : 'Create Coupon'}
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Spinner className="h-4 w-4" /> Creating...
+                </div>
+              ) : (
+                'Create Coupon'
+              )}
             </Button>
           </form>
         </CardBody>

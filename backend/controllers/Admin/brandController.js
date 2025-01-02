@@ -14,11 +14,16 @@ export const createBrand = async (req, res) => {
             about
         } = req.body;
 
-        const existingBrand = await Brand.findOne({ 
-          name: { $regex: new RegExp(`^${name}$`, 'i') }
+        // Remove all spaces and special characters for comparison
+        const normalizedNewName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        const existingBrand = await Brand.find({});
+        const exists = existingBrand.some(brand => {
+          const normalizedExistingName = brand.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return normalizedExistingName === normalizedNewName;
         });
         
-        if (existingBrand) {
+        if (exists) {
           return res.status(HttpStatusEnum.CONFLICT).json({ 
             field: 'name',
             message: MessageEnum.Brand.NAME_EXISTS 
@@ -230,12 +235,15 @@ export const updateBrand = async (req, res) => {
     const { brandId } = req.params;
     const updateData = { ...req.body };
     
-    const existingBrand = await Brand.findOne({ 
-      name: { $regex: new RegExp(`^${updateData.name}$`, 'i') }, 
-      _id: { $ne: brandId } 
+    const normalizedNewName = updateData.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+    const existingBrands = await Brand.find({ _id: { $ne: brandId } });
+    const exists = existingBrands.some(brand => {
+        const normalizedExistingName = brand.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedExistingName === normalizedNewName;
     });
-    
-    if (existingBrand) {
+        
+    if (exists) {
       return res.status(HttpStatusEnum.CONFLICT).json({ 
         field: 'name',
         message: MessageEnum.Brand.NAME_EXISTS 

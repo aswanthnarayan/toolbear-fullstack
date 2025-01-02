@@ -34,15 +34,15 @@ function AdminNavbar() {
       </div>
        
       <div className="flex items-center space-x-4 ml-auto ">
-        <img 
+        {/* <img 
           src="https://placehold.co/40x40" 
           alt="User avatar" 
           className="h-10 w-10 rounded-full hidden sm:flex"
-        />
+        /> */}
         
         <div className="text-right">
-          <div className="text-xs font-semibold">Aswanth</div>
-          <div className="text-xs text-gray-400">Admin</div>
+        <div className="text-sm font-semibold">{user?.name || 'Admin'}</div>
+        <div className="text-xs text-gray-500">{user?.email || 'admin@gmail.com'}</div>
         </div>
         
         <Link  

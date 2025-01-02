@@ -43,6 +43,17 @@ export const processOrderRefund = async (req, res) => {
     const userId = req.user._id;
     const { orderId, amount } = req.body;
 
+    // Check if order exists and was paid
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Only process refund if order was paid
+    if (order.paymentStatus !== 'Paid') {
+      return res.status(400).json({ message: 'Cannot refund unpaid order' });
+    }
+
     // Find or create wallet
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {

@@ -60,6 +60,7 @@ function App() {
 
   return (
     <Routes>
+     
       {/* Public and Protected Routes with Navbar */}
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to={getHomeRoute()} />} />
@@ -132,6 +133,7 @@ function App() {
       <Route path="/no-access" element={<NoAccessPage />} />
       {/* <Route path="*" element={<Navigate to="/no-access" replace />} /> */}
     </Routes>
+    
   );
 }
 

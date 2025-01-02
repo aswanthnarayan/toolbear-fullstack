@@ -181,7 +181,14 @@ const CategoryForm = ({ initialData, onSubmit, isLoading, mode, error }) => {
                     value: 50,
                     message: "Category name must not exceed 50 characters"
                   },
-                  validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
+                  validate: {
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Name cannot be empty or spaces only",
+                  
+                    noSpecialChars: (value) =>
+                      /^[a-zA-Z\s]*$/.test(value) || "Name cannot include special characters",
+                  
+                  }
                 })}
                 error={errors.name?.message}
               />
@@ -200,7 +207,13 @@ const CategoryForm = ({ initialData, onSubmit, isLoading, mode, error }) => {
                     value: 500,
                     message: "Description must not exceed 500 characters"
                   },
-                  validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
+                  validate: {
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Description cannot be empty or spaces only",
+                  
+                    firstThreeNotSpecial: (value) =>
+                      /^[a-zA-Z]{3}/.test(value.trim()) || "The first three characters must be letters",
+                  }
                 })}
                 error={errors.desc?.message}
               />

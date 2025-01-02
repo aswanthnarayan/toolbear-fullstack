@@ -17,15 +17,21 @@ export const createProduct = async (req, res) => {
             isListed
         } = req.body;
 
-        const existingProduct = await Product.findOne({ 
-            name: { $regex: new RegExp(`^${name}$`, 'i') }
-          });
-          if (existingProduct) {
+        // Remove all spaces and special characters for comparison
+      const normalizedNewName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+      const existingProduct = await Product.find({});
+      const exists = existingProduct.some(product => {
+        const normalizedExistingName = product.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedExistingName === normalizedNewName;
+      });
+      
+      if (exists) {
             return res.status(HttpStatusEnum.CONFLICT).json({ 
               field: 'name',
               message: MessageEnum.Admin.PRODUCT_EXISTS 
             });
-          }
+     }
 
         // Basic validation
         if (!name || !desc || !category || !brand || !price || stock === undefined) {
@@ -304,11 +310,16 @@ export const updateProduct = async (req, res) => {
         } = req.body;
 
 
-        const existingProduct = await Product.findOne({ 
-            name: { $regex: new RegExp(`^${name}$`, 'i') },
-            _id: { $ne: productId } 
-          });
-          if (existingProduct) {
+        // Check if another category with the same name exists (excluding current category)
+    const normalizedNewName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+    const existingProduct = await Product.find({ _id: { $ne: productId } });
+    const exists = existingProduct.some(product => {
+      const normalizedExistingName = product.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return normalizedExistingName === normalizedNewName;
+    });
+    
+    if (exists) {
             return res.status(HttpStatusEnum.CONFLICT).json({ 
               field: 'name',
               message: MessageEnum.Admin.PRODUCT_EXISTS 

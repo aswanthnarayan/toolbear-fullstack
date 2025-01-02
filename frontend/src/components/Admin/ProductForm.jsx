@@ -80,20 +80,25 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
         // In create mode
         if (mode === 'add') {
           const validImages = additionalImages.filter(img => img !== null);
-          if (validImages.length !== 3) {
-            return "Exactly 3 additional images are required";
+          const totalImages = validImages.length;
+          console.log(totalImages);
+          
+          if (totalImages < 2) {
+            const remaining = 2 - totalImages;
+            return `Please add ${remaining} more image${remaining !== 1 ? 's' : ''}`;
           }
         }
         
         // In edit mode
         if (mode === 'edit') {
-          const totalValidImages = additionalImagePreviews.reduce((count, preview, index) => {
-            // Count either a new image or an existing preview at each position
-            return count + ((additionalImages[index] || preview) ? 1 : 0);
+          const totalValidImages = additionalImages.reduce((count, img, idx) => {
+            // Count either a new image or an existing preview that hasn't been replaced
+            return count + (img !== null || (additionalImagePreviews[idx] && !additionalImages[idx]) ? 1 : 0);
           }, 0);
           
-          if (totalValidImages !== 3) {
-            return "Exactly 3 additional images are required";
+          if (totalValidImages < 3) {
+            const remaining = 3 - totalValidImages;
+            return `Please add ${remaining} more image${remaining !== 1 ? 's' : ''}`;
           }
         }
         return true;
@@ -138,13 +143,6 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
   }, [mode, initialData, categories, brands, reset]);
 
   useEffect(() => {
-    // Register all fields with their validation rules
-    Object.entries(validationRules).forEach(([fieldName, rules]) => {
-      register(fieldName, rules);
-    });
-  }, [register]);
-
-  useEffect(() => {
     if (initialData && mode === 'edit') {
       // image preview 
       setMainImagePreview(initialData.mainImage?.imageUrl || initialData.mainImage);
@@ -156,80 +154,6 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
 
   const selectedCategory = watch("category");
   const selectedBrand = watch("brand");
-
-  // Validation schema
-  const validationRules = {
-    name: { 
-      required: "Product name is required",
-      minLength: { value: 3, message: "Name must be at least 3 characters" }
-    },
-    desc: { 
-      required: "Description is required",
-      minLength: { value: 10, message: "Description must be at least 10 characters" }
-    },
-    category: { 
-      required: "Please select a category"
-    },
-    brand: { 
-      required: "Please select a brand"
-    },
-    price: { 
-      required: "Price is required",
-      min: { value: 0, message: "Price must be greater than 0" },
-      validate: value => !isNaN(value) || "Price must be a number"
-    },
-    stock: { 
-      required: "Stock is required",
-      validate: {
-        isNumber: value => !isNaN(value) || "Stock must be a number",
-        isPositive: value => Number(value) >= 0 || "Stock cannot be negative",
-        isInteger: value => Number.isInteger(Number(value)) || "Stock must be a whole number"
-      }
-    },
-    offerPercentage: {
-      required: "Offer percentage is required",
-      validate: {
-        isNumber: value => {
-          if (value === "" || value === null) return true;
-          return !isNaN(value) || "Offer percentage must be a number";
-        },
-        range: value => {
-          if (value === "" || value === null) return true;
-          const numValue = Number(value);
-          return (numValue >= 0 && numValue <= 100) || "Offer percentage must be between 0 and 100";
-        },
-        isInteger: value => {
-          if (value === "" || value === null) return true;
-          return Number.isInteger(Number(value)) || "Offer percentage must be a whole number";
-        }
-      }
-    },
-    "specifications.color": { 
-      required: "Color is required"
-    },
-    "specifications.productType": { 
-      required: "Product type is required"
-    },
-    "specifications.weight": { 
-      required: "Weight is required"
-    },
-    "specifications.condition": { 
-      required: "Please select a condition",
-      validate: value => value !== "" || "Please select a condition"
-    },
-    "specifications.countryOfOrigin": { 
-      required: "Country of origin is required"
-    },
-    "specifications.warranty": { 
-      required: "Warranty information is required"
-    },
-    "specifications.includedItems": { 
-      required: "Included items are required"
-    },
-    isListed: {
-      required: "Please select a listing status"
-    }
-  };
 
   const handleSelectChange = (field, value) => {
     setValue(field, value);
@@ -317,14 +241,15 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
           return newImages;
         });
         
-        // Keep the existing previews for other positions
+        // Update the previews
         setAdditionalImagePreviews(prevPreviews => {
           const newPreviews = [...prevPreviews];
           newPreviews[currentImageIndex] = croppedImage;
           return newPreviews;
         });
 
-        // Trigger validation after updating images
+        // Clear any existing errors and trigger validation
+        clearErrors("additionalImages");
         trigger("additionalImages");
       }
     } catch (error) {
@@ -350,12 +275,30 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
     trigger("additionalImages");
   };
 
+  const validateImages = () => {
+    const totalImages = mode === 'add'
+      ? additionalImages.filter(img => img !== null).length
+      : additionalImages.reduce((count, img, idx) => {
+          return count + (img !== null || (additionalImagePreviews[idx] && !additionalImages[idx]) ? 1 : 0);
+        }, 0);
+
+    return totalImages === 3;
+  };
+
   const onSubmit = async (data) => {
     try {
       if (!mainImageFile && mode === 'add') {
         setError("image", {
           type: "manual",
           message: "Main product image is required"
+        });
+        return;
+      }
+
+      if (!validateImages()) {
+        setError("additionalImages", {
+          type: "manual",
+          message: "Please add 3 additional images"
         });
         return;
       }
@@ -400,18 +343,6 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
         });
       }
 
-      // Validate that we have enough images
-      const totalImages = additionalImages.filter(img => img).length + 
-                         (mode === 'edit' ? additionalImagePreviews.filter((preview, index) => preview && !additionalImages[index]).length : 0);
-
-      if (totalImages !== 3) {
-        setError("additionalImages", {
-          type: "manual",
-          message: "Exactly 3 additional images are required"
-        });
-        return;
-      }
-
       const result = await submitForm(formData);
       if (result?.error) {
         // Handle the error returned from parent component
@@ -445,7 +376,22 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 placeholder="Enter product name"
                 {...register("name",{
                   required:"Product Name required",
-                  validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
+                  minLength: {
+                    value: 3,
+                    message: "Product name must be at least 3 characters"
+                  },
+                  maxLength: {
+                    value: 50,
+                    message: "Product name must not exceed 50 characters"
+                  },
+                  validate: {
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Name cannot be empty or spaces only",
+                  
+                    noSpecialChars: (value) =>
+                      /^[a-zA-Z\s]*$/.test(value) || "Name cannot include special characters",
+                  
+                  }
                 })}
                 error={errors.name?.message}
               />
@@ -457,8 +403,21 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 placeholder="Enter product description"
                 type="textarea"
                 {...register("desc",{
-                  required:"Product Description required",
-                  validate: (value) => value.trim() !== "" || "Description cannot be empty or spaces only"
+                  required: "Description is required",
+                  minLength: {
+                    value: 10,
+                    message: "Description must be at least 10 characters"
+                  },
+                  maxLength: {
+                    value: 500,
+                    message: "Description must not exceed 500 characters"
+                  },
+                  validate: {
+                    notEmpty: (value) =>
+                      value.trim() !== "" || "Description cannot be empty or spaces only",
+                    firstThreeNotSpecial: (value) =>
+                      /^[a-zA-Z]{3}/.test(value.trim()) || "The first three characters must be letters",
+                  }
                 })}
                 error={errors.desc?.message}
               />
@@ -468,6 +427,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               <CustomSelect
                 label="Select Category"
                 value={watch("category") || ""}
+                {...register("category", {
+                  required: "Category is required",
+                })}
                 onChange={(e) => handleSelectChange("category", e.target.value)}
                 error={errors.category?.message}
                 options={categories?.map(category => ({
@@ -482,6 +444,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               <CustomSelect
                 label="Select Brand"
                 value={watch("brand") || ""}
+                {...register("brand", {
+                  required: "Brand is required",
+                })}
                 onChange={(e) => handleSelectChange("brand", e.target.value)}
                 error={errors.brand?.message}
                 options={brands?.map(brand => ({
@@ -499,8 +464,13 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 label="Price"
                 type="number"
                 placeholder="Enter price"
-                {...register("price")}
+                {...register("price", {
+                  required: "Price is required",
+                  min: { value: 0, message: "Price must be greater than 0" },
+                  validate: value => !isNaN(value) || "Price must be a number"
+                })}
                 error={errors.price?.message}
+                min="0"
               />
             </div>
 
@@ -527,7 +497,14 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 label="Product Offer Percentage"
                 type="number"
                 placeholder="Enter product specific offer (0-100)"
-                {...register("offerPercentage")}
+                {...register("offerPercentage",
+                  {
+                    required: "Offer Percentage is required",
+                    min: { value: 0, message: "Offer percentage must be greater than 0" },
+                    max: { value: 100, message: "Offer percentage must be less than 100" },
+                    validate: value => !isNaN(value) || "Offer percentage must be a number"
+                  }
+                )}
                 error={errors?.offerPercentage?.message}
                 min="0"
                 max="100"
@@ -623,21 +600,45 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
             <CustomInput
                 label="Color"
                 type="text"
-                {...register("specifications.color")}
+                {...register("specifications.color",
+                  {
+                    required: "Color is required",
+                    validate: (value) => {
+                      const regex = /^[a-zA-Z\s]+$/;
+                      return regex.test(value) || "Color must contain only letters and spaces";
+                    },
+                  }
+                )}
                 error={errors.specifications?.color?.message}
               />
 
               <CustomInput
                 label="Product Type"
                 type="text"
-                {...register("specifications.productType")}
+                {...register("specifications.productType",
+                  {
+                    required: "Product type is required",
+                    validate: (value) => {
+                      const regex = /^[a-zA-Z\s]+$/;
+                      return regex.test(value) || "Product type must contain only letters and spaces";
+                    },
+                  }
+                )}
                 error={errors.specifications?.productType?.message}
               />
 
               <CustomInput
                 label="Weight"
                 type="text"
-                {...register("specifications.weight")}
+                {...register("specifications.weight",
+                  {
+                    required: "Weight is required",
+                    validate: (value) => {
+                      const regex = /^[0-9.]+(kg|g)$/;
+                      return regex.test(value) || "Weight must be in the format of number followed by kg or g";
+                    },
+                  }
+                )}
                 error={errors.specifications?.weight?.message}
                 placeholder="e.g., 500g, 1.2kg"
               />
@@ -646,6 +647,11 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 <CustomSelect
                   label="Condition"
                   value={watch("specifications.condition") || ""}
+                  {...register("specifications.condition",
+                    {
+                      required: "Condition is required",
+                    }
+                  )}
                   onChange={(e) => handleSelectChange("specifications.condition", e.target.value)}
                   error={errors.specifications?.condition?.message}
                   options={[
@@ -661,6 +667,11 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 <CustomSelect
                   label="Country of Origin"
                   value={watch("specifications.countryOfOrigin") || ""}
+                  {...register("specifications.countryOfOrigin",
+                    {
+                      required: "Country of Origin is required",
+                    }
+                  )}
                   onChange={(e) => handleSelectChange("specifications.countryOfOrigin", e.target.value)}
                   error={errors.specifications?.countryOfOrigin?.message}
                   options={[
@@ -681,6 +692,11 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 <CustomSelect
                   label="Warranty"
                   value={watch("specifications.warranty") || ""}
+                  {...register("specifications.warranty",
+                    {
+                      required: "Warranty is required",
+                    }
+                  )}
                   onChange={(e) => handleSelectChange("specifications.warranty", e.target.value)}
                   error={errors.specifications?.warranty?.message}
                   options={[
@@ -699,7 +715,16 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
               <CustomInput
                 label="Included Items"
                 type="text"
-                {...register("specifications.includedItems")}
+                {...register("specifications.includedItems",
+                  {
+                    required: "Included Items is required",
+                    validate: {
+                      notOnlyWhitespace: (value) => value.trim() !== "" || "Included Items cannot be empty",
+                      firstThreeNotSpecial: (value) =>
+                        /^[a-zA-Z]{3}/.test(value.trim()) || "The first three characters must be letters",
+                    }
+                  }
+                )}
                 error={errors.specifications?.includedItems?.message}
               />
             </div>
@@ -716,6 +741,9 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
                 <CustomSelect
                   label="Listing Status"
                   value={watch("isListed") || ""}
+                  {...register("isListed",
+                    { required: "Listing Status is required" }
+                  )}
                   onChange={(e) => handleSelectChange("isListed", e.target.value)}
                   error={errors.isListed?.message}
                   options={[
