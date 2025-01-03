@@ -49,16 +49,16 @@ const AddressCard = ({ address, onSetDefault, onDelete, onEdit, theme }) => {
             <IconButton
               size="sm"
               onClick={() => onEdit(address)}
-              className={`rounded-full ${theme.iconButton}`}
+              className={`${theme.iconButton.bg}`}
             >
-              <PencilSquareIcon className={`h-4 w-4 ${theme.text}`} />
+              <PencilSquareIcon className="h-4 w-4" />
             </IconButton>
             <IconButton
               size="sm"
               onClick={handleOpenAlert}
-              className={`rounded-full ${theme.iconButton}`}
+              className={`rounded-full bg-red-500 hover:bg-red-600 p-1`}
             >
-              <TrashIcon className="h-4 w-4 text-red-500" />
+              <TrashIcon className="h-4 w-4 text-white" />
             </IconButton>
           </div>
         </div>

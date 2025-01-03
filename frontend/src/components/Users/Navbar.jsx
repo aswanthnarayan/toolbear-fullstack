@@ -41,7 +41,7 @@ function Navbar() {
   const handleSearch = ()=>{
     if(searchQuery.trim() !== "")
     {
-      navigate(`/user/all-products?search=${searchQuery}`)
+      navigate(`/user/all-prndoducts?search=${searchQuery}`)
     }
   }
 

@@ -42,9 +42,12 @@ export const updateProfile = async (req, res) => {
         if (!isMatch) {
           return res.status(400).json({field: "currentPassword", message: 'current password is incorrect.' });
         }
-  
+        if(currentPassword === newPassword){
+          return res.status(400).json({ message: 'New password cannot be the same as the current password.' });
+        }
         user.password = newPassword;
       }
+
   
       await user.save();
   

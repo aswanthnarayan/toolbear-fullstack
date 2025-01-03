@@ -24,7 +24,7 @@ const baseQueryWithLogout = async (args, api, extraOptions) => {
 export const userApi = createApi({
     reducerPath: 'userApi',
     baseQuery: baseQueryWithLogout,
-    tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet"],
+    tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet", "Products", "Categories", "Brands"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -217,6 +217,14 @@ export const userApi = createApi({
     }),
     invalidatesTags: ['Order']
   }),
+  // Top Selling Items
+  getTopSellingItems: builder.query({
+    query: () => ({
+      url: '/top-selling-items',
+      method: 'GET'
+    }),
+    providesTags: ['Products', 'Categories', 'Brands']
+  }),
 }),
 });
 
@@ -248,5 +256,6 @@ export const {
   useProcessRefundMutation,
   useGetProductByCategoryQuery,
   useGetAllCategoriesOfBrandQuery,
-  useDownloadInvoiceMutation
+  useDownloadInvoiceMutation,
+  useGetTopSellingItemsQuery
 } = userApi

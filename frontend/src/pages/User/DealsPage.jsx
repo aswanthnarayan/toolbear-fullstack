@@ -14,6 +14,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { useGetBannersQuery } from '../../../App/features/rtkApis/adminApi';
 import { useSelector } from 'react-redux';
+import PopularContainer from '../../components/Users/PopularContainer';
+import { Toaster } from 'sonner';
 
 const DealsPage = () => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const DealsPage = () => {
 
   return (
     <div className={`${currentTheme.primary} min-h-screen`}>
+      <Toaster position="top-right" richColors />
       <div className="container mx-auto p-4 pt-[124px]">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Main Banner */}
@@ -188,6 +191,9 @@ const DealsPage = () => {
             </Typography>
           </div>
         </div>
+
+        {/* Popular Items Section */}
+        <PopularContainer />
 
         {/* Bottom Tagline */}
         <div className="text-center mt-8 mb-8">

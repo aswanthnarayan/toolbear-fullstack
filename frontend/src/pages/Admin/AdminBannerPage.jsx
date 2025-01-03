@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardBody, Typography, Button, IconButton, Select, Option, Spinner } from '@material-tailwind/react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import { useGetBannersQuery, useUpdateBannersMutation, useGetAllBrandsQuery } from '../../../App/features/rtkApis/adminApi';
+import EasyCropperModal from '../../components/EasyCropperModal';
 
 const AdminBannerPage = () => {
   const [bannerPreviews, setBannerPreviews] = useState([null, null, null]);
   const [bannerFiles, setBannerFiles] = useState([null, null, null]);
   const [selectedBrands, setSelectedBrands] = useState([null, null, null]);
+  const [showCropper, setShowCropper] = useState(false);
+  const [originalImage, setOriginalImage] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(null);
 
   const { data: bannersData, isLoading: isLoadingBanners } = useGetBannersQuery();
   const { data: brandsData, isLoading: isLoadingBrands } = useGetAllBrandsQuery({ page: 1, limit: 100 });
@@ -35,19 +38,35 @@ const AdminBannerPage = () => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          const newPreviews = [...bannerPreviews];
-          newPreviews[index] = reader.result;
-          setBannerPreviews(newPreviews);
-
-          const newFiles = [...bannerFiles];
-          newFiles[index] = file;
-          setBannerFiles(newFiles);
+          setOriginalImage(reader.result);
+          setCurrentIndex(index);
+          setShowCropper(true);
         };
         reader.readAsDataURL(file);
       } else {
         toast.error('Please select an image file');
       }
     }
+  };
+
+  const handleCroppedImage = async (croppedImageUrl) => {
+    try {
+      const response = await fetch(croppedImageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'cropped-banner.jpg', { type: 'image/jpeg' });
+
+      const newPreviews = [...bannerPreviews];
+      newPreviews[currentIndex] = croppedImageUrl;
+      setBannerPreviews(newPreviews);
+
+      const newFiles = [...bannerFiles];
+      newFiles[currentIndex] = file;
+      setBannerFiles(newFiles);
+    } catch (error) {
+      console.error('Error processing cropped image:', error);
+      toast.error('Failed to process the cropped image');
+    }
+    setShowCropper(false);
   };
 
   const handleBrandChange = (value, index) => {
@@ -129,22 +148,33 @@ const AdminBannerPage = () => {
                   </Typography>
                   <div className="relative w-full h-[200px]">
                     {bannerPreviews[index] ? (
-                      <>
+                      <div className="relative h-full">
                         <img
                           src={bannerPreviews[index]}
                           alt={`Banner ${index + 1}`}
                           className="w-full h-full object-cover rounded-lg"
                         />
-                        <IconButton
-                          size="sm"
-                          color="red"
-                          variant="text"
-                          className="!absolute top-2 right-2 bg-white/80 hover:bg-white"
-                          onClick={() => handleRemoveImage(index)}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </>
+                        <div className="absolute top-2 right-2">
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleImageChange(e, index)}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <IconButton
+                              size="sm"
+                              color="blue"
+                              variant="text"
+                              className="bg-white/80 hover:bg-white pointer-events-none"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                              </svg>
+                            </IconButton>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
                         <input
@@ -190,6 +220,13 @@ const AdminBannerPage = () => {
           </Button>
         </div>
       </form>
+      {showCropper && (
+        <EasyCropperModal
+          image={originalImage}
+          onCropComplete={handleCroppedImage}
+          onClose={() => setShowCropper(false)}
+        />
+      )}
     </div>
   );
 };

@@ -70,7 +70,7 @@ router.get('/orders', protect, adminOnly, getAllOrders);
 router.post('/sales-report', protect, adminOnly, getSalesReport);
 router.post('/sales-report/pdf', protect, adminOnly, downloadSalesPDF);
 router.post('/sales-report/excel', protect, adminOnly, downloadSalesExcel);
-router.get('/sales-report/top-selling', protect, adminOnly, getTopSellingItems);
+router.get('/sales-report/top-selling', protect, getTopSellingItems);
 
 // Coupon routes
 router.get('/coupons', protect, adminOnly, getAllCoupons);

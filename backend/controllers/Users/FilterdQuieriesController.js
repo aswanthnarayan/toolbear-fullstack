@@ -1,6 +1,7 @@
 import {Product} from '../../models/ProductSchema.js';
-import  HttpStatusEnum from '../../constants/httpStatus.js';
-import  MessageEnum from '../../constants/messages.js';
+import Order from '../../models/OrderSchema.js';
+import HttpStatusEnum from '../../constants/httpStatus.js';
+import MessageEnum from '../../constants/messages.js';
 
 export const getProductByCategory = async (req, res) => {
     try {
@@ -100,5 +101,161 @@ export const getPopularProductOfBrand = async (req, res) => {
         });
     }
 
+}
+
+export const getTopSellingItems = async (req, res) => {
+    try {
+        // Pipeline for aggregating sales data
+        const basePipeline = [
+            { $match: { status: 'Delivered' } },
+            { $unwind: '$products' }
+        ];
+
+        // Get top 5 products with full details
+        const topProducts = await Order.aggregate([
+            ...basePipeline,
+            {
+                $group: {
+                    _id: '$products.productId',
+                    totalQuantity: { $sum: '$products.quantity' }
+                }
+            },
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productDetails'
+                }
+            },
+            { $unwind: '$productDetails' },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'productDetails.category',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
+                }
+            },
+            { $unwind: '$categoryDetails' },
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'productDetails.brand',
+                    foreignField: '_id',
+                    as: 'brandDetails'
+                }
+            },
+            { $unwind: '$brandDetails' },
+            {
+                $project: {
+                    _id: '$productDetails._id',
+                    name: '$productDetails.name',
+                    description: '$productDetails.desc',
+                    price: '$productDetails.price',
+                    image: { $ifNull: ['$productDetails.mainImage.imageUrl', null] },
+                    category: '$categoryDetails.name',
+                    brand: '$brandDetails.name',
+                    rating: '$productDetails.rating',
+                    reviews: '$productDetails.reviews',
+                    stock: '$productDetails.stock',
+                    maxOfferPercentage: '$productDetails.maxOfferPercentage',
+                    sellingPrice: '$productDetails.sellingPrice',
+                    totalQuantity: 1,
+                    isListed: '$productDetails.isListed'
+                }
+            },
+            {
+                $match: {
+                    isListed: true
+                }
+            }
+        ]);
+
+        // Get top 5 categories
+        const topCategories = await Order.aggregate([
+            ...basePipeline,
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.productId',
+                    foreignField: '_id',
+                    as: 'productDetails'
+                }
+            },
+            { $unwind: '$productDetails' },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'productDetails.category',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
+                }
+            },
+            { $unwind: '$categoryDetails' },
+            {
+                $group: {
+                    _id: '$categoryDetails._id',
+                    name: { $first: '$categoryDetails.name' },
+                    image: { $first: '$categoryDetails.image' },
+                    desc: { $first: '$categoryDetails.desc' },
+                    totalQuantity: { $sum: '$products.quantity' }
+                }
+            },
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 5 }
+        ]);
+
+        // Get top 5 brands
+        const topBrands = await Order.aggregate([
+            ...basePipeline,
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.productId',
+                    foreignField: '_id',
+                    as: 'productDetails'
+                }
+            },
+            { $unwind: '$productDetails' },
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'productDetails.brand',
+                    foreignField: '_id',
+                    as: 'brandDetails'
+                }
+            },
+            { $unwind: '$brandDetails' },
+            {
+                $group: {
+                    _id: '$brandDetails._id',
+                    name: { $first: '$brandDetails.name' },
+                    description: { $first: '$brandDetails.description' },
+                    logo: { $first: '$brandDetails.logo' },
+                    totalQuantity: { $sum: '$products.quantity' }
+                }
+            },
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 5 }
+        ]);
+
+        res.status(HttpStatusEnum.OK).json({
+            success: true,
+            data: {
+                products: topProducts,
+                categories: topCategories,
+                brands: topBrands
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching top selling items:", error);
+        res.status(HttpStatusEnum.INTERNAL_SERVER).json({
+            success: false,
+            message: MessageEnum.Error.INTERNAL_SERVER_ERROR
+        });
     }
-    
+};

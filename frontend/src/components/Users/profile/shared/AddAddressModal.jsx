@@ -70,7 +70,13 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "Name must be at least 3 characters",
                 },
-              validate: (value) => value.trim() !== "" || "Name cannot be empty or spaces only"
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim() !== "" || "Name cannot be empty or spaces only",
+                  noSpecialChars: (value) =>
+                    /^[a-zA-Z\s]*$/.test(value) || "Name cannot include special characters",
+                },
+
               })}
               error={!!errors.fullName}
             />
@@ -90,8 +96,12 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 6,
                   message: "Address must be at least 6 characters",
                 },
-              validate: (value) => value.trim() !== "" || "Address cannot be empty or spaces only"
-
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim() !== "" || "Address cannot be empty or spaces only",
+                  noSpecialChars: (value) =>
+                    /^[a-zA-Z0-9\s,]*$/.test(value) || "Address can only contain letters, numbers, spaces, and commas",
+                },
               })}
               error={!!errors.address}
             />
@@ -111,7 +121,12 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "Area must be at least 3 characters",
                 },
-              validate: (value) => value.trim() !== "" || "Area cannot be empty or spaces only"
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim() !== "" || "Area cannot be empty or spaces only",
+                  noSpecialChars: (value) =>
+                    /^[a-zA-Z\s]*$/.test(value) || "Area cannot include special characters",
+                },
 
               })}
               error={!!errors.area}
@@ -152,7 +167,12 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 2,
                   message: "City must be at least 2 characters",
                 },
-              validate: (value) => value.trim() !== "" || "City cannot be empty or spaces only"
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim() !== "" || "City cannot be empty or spaces only",
+                  noSpecialChars: (value) =>
+                    /^[a-zA-Z\s]*$/.test(value) || "City cannot include special characters",
+                },
               })}
               error={!!errors.city}
             />
@@ -172,8 +192,12 @@ const AddAddressModal = ({ isOpen, onClose, editAddress = null }) => {
                   value: 3,
                   message: "State must be at least 3 characters",
                 },
-              validate: (value) => value.trim() !== "" || "State cannot be empty or spaces only"
-
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim() !== "" || "State cannot be empty or spaces only",
+                  noSpecialChars: (value) =>
+                    /^[a-zA-Z\s]*$/.test(value) || "State cannot include special characters",
+                },
               })}
               error={!!errors.state}
             />

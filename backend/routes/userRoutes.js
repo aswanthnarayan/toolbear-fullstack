@@ -18,7 +18,7 @@ import {getUserDetails,updateProfile} from '../controllers/Users/ProfileControll
 import {addToWishlist,removeFromWishlist,getWishlist,isInWishlist} from '../controllers/Users/WishlistController.js'
 import { getAvailableCoupons, validateCoupon } from '../controllers/Users/CouponController.js';
 import { getWallet, processOrderRefund } from '../controllers/Users/WalletController.js';
-import { getAllCategoriesOfBrand, getProductByCategory } from '../controllers/Users/FilterdQuieriesController.js';
+import { getAllCategoriesOfBrand, getProductByCategory, getTopSellingItems } from '../controllers/Users/FilterdQuieriesController.js';
 const router = express.Router();
 //profile
 
@@ -66,6 +66,9 @@ router.post('/wallet/refund', protect, processOrderRefund);
 //coupons
 router.route('/coupons').get(protect,getAvailableCoupons);
 router.route('/coupons/:code').get(protect,validateCoupon);
+
+// Popular Items Routes
+router.get('/top-selling-items', getTopSellingItems);
 
 //products
 router.get('/products/category/:categoryId', getProductByCategory)

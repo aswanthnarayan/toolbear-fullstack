@@ -10,11 +10,19 @@ import {
   ArrowLeftOnRectangleIcon,
   XMarkIcon
 } from "@heroicons/react/24/solid";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../../../../../App/features/slices/authSlice';
+import { useLogOutMutation } from '../../../../../App/features/rtkApis/authApi';
+import { persistor } from '../../../../../App/store';
 
 const ProfileSidebar = ({ activeSection, onSectionChange }) => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
+  const { user } = useSelector((state) => state.auth);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [logOut] = useLogOutMutation();
 
   const menuItems = [
     { id: 'edit', label: 'Edit Profile', icon: UserCircleIcon },
@@ -23,6 +31,19 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
     { id: 'wallet', label: 'Wallet', icon: WalletIcon },
     { id: 'coupons', label: 'Coupons', icon: TicketIcon },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logOut().unwrap();
+      dispatch(logout());
+      await persistor.purge(); // Purge the persisted state
+   
+        navigate('/user/deals');
+     
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <div className={`h-full flex flex-col ${currentTheme.secondary}`}>
@@ -67,7 +88,10 @@ const ProfileSidebar = ({ activeSection, onSectionChange }) => {
       
       {/* Sign Out Button */}
       <List className={`mt-auto border-t ${currentTheme.border}`}>
-        <ListItem className={`cursor-pointer hover:${currentTheme.hover} text-red-500`}>
+        <ListItem 
+          onClick={handleLogout}
+          className={`cursor-pointer hover:${currentTheme.hover} text-red-500`}
+        >
           <ListItemPrefix>
             <ArrowLeftOnRectangleIcon className="h-5 w-5" />
           </ListItemPrefix>
