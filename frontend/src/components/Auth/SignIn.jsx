@@ -38,11 +38,11 @@ const SignIn = () => {
           name: user.displayName,
         }).unwrap();
         
-        if (response.message === 'New user created' && response.isNewUser) {
+        if (response.isNewUser) {
           navigate('/user/complete-signup', { 
             state: { email: user.email }
           });
-        } else {
+        } else if (response.user) {
           if (response.user.role === "admin") {
             navigate("/admin/dashboard");
           } else {
@@ -60,7 +60,7 @@ const SignIn = () => {
       console.error('Google sign-in error:', error);
       setError('general', { 
         type: 'server', 
-        message: 'Could not sign in with Google' 
+        message: 'Failed to sign in with Google'
       });
     }
   };
