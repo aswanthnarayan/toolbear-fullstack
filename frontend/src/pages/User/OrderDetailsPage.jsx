@@ -107,7 +107,7 @@ const OrderDetailsPage = () => {
                   Order Details
                 </Typography>
                 <Typography variant="h6" className={`mb-1 text-sm md:text-base ${currentTheme.textGray}`}>
-                  Order #{order._id}
+                  Order #{order.orderId}
                 </Typography>
                 <Typography className={`text-sm md:text-base ${currentTheme.textGray}`}>
                   Placed on {new Date(order.createdAt).toLocaleDateString()}

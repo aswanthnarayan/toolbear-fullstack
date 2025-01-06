@@ -171,7 +171,7 @@ const OrdersSection = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
                   <Typography variant="h6" className={`${currentTheme.text} break-all`}>
-                    Order #{order._id}
+                    Order #{order.orderId}
                   </Typography>
                   <Typography className={`text-sm ${currentTheme.textGray}`}>
                     Placed on {new Date(order.createdAt).toLocaleDateString()}

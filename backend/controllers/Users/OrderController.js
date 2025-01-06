@@ -7,6 +7,7 @@ import HttpStatusEnum from "../../constants/httpStatus.js";
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import PDFDocument from 'pdfkit';
+import { generateOrderId } from '../../utils/generateOrderId.js';
 
 export const getAllOrders = async (req, res) => {
     try {
@@ -75,8 +76,11 @@ export const createOrder = async (req, res) => {
             }
         }
         
+        const orderId = await generateOrderId();
+
         // 2. Create the order with pending payment status
-        const order = await Order.create({ 
+        const order = await Order.create({
+            orderId, 
             userId: user._id, 
             products,
             address,

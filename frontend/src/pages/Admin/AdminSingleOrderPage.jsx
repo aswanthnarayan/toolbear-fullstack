@@ -48,7 +48,7 @@ const AdminSingleOrderPage = () => {
                 Order Details
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
-                Order ID: {order?._id}
+                Order ID: {order?.orderId}
               </Typography>
             </div>
             <Button

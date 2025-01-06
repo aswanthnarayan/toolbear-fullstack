@@ -135,7 +135,7 @@ const AdminOrders = () => {
                 <tr key={order._id} className="even:bg-blue-gray-50/50">
                   <td className="p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                      {order._id}
+                      {order.orderId}
                     </Typography>
                   </td>
                   <td className="p-4">
