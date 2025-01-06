@@ -21,9 +21,30 @@ export const getAllOrders = async (req, res) => {
 
 export const getAllOrdersofUser = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
         const user = await User.findById(req.user._id);
-        const orders = await Order.find({ userId: user._id }).sort({ createdAt: -1 }).populate('products.productId')
-        res.status(HttpStatusEnum.OK).json(orders); 
+        
+        // Get total count for pagination
+        const totalOrders = await Order.countDocuments({ userId: user._id });
+        
+        // Get paginated orders
+        const orders = await Order.find({ userId: user._id })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('products.productId');
+
+        res.status(HttpStatusEnum.OK).json({
+            orders,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+            totalOrders,
+            hasNextPage: page * limit < totalOrders,
+            hasPrevPage: page > 1
+        }); 
     } catch (error) {
         console.error("Error fetching orders:", error);
         res.status(HttpStatusEnum.INTERNAL_SERVER).json({ error: "Server error" });
@@ -125,6 +146,20 @@ export const completePayment = async (req, res) => {
             order.paymentMethod = 'COD';
             order.paymentStatus = 'Pending';  
             order.status = 'Order Placed';    
+
+            // Update product stock
+            for (const item of order.products) {
+                await Product.findByIdAndUpdate(
+                    item.productId,
+                    { $inc: { stock: -item.quantity } }
+                );
+            }
+
+            // Empty the user's cart for COD orders
+            await Cart.findOneAndUpdate(
+                { user: order.userId },
+                { $set: { items: [], totalAmount: 0 } }
+            );
         } else if (paymentMethod === 'WALLET') {
             try {
                 // First check if wallet has sufficient balance
@@ -139,6 +174,14 @@ export const completePayment = async (req, res) => {
                 order.paymentMethod = 'WALLET';
                 
                 await order.save();
+
+                // Update product stock
+                for (const item of order.products) {
+                    await Product.findByIdAndUpdate(
+                        item.productId,
+                        { $inc: { stock: -item.quantity } }
+                    );
+                }
 
                 // Then update wallet balance
                 try {

@@ -92,7 +92,7 @@ export const userApi = createApi({
 
   //  Order endpoints
   getAllOrders: builder.query({
-    query: () => "/order/all",
+    query: ({ page = 1, limit = 5 } = {}) => `/order/all?page=${page}&limit=${limit}`,
     providesTags: ["Order"],
   }),
   createOrder: builder.mutation({

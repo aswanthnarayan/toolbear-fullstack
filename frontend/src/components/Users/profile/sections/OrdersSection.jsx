@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import ReturnReasonModal from '../shared/ReturnReasonModal';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import Pagination from '../../Pagination';
 
 const OrdersSection = () => {
   const navigate = useNavigate();
@@ -29,11 +30,28 @@ const OrdersSection = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [returnModal, setReturnModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
-  const { data: orders, isLoading, error } = useGetAllOrdersQuery();
+  const { data: ordersData, isLoading, error } = useGetAllOrdersQuery(
+    {
+      page: currentPage,
+      limit: ITEMS_PER_PAGE
+    },
+    {
+      refetchOnMountOrArgChange: true
+    }
+  );
+  const orders = ordersData?.orders || [];
+  const totalPages = ordersData?.totalPages || 1;
+
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
   const [returnOrder, { isLoading: isReturning }] = useReturnOrderMutation();
   const [processRefund] = useProcessRefundMutation();
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleCancelClick = (order) => {
     setSelectedOrder(order);
@@ -234,6 +252,17 @@ const OrdersSection = () => {
           </Card>
         ))}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && orders.length > 0 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
       {/* Cancel Order Modal */}
       <Dialog 
