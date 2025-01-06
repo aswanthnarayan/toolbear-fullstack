@@ -161,6 +161,7 @@ const CheckoutPage = () => {
     
     setCouponCode(coupon.code);
     setAppliedCoupon(coupon);
+    setOpenAccordion(0); // Close the accordion after selecting
     toast.success("Coupon applied successfully!");
   };
 
@@ -438,7 +439,7 @@ const CheckoutPage = () => {
                       <div className="flex justify-between text-green-500">
                         <Typography>Coupon Discount</Typography>
                         <Typography>
-                          - ₹{calculateFinalAmount() - totalAmount - calculateShippingCost()}
+                          - ₹{Math.abs(calculateFinalAmount() - totalAmount - calculateShippingCost())}
                         </Typography>
                       </div>
                     )}

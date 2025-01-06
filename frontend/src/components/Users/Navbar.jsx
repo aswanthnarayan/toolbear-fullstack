@@ -264,7 +264,10 @@ function Navbar() {
 
                 <button
                   className={`flex items-center space-x-3 ${currentTheme.text} w-full px-3 py-2 rounded-md text-base ${currentTheme.hover}`}
-                  onClick={handleCartClick}
+                  onClick={() => {
+                    handleCartClick();
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   <ShoppingBagIcon className="w-5 h-5" />
                   <span>Cart</span>
@@ -272,7 +275,7 @@ function Navbar() {
 
                 {user ? (
                   <>
-                    <Link to="/user/wishlist">
+                    <Link to="/user/wishlist" onClick={() => setIsMobileMenuOpen(false)}>
                       <button
                         className={`flex items-center space-x-3 ${currentTheme.text} w-full px-3 py-2 rounded-md text-base ${currentTheme.hover}`}
                       >
@@ -281,7 +284,7 @@ function Navbar() {
                       </button>
                     </Link>
 
-                    <Link to="/user/profile">
+                    <Link to="/user/profile" onClick={() => setIsMobileMenuOpen(false)}>
                       <button
                         className={`flex items-center space-x-3 ${currentTheme.text} w-full px-3 py-2 rounded-md text-base ${currentTheme.hover}`}
                       >
@@ -292,14 +295,17 @@ function Navbar() {
 
                     <button
                       className={`flex items-center space-x-3 ${currentTheme.text} w-full px-3 py-2 rounded-md text-base ${currentTheme.hover}`}
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
                     >
                       <UserCircleIcon className="w-5 h-5" />
                       <span>Logout</span>
                     </button>
                   </>
                 ) : (
-                  <Link to="/user/signin">
+                  <Link to="/user/signin" onClick={() => setIsMobileMenuOpen(false)}>
                     <button
                       className={`flex items-center space-x-3 ${currentTheme.text} w-full px-3 py-2 rounded-md text-base ${currentTheme.hover}`}
                     >
@@ -308,8 +314,6 @@ function Navbar() {
                     </button>
                   </Link>
                 )}
-
-                
               </div>
             </motion.div>
           )}

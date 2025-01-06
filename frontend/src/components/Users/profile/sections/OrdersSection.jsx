@@ -168,23 +168,24 @@ const OrdersSection = () => {
             onClick={() => handleOrderClick(order._id)}
           >
             <CardBody>
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
-                  <Typography variant="h6" className={currentTheme.text}>
+                  <Typography variant="h6" className={`${currentTheme.text} break-all`}>
                     Order #{order._id}
                   </Typography>
                   <Typography className={`text-sm ${currentTheme.textGray}`}>
                     Placed on {new Date(order.createdAt).toLocaleDateString()}
                   </Typography>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
                   <Chip
                     value={order.status}
                     color={getStatusColor(order.status)}
+                    className="w-fit"
                   />
                   {order.paymentStatus === 'Pending' && order.status !== 'Cancelled' && order.paymentMethod !== 'COD' && (
                     <Button
-                      className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
+                      className={`${currentTheme.button} ${currentTheme.buttonHover} text-black w-full sm:w-auto`}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -201,6 +202,7 @@ const OrdersSection = () => {
                       variant="outlined" 
                       color="red" 
                       size="sm"
+                      className="w-full sm:w-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCancelClick(order);
@@ -214,6 +216,7 @@ const OrdersSection = () => {
                       size="sm"
                       color="blue"
                       variant="outlined"
+                      className="w-full sm:w-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleReturnClick(order);
@@ -224,7 +227,7 @@ const OrdersSection = () => {
                   )}
                 </div>
               </div>
-              <Typography variant="h6" className={`mt-2 ${currentTheme.text}`}>
+              <Typography variant="h6" className={`mt-4 ${currentTheme.text}`}>
                 Total Amount: ₹{order.totalAmount}
               </Typography>
             </CardBody>

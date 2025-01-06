@@ -109,7 +109,7 @@ export const userApi = createApi({
       method: "POST",
       body: data,
     }),
-    invalidatesTags: ["Order", "Cart", "Products"],
+    invalidatesTags: ["Order", "Cart", "Products", "Wallet"],
   }),
 
   getOrderById: builder.query({
