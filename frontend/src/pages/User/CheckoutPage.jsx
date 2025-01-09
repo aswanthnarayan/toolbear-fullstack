@@ -81,7 +81,7 @@ const CheckoutPage = () => {
     }
 
     try {
-      const orderResponse = await createOrder({
+      const order = await createOrder({
         products: cart.items.map(item => ({
           productId: item.product._id,
           quantity: item.quantity,
@@ -89,16 +89,18 @@ const CheckoutPage = () => {
         })),
         address: selectedAddress,
         totalAmount: calculateFinalAmount(),
-        shippingAmount: calculateShippingCost()
+        shippingAmount: calculateShippingCost(),
+        couponCode: appliedCoupon?.code || null,
+        discountAmount: calculateDiscount()
       }).unwrap();
 
       dispatch(setCheckoutData({
-        orderId: orderResponse._id,
+        orderId: order._id,
         amount: calculateFinalAmount()
       }));
 
       navigate('/user/checkout/payments', {
-        state: { orderId: orderResponse._id }
+        state: { orderId: order._id }
       });
     } catch (error) {
       toast.error(error.data?.error || "Failed to create order");
@@ -175,21 +177,30 @@ const CheckoutPage = () => {
     return cart?.totalAmount >= 1000 ? 0 : 50;
   };
 
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    const subtotal = cart?.totalAmount || 0;
+    let discount = 0;
+
+    if (appliedCoupon.discountType === 'percentage') {
+      discount = (subtotal * appliedCoupon.discountAmount) / 100;
+      // Apply maxDiscount limit
+      discount = Math.min(discount, appliedCoupon.maxDiscount);
+    } else {
+      discount = Math.min(appliedCoupon.discountAmount, appliedCoupon.maxDiscount);
+    }
+
+    return discount;
+  };
+
   const calculateFinalAmount = () => {
     const subtotal = cart?.totalAmount || 0;
     const shippingCost = calculateShippingCost();
-    let finalAmount = subtotal + shippingCost;
+    const discount = calculateDiscount();
+    let finalAmount = subtotal + shippingCost - discount;
 
-    if (appliedCoupon) {
-      if (appliedCoupon.discountType === 'percentage') {
-        const discount = (subtotal * appliedCoupon.discountAmount) / 100;
-        finalAmount = finalAmount - discount;
-      } else {
-        finalAmount = finalAmount - appliedCoupon.discountAmount;
-      }
-    }
-
-    return Math.max(0, finalAmount);
+    return Math.max(finalAmount, 0); // Ensure final amount is not negative
   };
 
   if (cartLoading || addressLoading || couponsLoading) {

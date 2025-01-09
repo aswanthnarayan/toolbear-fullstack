@@ -17,11 +17,12 @@ import { useNavigate } from 'react-router-dom';
 
 const AddCouponPage = () => {
   const navigate = useNavigate();
-  const [createCoupon, { isLoading }] = useCreateCouponMutation();
+  const [createCoupon, { isLoading ,error: createError } ] = useCreateCouponMutation();
 
   const { 
     register, 
     handleSubmit,
+    setError,
     formState: { errors },
     watch,
     setValue 
@@ -41,6 +42,8 @@ const AddCouponPage = () => {
   const discountType = watch('discountType');
   const startDate = watch('startDate');
 
+ 
+
   const onSubmit = async (data) => {
     try {
       const formattedData = {
@@ -55,7 +58,14 @@ const AddCouponPage = () => {
       toast.success('Coupon created successfully');
       navigate('/admin/coupons');
     } catch (error) {
-      toast.error(error.data?.message || 'Failed to create coupon');
+      if (error.data?.field === 'code') {
+        setError("code", {
+          type: "manual",
+          message: error.data.message
+        });
+      } else {
+        toast.error(error.data?.message || 'Failed to create coupon');
+      }
     }
   };
 

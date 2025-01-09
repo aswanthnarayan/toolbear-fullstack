@@ -56,7 +56,7 @@ const orderSchema = new mongoose.Schema({
             priceAtPurchase: {
                 type: Number,
                 required: true
-            }
+            },
         }
     ],
     status: {
@@ -87,6 +87,16 @@ const orderSchema = new mongoose.Schema({
         min: 0
     },
     shippingAmount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    couponCode: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    discountAmount: {
         type: Number,
         default: 0,
         min: 0

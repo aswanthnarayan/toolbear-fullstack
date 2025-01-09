@@ -15,6 +15,21 @@ export const createCoupon = async (req, res) => {
             expiryDate,
         } = req.body;
 
+        // Remove all spaces and special characters for comparison
+      const normalizedNewCode = code.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const existingCode = await Coupon.find({});
+      const exists = existingCode.some(code => {
+        const normalizedExistingCode = code.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedExistingCode === normalizedNewCode;
+      });
+      
+      if (exists) {
+      return res.status(HttpStatusEnum.CONFLICT).json({ 
+        field: 'code',
+        message: 'Coupon code already exists'
+      });
+    }
+
         const newCoupon = new Coupon({
             code,
             description,

@@ -39,6 +39,53 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
   const categories = categoriesData?.categories || [];
   const brands = brandsData?.brands || [];
 
+  const clearAllFilters = () => {
+    setSelectedFilters({
+      categories: [],
+      brands: [],
+      priceRange: null
+    });
+    onApplyFilters({
+      categories: [],
+      brands: [],
+      priceRange: null
+    });
+  };
+
+  const removeFilter = (type, value) => {
+    setSelectedFilters(prev => {
+      const newFilters = { ...prev };
+      if (type === 'priceRange') {
+        newFilters.priceRange = null;
+      } else {
+        newFilters[type] = prev[type].filter(item => item !== value);
+      }
+      onApplyFilters(newFilters);
+      return newFilters;
+    });
+  };
+
+  const selectedCategoryNames = useMemo(() => 
+    categories.filter(cat => selectedFilters.categories.includes(cat._id))
+      .map(cat => cat.name),
+    [categories, selectedFilters.categories]
+  );
+
+  const selectedBrandNames = useMemo(() => 
+    brands.filter(brand => selectedFilters.brands.includes(brand._id))
+      .map(brand => brand.name),
+    [brands, selectedFilters.brands]
+  );
+
+  const selectedPriceRange = useMemo(() => 
+    priceRanges.find(range => range.id === selectedFilters.priceRange)?.label,
+    [selectedFilters.priceRange]
+  );
+
+  const hasActiveFilters = selectedFilters.categories.length > 0 || 
+                          selectedFilters.brands.length > 0 || 
+                          selectedFilters.priceRange !== null;
+
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;
   const [openAccordions, setOpenAccordions] = useState({
@@ -46,8 +93,6 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
     brands: false,
     price: false
   });
-
-  const [filtersApplied, setFiltersApplied] = useState(false);
 
   const toggleAccordion = (section) => {
     setOpenAccordions(prev => ({
@@ -58,46 +103,18 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
 
   const handleCheckboxChange = (type, value) => {
     setSelectedFilters(prev => {
+      const newFilters = { ...prev };
       if (type === 'priceRange') {
-        return {
-          ...prev,
-          priceRange: prev.priceRange === value ? null : value
-        };
+        newFilters.priceRange = prev.priceRange === value ? null : value;
       } else {
         const array = prev[type];
-        return {
-          ...prev,
-          [type]: array.includes(value)
-            ? array.filter(item => item !== value)
-            : [...array, value]
-        };
+        newFilters[type] = array.includes(value)
+          ? array.filter(item => item !== value)
+          : [...array, value];
       }
+      onApplyFilters(newFilters);
+      return newFilters;
     });
-  };
-
-  const handleApplyFilter = () => {
-    if (filtersApplied) {
-      // Clear all filters
-      setSelectedFilters({
-        categories: [],
-        brands: [],
-        priceRange: null
-      });
-      onApplyFilters({
-        categories: [],
-        brands: [],
-        priceRange: null
-      });
-      setFiltersApplied(false);
-    } else {
-      // Apply filters
-      onApplyFilters(selectedFilters);
-      setFiltersApplied(true);
-    }
-    
-    if (window.innerWidth < 1024) {
-      onClose(); // Close sidebar on mobile after applying filters
-    }
   };
 
   return (
@@ -130,11 +147,65 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
           </button>
         </div>
 
+        {/* Selected Filters Section */}
+        {hasActiveFilters && (
+          <div className="p-4 border-b">
+            <div className="flex justify-between items-center mb-2">
+              <Typography variant="small" className={`font-medium ${currentTheme.text}`}>
+                Selected Filters
+              </Typography>
+              <button
+                onClick={clearAllFilters}
+                className="text-red-500 text-sm hover:text-red-600"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedCategoryNames.map(name => (
+                <span
+                  key={`cat-${name}`}
+                  className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm"
+                >
+                  {name}
+                  <XMarkIcon
+                    className="h-4 w-4 ml-1 cursor-pointer"
+                    onClick={() => removeFilter('categories', categories.find(c => c.name === name)?._id)}
+                  />
+                </span>
+              ))}
+              {selectedBrandNames.map(name => (
+                <span
+                  key={`brand-${name}`}
+                  className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm"
+                >
+                  {name}
+                  <XMarkIcon
+                    className="h-4 w-4 ml-1 cursor-pointer"
+                    onClick={() => removeFilter('brands', brands.find(b => b.name === name)?._id)}
+                  />
+                </span>
+              ))}
+              {selectedPriceRange && (
+                <span
+                  className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm"
+                >
+                  {selectedPriceRange}
+                  <XMarkIcon
+                    className="h-4 w-4 ml-1 cursor-pointer"
+                    onClick={() => removeFilter('priceRange', selectedFilters.priceRange)}
+                  />
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           <List className="p-0">
             {/* Categories Accordion */}
-            <ListItem className="flex-col items-start">
+            <ListItem ripple={false} className="flex-col items-start hover:bg-transparent active:bg-transparent focus:bg-transparent">
               <button
                 className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('categories')}
@@ -143,7 +214,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                 {openAccordions.categories ? <IoIosArrowUp /> : <IoIosArrowDown />}
               </button>
               {openAccordions.categories && (
-                <div className="space-y-2 ml-2 transition-all duration-300">
+                <div className="space-y-2 ml-2">
                   {categories.map((category) => (
                     <ListItemPrefix key={category._id} className="flex items-center">
                       <Checkbox
@@ -164,7 +235,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             </ListItem>
 
             {/* Brands Accordion */}
-            <ListItem className="flex-col items-start">
+            <ListItem ripple={false} className="flex-col items-start hover:bg-transparent active:bg-transparent focus:bg-transparent">
               <button
                 className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('brands')}
@@ -173,7 +244,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                 {openAccordions.brands ? <IoIosArrowUp /> : <IoIosArrowDown />}
               </button>
               {openAccordions.brands && (
-                <div className="space-y-2 ml-2 transition-all duration-300">
+                <div className="space-y-2 ml-2">
                   {brands.map((brand) => (
                     <div key={brand._id} className="flex items-center">
                       <Checkbox
@@ -194,7 +265,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             </ListItem>
 
             {/* Price Range Accordion */}
-            <ListItem className="flex-col items-start">
+            <ListItem ripple={false} className="flex-col items-start hover:bg-transparent active:bg-transparent focus:bg-transparent">
               <button
                 className={`flex justify-between items-center w-full text-left font-medium mb-2 ${currentTheme.text}`}
                 onClick={() => toggleAccordion('price')}
@@ -203,7 +274,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                 {openAccordions.price ? <IoIosArrowUp /> : <IoIosArrowDown />}
               </button>
               {openAccordions.price && (
-                <div className="w-full px-2 space-y-2 ml-2 transition-all duration-300">
+                <div className="w-full px-2 space-y-2 ml-2">
                   {priceRanges.map((range) => (
                     <div key={range.id} className="flex items-center">
                       <Checkbox
@@ -224,45 +295,32 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
             </ListItem>
           </List>
         </div>
-
-        <div className="p-4 border-t mt-auto">
-          <button 
-            onClick={handleApplyFilter}
-            className={`w-full py-3 px-4 rounded-lg transition duration-300 font-medium ${
-              filtersApplied 
-                ? 'bg-red-500 hover:bg-red-600 text-black' 
-                : `${currentTheme.button} ${currentTheme.buttonHover} text-black`
-            }`}
-          >
-            {filtersApplied ? 'Clear Filters' : 'Apply Filters'}
-          </button>
-        </div>
-        <style jsx global>{`
-          /* Custom scrollbar styles */
-          .scrollbar-thin::-webkit-scrollbar {
-            width: 4px;
-          }
-          
-          .scrollbar-thin::-webkit-scrollbar-track {
-            background: ${isDarkMode ? '#1a1a1a' : '#f1f1f1'};
-          }
-          
-          .scrollbar-thin::-webkit-scrollbar-thumb {
-            background: ${isDarkMode ? '#4a4a4a' : '#888'};
-            border-radius: 2px;
-          }
-          
-          .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-            background: ${isDarkMode ? '#606060' : '#555'};
-          }
-
-          /* Firefox */
-          .scrollbar-thin {
-            scrollbar-width: thin;
-            scrollbar-color: ${isDarkMode ? '#4a4a4a #1a1a1a' : '#888 #f1f1f1'};
-          }
-        `}</style>
       </Card>
+      <style jsx global>{`
+        /* Custom scrollbar styles */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 4px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: ${isDarkMode ? '#1a1a1a' : '#f1f1f1'};
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: ${isDarkMode ? '#4a4a4a' : '#888'};
+          border-radius: 2px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: ${isDarkMode ? '#606060' : '#555'};
+        }
+
+        /* Firefox */
+        .scrollbar-thin {
+          scrollbar-width: thin;
+          scrollbar-color: ${isDarkMode ? '#4a4a4a #1a1a1a' : '#888 #f1f1f1'};
+        }
+      `}</style>
     </>
   );
 };

@@ -102,7 +102,8 @@ const productSchema = new mongoose.Schema({
     isListed: {
         type: Boolean,
         default: true
-    }
+    },
+    
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

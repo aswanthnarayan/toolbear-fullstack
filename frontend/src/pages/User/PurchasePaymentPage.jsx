@@ -212,6 +212,10 @@ const PurchasePaymentPage = () => {
                     <Typography className={currentTheme.text}>Shipping:</Typography>
                     <Typography className={currentTheme.text}>₹{order?.shippingAmount || 0}</Typography>
                   </div>
+                  {/* <div className="flex justify-between">
+                    <Typography className={currentTheme.text}>Shipping:</Typography>
+                    <Typography className={currentTheme.text}>₹{order?.shippingAmount || 0}</Typography>
+                  </div> */}
                   <div className={`flex justify-between font-bold pt-2 border-t ${currentTheme.border}`}>
                     <Typography className={currentTheme.text}>Total:</Typography>
                     <Typography className={currentTheme.text}>₹{(order?.totalAmount)}</Typography>
@@ -222,14 +226,12 @@ const PurchasePaymentPage = () => {
                 <div className={`mt-6 border-t pt-4 ${currentTheme.border}`}>
                   <Typography variant="h6" className={`mb-2 ${currentTheme.text}`}>Delivery Address</Typography>
                   <div className={`${currentTheme.secondary} p-4 rounded`}>
-                    <Typography className={currentTheme.text}>{order?.address.name}</Typography>
-                    <Typography className={`text-sm ${currentTheme.textGray}`}>
-                      {order?.address.street}, {order?.address.city}
-                      <br />
-                      {order?.address.state}, {order?.address.pinCode}
-                      <br />
-                      Phone: {order?.address.mobile}
-                    </Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.fullName}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.phone}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.address}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>
+                    {order.address.city}, {order.address.state} {order.address.pincode}
+                  </Typography>
                   </div>
                 </div>
               </CardBody>

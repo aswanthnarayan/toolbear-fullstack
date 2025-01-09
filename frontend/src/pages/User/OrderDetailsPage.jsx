@@ -26,6 +26,7 @@ const OrderDetailsPage = () => {
   
   const { data: order, isLoading } = useGetOrderByIdQuery(orderId);
   const [downloadInvoice, { isLoading: isDownloading }] = useDownloadInvoiceMutation();
+  
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
@@ -47,6 +48,8 @@ const OrderDetailsPage = () => {
         return 'gray';
     }
   };
+  
+  
 
   const handleCompletePayment = () => {
     navigate('/user/checkout/payments', { 
@@ -155,57 +158,8 @@ const OrderDetailsPage = () => {
               </div>
             </div>
 
-            {/* Grid Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              {/* Shipping Address */}
-              <Card className={`${currentTheme.secondary} shadow-md`}>
-                <CardBody className="p-4">
-                  <Typography variant="h6" className={`mb-4 text-lg ${currentTheme.text}`}>
-                    Shipping Address
-                  </Typography>
-                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.name}</Typography>
-                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.phone}</Typography>
-                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.address}</Typography>
-                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>
-                    {order.address.city}, {order.address.state} {order.address.pincode}
-                  </Typography>
-                </CardBody>
-              </Card>
-
-              {/* Payment Information */}
-              <Card className={`${currentTheme.secondary} shadow-md`}>
-                <CardBody className="p-4">
-                  <Typography variant="h6" className={`mb-4 text-lg ${currentTheme.text}`}>
-                    Payment Information
-                  </Typography>
-                  <List className="p-0">
-                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
-                      <span className="text-sm md:text-base">Payment Method</span>
-                      <span className="text-sm md:text-base">{order.paymentMethod}</span>
-                    </ListItem>
-                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
-                      <span className="text-sm md:text-base">Payment Status</span>
-                      <span className="text-sm md:text-base">{order.paymentStatus}</span>
-                    </ListItem>
-                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
-                      <span className="text-sm md:text-base">Subtotal</span>
-                      <span className="text-sm md:text-base">₹{order.totalAmount - order.shippingAmount}</span>
-                    </ListItem>
-                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
-                      <span className="text-sm md:text-base">Shipping</span>
-                      <span className="text-sm md:text-base">₹{order.shippingAmount}</span>
-                    </ListItem>
-                    <ListItem className={`flex justify-between py-2 font-bold ${currentTheme.text}`}>
-                      <span className="text-sm md:text-base">Total</span>
-                      <span className="text-sm md:text-base">₹{order.totalAmount}</span>
-                    </ListItem>
-                  </List>
-                </CardBody>
-              </Card>
-            </div>
-
-            {/* Order Items */}
-            <Card className={`mt-6 ${currentTheme.secondary} shadow-md`}>
+              {/* Order Items */}
+              <Card className={` ${currentTheme.secondary} shadow-md`}>
               <CardBody className="p-4">
                 <Typography variant="h6" className={`mb-4 text-lg ${currentTheme.text}`}>
                   Order Items
@@ -240,6 +194,69 @@ const OrderDetailsPage = () => {
                 </div>
               </CardBody>
             </Card>
+
+            {/* Grid Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-6">
+              {/* Shipping Address */}
+              <Card className={`${currentTheme.secondary} shadow-md`}>
+                <CardBody className="p-4">
+                  <Typography variant="h6" className={`mb-4 text-lg ${currentTheme.text}`}>
+                    Shipping Address
+                  </Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.fullName}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.phone}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>{order.address.address}</Typography>
+                  <Typography className={`mb-1 text-sm md:text-base ${currentTheme.text}`}>
+                    {order.address.city}, {order.address.state} {order.address.pincode}
+                  </Typography>
+                </CardBody>
+              </Card>
+
+              {/* Payment Information */}
+              <Card className={`${currentTheme.secondary} shadow-md`}>
+                <CardBody className="p-4">
+                  <Typography variant="h6" className={`mb-4 text-lg ${currentTheme.text}`}>
+                    Payment Information
+                  </Typography>
+                  <List className="p-0">
+                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                      <span className="text-sm md:text-base">Payment Method</span>
+                      <span className="text-sm md:text-base">{order.paymentMethod}</span>
+                    </ListItem>
+                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                      <span className="text-sm md:text-base">Payment Status</span>
+                      <span className="text-sm md:text-base">{order.paymentStatus}</span>
+                    </ListItem>
+                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                      <span className="text-sm md:text-base">Original Price</span>
+                      <span className="text-sm md:text-base">₹{order.totalAmount + order.discountAmount}</span>
+                    </ListItem>
+                    {order.couponCode && (
+                      <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                        <span className="text-sm md:text-base">Applied Coupon</span>
+                        <span className="text-sm md:text-base">{order.couponCode}</span>
+                      </ListItem>
+                    )}
+                    {order.discountAmount > 0 && (
+                      <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                        <span className="text-sm md:text-base">Coupon Discount</span>
+                        <span className="text-sm md:text-base text-green-500">-₹{order.discountAmount}</span>
+                      </ListItem>
+                    )}
+                    <ListItem className={`flex justify-between py-2 ${currentTheme.text}`}>
+                      <span className="text-sm md:text-base">Shipping</span>
+                      <span className="text-sm md:text-base">₹{order.shippingAmount}</span>
+                    </ListItem>
+                    <ListItem className={`flex justify-between py-2 font-bold ${currentTheme.text}`}>
+                      <span className="text-sm md:text-base">Final Amount</span>
+                      <span className="text-sm md:text-base">₹{order.totalAmount}</span>
+                    </ListItem>
+                  </List>
+                </CardBody>
+              </Card>
+            </div>
+
+          
           </CardBody>
         </Card>
       </div>

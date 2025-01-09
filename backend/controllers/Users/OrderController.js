@@ -83,7 +83,14 @@ export const createRazorpayOrder = async (req, res) => {
 
 export const createOrder = async (req, res) => {
     try {
-        const { products, address, totalAmount, shippingAmount } = req.body;
+        const { 
+            products, 
+            address, 
+            totalAmount, 
+            shippingAmount,
+            couponCode,
+            discountAmount 
+        } = req.body;
         const user = await User.findById(req.user._id);
 
         // 1. Check stock availability first
@@ -107,8 +114,10 @@ export const createOrder = async (req, res) => {
             address,
             totalAmount,
             shippingAmount,
-            paymentMethod: 'PENDING', // Default to pending
-            paymentStatus: 'Pending'  // Default to pending
+            couponCode,
+            discountAmount,
+            paymentMethod: 'PENDING',
+            paymentStatus: 'Pending'
         });
 
         res.status(HttpStatusEnum.CREATED).json(order);
