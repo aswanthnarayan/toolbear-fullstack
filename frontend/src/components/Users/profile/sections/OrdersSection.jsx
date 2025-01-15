@@ -150,7 +150,7 @@ const OrdersSection = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
+      <div className={`min-h-[60vh] flex items-center justify-center  ${currentTheme.primary}`}>
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
@@ -173,7 +173,7 @@ const OrdersSection = () => {
   }
 
   return (
-    <div className={`w-full ${currentTheme.primary}`}>
+    <div className={`w-ful l ${currentTheme.primary}`}>
       <Typography variant="h6" className={`mb-4 ${currentTheme.text}`}>
         Order History
       </Typography>
@@ -182,7 +182,7 @@ const OrdersSection = () => {
         {orders.map((order) => (
           <Card 
             key={order._id} 
-            className={`w-full cursor-pointer hover:shadow-lg transition-shadow ${currentTheme.secondary}`}
+            className={` cursor-pointer hover:shadow-lg transition-shadow ${currentTheme.secondary}`}
             onClick={() => handleOrderClick(order._id)}
           >
             <CardBody>

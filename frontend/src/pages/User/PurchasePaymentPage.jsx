@@ -123,6 +123,7 @@ const PurchasePaymentPage = () => {
           name: "Tool Purchase",
           description: "Tool Purchase",
           order_id: razorpayResponse.order.id,
+          retry: false,
           handler: async function (response) {
             const result = await completePayment({
               orderId,
@@ -140,6 +141,12 @@ const PurchasePaymentPage = () => {
               toast.success('Payment successful!');
             }
             handleSuccessfulPayment();
+          },
+          modal: {
+            ondismiss: function() {
+              // Handle payment modal dismissal
+              navigate('/user/checkout/payment/fail', { state: { orderId } });
+            }
           },
           prefill: {
             name: order?.address?.name || "",

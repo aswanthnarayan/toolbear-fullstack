@@ -61,13 +61,14 @@ const AddressSection = () => {
   return (
     <div className={`space-y-6 ${currentTheme.primary}`}>
       <div className="flex justify-between items-center">
-        <h2 className={`text-2xl font-semibold ${currentTheme.text}`}>
+        <h2 className={`text-lg md:text-2xl font-semibold ${currentTheme.text}`}>
           Your Addresses
         </h2>
         {addresses?.length < 5 ? (
           <Button
             className={`${currentTheme.button} ${currentTheme.buttonHover} text-black`}
             onClick={handleOpenModal}
+            size="sm"
           >
             Add New Address
           </Button>

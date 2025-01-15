@@ -19,6 +19,8 @@ import {addToWishlist,removeFromWishlist,getWishlist,isInWishlist} from '../cont
 import { getAvailableCoupons, validateCoupon } from '../controllers/Users/CouponController.js';
 import { getWallet, processOrderRefund } from '../controllers/Users/WalletController.js';
 import { getAllCategoriesOfBrand, getProductByCategory, getTopSellingItems } from '../controllers/Users/FilterdQuieriesController.js';
+import { getAllReviews , addReview ,  checkUserPurchase, deleteReview, updateReview } from '../controllers/Users/ReviewController.js';
+
 const router = express.Router();
 //profile
 
@@ -73,5 +75,12 @@ router.get('/top-selling-items', getTopSellingItems);
 //products
 router.get('/products/category/:categoryId', getProductByCategory)
 router.get('/products/brand/:brandId/categories', getAllCategoriesOfBrand)
+
+//review
+router.get('/reviews', getAllReviews)
+router.post('/reviews/add', protect, addReview)
+router.get('/reviews/check-purchase/:productId', protect, checkUserPurchase)
+router.delete('/reviews/:reviewId', protect, deleteReview)
+router.put('/reviews/:reviewId', protect, updateReview)
 
 export default router;

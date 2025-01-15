@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { authApi } from '../rtkApis/authApi.js';
 
 const extractMinimalUserData = (user) => ({
-  // _id: user._id,
+  name: user.name,
   role: user.role,
   isVerified: user.isVerified,
   isBlocked: user.isBlocked,

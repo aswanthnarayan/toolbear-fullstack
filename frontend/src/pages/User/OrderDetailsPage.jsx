@@ -93,7 +93,7 @@ const OrderDetailsPage = () => {
 
   return (
     <div className={`min-h-screen ${currentTheme.primary}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-[112px]">
+      <div className="max-w-7xl px-2 sm:px-6 lg:px-8 py-8 mt-[112px]">
         <Button
           className={`mb-4 ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
           onClick={() => navigate('/user/profile/orders')}

@@ -102,7 +102,7 @@ const AllProductsPage = () => {
     <div className={`min-h-screen pt-[112px] ${currentTheme.primary}`}>
       <div className="flex relative">
         {/* Filter Sidebar */}
-        <div className={`hidden ${showLgFilter ? 'lg:block' : ''} sticky top-[112px]`}>
+        <div className={`hidden ${showLgFilter ? 'lg:block' : ''} sticky top-[112px] h-[calc(100vh-112px)] overflow-y-auto`}>
           <FilterSidebar 
             isOpen={isSidebarOpen} 
             onClose={() => setIsSidebarOpen(false)}
@@ -120,53 +120,61 @@ const AllProductsPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1">
-          <div className="max-w-[1920px] mx-auto px-4 py-8">
+        <div className="flex-1 min-w-0">
+          <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
             {/* Filter button for mobile */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden fixed bottom-4 right-4 z-30 bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200"
+              className="lg:hidden fixed bottom-4 right-4 z-30 bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
             >
-              <FunnelIcon className="h-6 w-6" />
+              <FunnelIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="hidden sm:inline">Filter</span>
             </button>
 
-            <div className='flex justify-between items-center'>
-              <Breadcrumbs className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
-                <Link to="/" className={`opacity-60 flex items-center gap-2 ${currentTheme.text}`}>
-                  <HomeIcon className="h-4 w-4" /> Home
+            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4'>
+              <Breadcrumbs className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm text-sm sm:text-base`}>
+                <Link to="/" className={`opacity-60 flex items-center gap-1 sm:gap-2 ${currentTheme.text}`}>
+                  <HomeIcon className="h-3 w-3 sm:h-4 sm:w-4" /> Home
                 </Link>
                 <Link to="#" className={`${currentTheme.text}`}>
                   All Products
                 </Link>
               </Breadcrumbs>
               <button 
-                className={`hidden lg:block text-sm ${currentTheme.accent} ${currentTheme.accentHover}`} 
+                className={`hidden lg:block text-sm ${currentTheme.accent} ${currentTheme.accentHover} px-3 py-1.5 rounded-md transition-colors duration-200`} 
                 onClick={() => setShowLgFilter(!showLgFilter)}
               >
-                Filter
+                <span className="flex items-center gap-2">
+                  <FunnelIcon className="h-4 w-4" />
+                  {showLgFilter ? 'Hide Filter' : 'Show Filter'}
+                </span>
               </button>
             </div>
-            <div className='flex justify-between items-center'>
-              <h1 className={`text-3xl font-bold my-6 ${currentTheme.text}`}>All Products</h1>
-              <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
+
+            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mt-4 sm:mt-6'>
+              <h1 className={`text-xl sm:text-2xl lg:text-3xl font-bold ${currentTheme.text}`}>All Products</h1>
+              <div className="w-full sm:w-auto">
+                <SortSelect onSortChange={handleSortChange} currentSort={sortOption} />
+              </div>
             </div>
+
             {isLoading ? (
               <div className="flex justify-center items-center min-h-[400px]">
                 <Spinner className="h-12 w-12" />
               </div>
             ) : error ? (
-              <div className={`text-center ${currentTheme.text} bg-opacity-50 p-4 rounded-lg`}>
+              <div className={`text-center ${currentTheme.text} bg-opacity-50 p-4 rounded-lg mt-4`}>
                 Error loading products. Please try again later.
               </div>
             ) : (
               <>
                 {data?.products.length === 0 && (
-                  <div className={`text-center py-12 ${currentTheme.text}`}>
-                    <p className="text-lg">No products found.</p>
+                  <div className={`text-center py-8 sm:py-12 ${currentTheme.text}`}>
+                    <p className="text-base sm:text-lg">No products found.</p>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mt-4 sm:mt-6">
                   {data?.products
                     .filter(product => 
                       product.isListed && 
@@ -174,7 +182,7 @@ const AllProductsPage = () => {
                       product.category?.isListed
                     )
                     .map((product) => (
-                      <div key={product._id} className="w-full max-w-[350px] mx-auto">
+                      <div key={product._id} className="w-full sm:max-w-[350px] mx-auto">
                         <ProductCard
                           id={product._id}
                           image={product.mainImage?.imageUrl || product.mainImage}
@@ -196,7 +204,7 @@ const AllProductsPage = () => {
                 </div>
 
                 {data?.totalPages > 0 && (
-                  <div className="mt-8">
+                  <div className="mt-6 sm:mt-8 lg:mt-10">
                     <Pagination 
                       currentPage={currentPage}
                       totalPages={data.totalPages}

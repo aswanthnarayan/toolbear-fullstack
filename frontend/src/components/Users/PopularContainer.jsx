@@ -33,6 +33,37 @@ const PopularContainer = () => {
         }
     }, [user, refetchWishlist]);
 
+    useEffect(() => {
+        // Check scroll buttons when component mounts and when data changes
+        if (scrollContainerRef.current) {
+            checkScrollButtons(scrollContainerRef.current, setCanScrollLeft, setCanScrollRight);
+        }
+        if (categoryContainerRef.current) {
+            checkScrollButtons(categoryContainerRef.current, setCanScrollLeftCategory, setCanScrollRightCategory);
+        }
+        if (brandContainerRef.current) {
+            checkScrollButtons(brandContainerRef.current, setCanScrollLeftBrand, setCanScrollRightBrand);
+        }
+    }, [topSellingData]);
+
+    useEffect(() => {
+        // Add window resize listener
+        const handleResize = () => {
+            if (scrollContainerRef.current) {
+                checkScrollButtons(scrollContainerRef.current, setCanScrollLeft, setCanScrollRight);
+            }
+            if (categoryContainerRef.current) {
+                checkScrollButtons(categoryContainerRef.current, setCanScrollLeftCategory, setCanScrollRightCategory);
+            }
+            if (brandContainerRef.current) {
+                checkScrollButtons(brandContainerRef.current, setCanScrollLeftBrand, setCanScrollRightBrand);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const isProductInWishlist = (productId) => {
         return wishlistItems.some(item => 
             item.productId._id === productId || item.productId === productId
@@ -52,12 +83,88 @@ const PopularContainer = () => {
 
     const checkScrollButtons = (container, setLeft, setRight) => {
         if (container) {
-            setLeft(container.scrollLeft > 0);
-            setRight(
-                container.scrollLeft < container.scrollWidth - container.clientWidth
-            );
+            const threshold = 5; // Small threshold for rounding errors
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            
+            setLeft(container.scrollLeft > threshold);
+            setRight(container.scrollLeft < maxScroll - threshold);
         }
     };
+
+    const scroll = (direction, containerRef) => {
+        const container = containerRef.current;
+        if (container) {
+            const containerWidth = container.clientWidth;
+            const scrollAmount = direction === 'left' ? -containerWidth : containerWidth;
+            
+            container.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+
+            // Update scroll buttons after animation
+            setTimeout(() => {
+                if (containerRef === scrollContainerRef) {
+                    checkScrollButtons(container, setCanScrollLeft, setCanScrollRight);
+                } else if (containerRef === categoryContainerRef) {
+                    checkScrollButtons(container, setCanScrollLeftCategory, setCanScrollRightCategory);
+                } else if (containerRef === brandContainerRef) {
+                    checkScrollButtons(container, setCanScrollLeftBrand, setCanScrollRightBrand);
+                }
+            }, 500);
+        }
+    };
+
+    const renderScrollContainer = (title, items, containerRef, canScrollLeft, canScrollRight, renderItem) => (
+        <div className="w-full px-4">
+            <Typography variant="h3" className={`mb-6 ${currentTheme.text}`}>
+                {title}
+            </Typography>
+            <div className="relative">
+                {/* Left scroll button */}
+                <button 
+                    onClick={() => scroll('left', containerRef)}
+                    className={`absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 rounded-full shadow-lg p-2 transition-all duration-200 
+                        ${canScrollLeft ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+                    disabled={!canScrollLeft}
+                    aria-label="Scroll left"
+                >
+                    <ChevronLeftIcon className="h-6 w-6 text-gray-800 dark:text-white" />
+                </button>
+
+                {/* Scroll container */}
+                <div 
+                    ref={containerRef}
+                    className="grid grid-flow-col auto-cols-[100%] sm:auto-cols-[calc(50%-12px)] md:auto-cols-[calc(33.333%-16px)] lg:auto-cols-[calc(25%-18px)] gap-6 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar"
+                    style={{ 
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch'
+                    }}
+                >
+                    {items?.map((item) => (
+                        <div 
+                            key={item._id} 
+                            className="w-full snap-start"
+                        >
+                            {renderItem(item)}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Right scroll button */}
+                <button 
+                    onClick={() => scroll('right', containerRef)}
+                    className={`absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 rounded-full shadow-lg p-2 transition-all duration-200 
+                        ${canScrollRight ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+                    disabled={!canScrollRight}
+                    aria-label="Scroll right"
+                >
+                    <ChevronRightIcon className="h-6 w-6 text-gray-800 dark:text-white" />
+                </button>
+            </div>
+        </div>
+    );
 
     useEffect(() => {
         const productsContainer = scrollContainerRef.current;
@@ -96,17 +203,6 @@ const PopularContainer = () => {
         };
     }, []);
 
-    const scroll = (direction, containerRef) => {
-        const container = containerRef.current;
-        if (container) {
-            const scrollAmount = 300;
-            container.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
-
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -115,149 +211,53 @@ const PopularContainer = () => {
         );
     }
 
-    const renderProducts = () => (
-        <div className="container mx-auto px-4">
-            <Typography variant="h3" className={`mb-6 ${currentTheme.text}`}>
-                Popular Products
-            </Typography>
-            <div className="relative group">
-                {canScrollLeft && (
-                    <button 
-                        onClick={() => scroll('left', scrollContainerRef)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform -translate-x-1/2"
-                        aria-label="Scroll left"
-                    >
-                        <ChevronLeftIcon className="h-6 w-6" />
-                    </button>
-                )}
-
-                <div 
-                    ref={scrollContainerRef}
-                    className="flex gap-4 overflow-x-hidden scroll-smooth pb-4"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {topSellingData?.data?.products.map((product) => (
-                        <div key={product._id} className="flex-none w-[300px]">
-                            <ProductCard
-                                id={product._id}
-                                image={product.image}
-                                name={product.name}
-                                brand={product.brand}
-                                price={product.price}
-                                description={product.description}
-                                rating={4.5}
-                                reviews={128}
-                                maxOfferPercentage={product.maxOfferPercentage || 0}
-                                sellingPrice={product.sellingPrice || product.price}
-                                stock={product.stock || 0}
-                                toastMsg={handleToast}
-                                isInWishlist={isProductInWishlist(product._id)}
-                                onWishlistChange={handleWishlistChange}
-                            />
-                        </div>
-                    ))}
-                </div>
-
-                {canScrollRight && (
-                    <button 
-                        onClick={() => scroll('right', scrollContainerRef)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform translate-x-1/2"
-                        aria-label="Scroll right"
-                    >
-                        <ChevronRightIcon className="h-6 w-6" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderCategories = () => (
-        <div className="container mx-auto px-4 mt-12">
-            <Typography variant="h3" className={`mb-6 ${currentTheme.text}`}>
-                Popular Categories
-            </Typography>
-            <div className="relative group">
-                {canScrollLeftCategory && (
-                    <button 
-                        onClick={() => scroll('left', categoryContainerRef)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform -translate-x-1/2"
-                        aria-label="Scroll left"
-                    >
-                        <ChevronLeftIcon className="h-6 w-6" />
-                    </button>
-                )}
-
-                <div 
-                    ref={categoryContainerRef}
-                    className="flex gap-4 overflow-x-hidden scroll-smooth pb-4"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {topSellingData?.data?.categories.map((category) => (
-                        <div key={category._id} className="flex-none w-[300px]">
-                            <CategoryCard category={category} />
-                        </div>
-                    ))}
-                </div>
-
-                {canScrollRightCategory && (
-                    <button 
-                        onClick={() => scroll('right', categoryContainerRef)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform translate-x-1/2"
-                        aria-label="Scroll right"
-                    >
-                        <ChevronRightIcon className="h-6 w-6" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderBrands = () => (
-        <div className="container mx-auto px-4 mt-12">
-            <Typography variant="h3" className={`mb-6 ${currentTheme.text}`}>
-                Popular Brands
-            </Typography>
-            <div className="relative group">
-                {canScrollLeftBrand && (
-                    <button 
-                        onClick={() => scroll('left', brandContainerRef)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform -translate-x-1/2"
-                        aria-label="Scroll left"
-                    >
-                        <ChevronLeftIcon className="h-6 w-6" />
-                    </button>
-                )}
-
-                <div 
-                    ref={brandContainerRef}
-                    className="flex gap-4 overflow-x-hidden scroll-smooth pb-4"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {topSellingData?.data?.brands.map((brand) => (
-                        <div key={brand._id} className="flex-none w-[300px]">
-                            <BrandCard brand={brand} />
-                        </div>
-                    ))}
-                </div>
-
-                {canScrollRightBrand && (
-                    <button 
-                        onClick={() => scroll('right', brandContainerRef)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition-all duration-200 transform translate-x-1/2"
-                        aria-label="Scroll right"
-                    >
-                        <ChevronRightIcon className="h-6 w-6" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-
     return (
         <div className="space-y-12">
-            {topSellingData?.data?.products?.length > 0 && renderProducts()}
-            {topSellingData?.data?.categories?.length > 0 && renderCategories()}
-            {topSellingData?.data?.brands?.length > 0 && renderBrands()}
+            {topSellingData?.data?.products?.length > 0 && renderScrollContainer(
+                'Popular Products',
+                topSellingData.data.products,
+                scrollContainerRef,
+                canScrollLeft,
+                canScrollRight,
+                (product) => (
+                    <ProductCard
+                        id={product._id}
+                        image={product.image}
+                        name={product.name}
+                        brand={product.brand}
+                        price={product.price}
+                        description={product.description}
+                        rating={4.5}
+                        reviews={128}
+                        maxOfferPercentage={product.maxOfferPercentage || 0}
+                        sellingPrice={product.sellingPrice || product.price}
+                        stock={product.stock || 0}
+                        toastMsg={handleToast}
+                        isInWishlist={isProductInWishlist(product._id)}
+                        onWishlistChange={handleWishlistChange}
+                    />
+                )
+            )}
+            {topSellingData?.data?.categories?.length > 0 && renderScrollContainer(
+                'Popular Categories',
+                topSellingData.data.categories,
+                categoryContainerRef,
+                canScrollLeftCategory,
+                canScrollRightCategory,
+                (category) => (
+                    <CategoryCard category={category} />
+                )
+            )}
+            {topSellingData?.data?.brands?.length > 0 && renderScrollContainer(
+                'Popular Brands',
+                topSellingData.data.brands,
+                brandContainerRef,
+                canScrollLeftBrand,
+                canScrollRightBrand,
+                (brand) => (
+                    <BrandCard brand={brand} />
+                )
+            )}
         </div>
     );
 };

@@ -116,29 +116,25 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
 
   return (
     <div
-      className={`${currentTheme.secondary} rounded-lg shadow-lg p-4 lg:p-6`}
+      className={`${currentTheme.secondary} rounded-lg shadow-lg p-3 sm:p-4 lg:p-6`}
     >
       <div className="flex justify-end mb-2">
         <Button variant="text" className={`p-2 ${currentTheme.text}`}>
           <ShareIcon className="h-5 w-5" />
         </Button>
       </div>
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Image Gallery */}
-        <div className="lg:w-[55%]">
-          <div className="flex flex-col-reverse lg:flex-row gap-4">
+        <div className="w-full lg:w-[55%]">
+          <div className="flex flex-col-reverse lg:flex-row gap-3 lg:gap-4">
             {/* Thumbnails */}
-            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:h-[400px] pb-2 lg:pb-0 lg:pr-2">
+            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:h-[400px] pb-2 lg:pb-0 lg:pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               {productImages.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`w-16 h-16 lg:w-[64px] lg:h-[64px] rounded-md overflow-hidden flex-shrink-0 border-2 
-                    ${
-                      selectedImage === index
-                        ? "border-yellow-500"
-                        : "border-transparent"
-                    }`}
+                  className={`min-w-[60px] w-[60px] h-[60px] sm:w-16 sm:h-16 lg:w-[64px] lg:h-[64px] rounded-md overflow-hidden flex-shrink-0 border-2 
+                    ${selectedImage === index ? "border-yellow-500" : "border-transparent"}`}
                 >
                   <img
                     src={image}
@@ -150,7 +146,7 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
             </div>
 
             {/* Main Image */}
-            <div className="relative aspect-square rounded-lg overflow-hidden flex-1 lg:max-h-[400px]">
+            <div className="relative w-full aspect-square rounded-lg overflow-hidden flex-1 lg:max-h-[400px]">
               <Magnifier
                 src={productImages[selectedImage]}
                 alt={product.name}
@@ -165,55 +161,56 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
         </div>
 
         {/* Product Info */}
-        <div className="lg:w-[45%] lg:pt-8">
-          <div className="flex flex-col mb-1">
-            <Typography variant="h4" className={currentTheme.text}>
+        <div className="w-full lg:w-[45%] lg:pt-8 space-y-4 lg:space-y-6">
+          <div className="flex flex-col">
+            <Typography variant="h4" className={`${currentTheme.text} text-xl sm:text-2xl lg:text-3xl`}>
               {product.name}
             </Typography>
-            <p className={currentTheme.textGray}>{product.brand?.name}</p>
+            <p className={`${currentTheme.textGray} text-sm sm:text-base`}>{product.brand?.name}</p>
           </div>
 
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2">
             {renderRating(4.5)}
-            <Typography className={`font-normal ${currentTheme.textGray}`}>
+            <Typography className={`font-normal ${currentTheme.textGray} text-sm sm:text-base`}>
               (0 reviews)
             </Typography>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-2 mb-4">
+          <div className="flex items-baseline gap-2 flex-wrap">
             {product.maxOfferPercentage > 0 ? (
               <>
-                <Typography variant="h4" className={currentTheme.text}>
+                <Typography variant="h4" className={`${currentTheme.text} text-xl sm:text-2xl lg:text-3xl`}>
                   ₹{product.sellingPrice}
                 </Typography>
-                <Typography className={`line-through ${currentTheme.textGray}`}>
+                <Typography className={`line-through ${currentTheme.textGray} text-sm sm:text-base`}>
                   ₹{product.price}
                 </Typography>
-                <Typography className="text-sm text-green-500">
+                <Typography className="text-xs sm:text-sm text-green-500">
                   {product.maxOfferPercentage}% off
                 </Typography>
               </>
             ) : (
-              <Typography variant="h4" className={currentTheme.text}>
+              <Typography variant="h4" className={`${currentTheme.text} text-xl sm:text-2xl lg:text-3xl`}>
                 ₹{product.price}
               </Typography>
             )}
           </div>
 
           {/* Description */}
-          <div className="mb-6">
-            <Typography className={`font-normal ${currentTheme.text}`}>
+          <div>
+            <Typography className={`font-normal ${currentTheme.text} text-sm sm:text-base`}>
               {product.desc}
             </Typography>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
             {product.stock > 0 ? (
               isInCart ? (
                 <Button
-                  className={`flex items-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
+                  fullWidth
+                  className={`flex items-center justify-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black py-2.5 sm:py-3`}
                   onClick={handleGoToCart}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
@@ -221,8 +218,9 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
                 </Button>
               ) : (
                 <Button
+                  fullWidth
                   size="lg"
-                  className={`flex items-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black`}
+                  className={`flex items-center justify-center gap-2 ${currentTheme.button} ${currentTheme.buttonHover} text-black py-2.5 sm:py-3`}
                   onClick={handleAddToCart}
                   disabled={isAdding}
                 >
@@ -231,15 +229,16 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
                 </Button>
               )
             ) : (
-              <Typography variant="h5" className="text-red-500">
+              <Typography variant="h5" className="text-red-500 text-center">
                 Out of Stock
               </Typography>
             )}
             <Button
+              fullWidth
               variant={isInWishlist ? "filled" : "outlined"}
               size="lg"
               color={isInWishlist ? "red" : "blue-gray"}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 py-2.5 sm:py-3"
               onClick={handleWishlist}
             >
               {isInWishlist ? (
@@ -247,7 +246,8 @@ const SingleProduct = ({ product, toastMsg,isInWishlist }) => {
               ) : (
                 <HeartIcon className="h-5 w-5" />
               )}
-              {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              <span className="hidden sm:inline">{isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}</span>
+              <span className="sm:hidden">{isInWishlist ? "Remove" : "Wishlist"}</span>
             </Button>
           </div>
         </div>

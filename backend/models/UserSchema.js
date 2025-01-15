@@ -13,7 +13,19 @@ const userSchema = mongoose.Schema({
     addresses: [{ 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Address'
-    }]
+    }],
+    purchasedProducts:[
+        {
+            productId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product'
+            },
+            quantity: {
+                type: Number,
+                default: 1
+            }
+        }
+    ]
 }, { timestamps: true });
 
 // Unique indexes

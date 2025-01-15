@@ -44,11 +44,11 @@ const WalletSection = () => {
     <div className={`space-y-4 ${currentTheme.primary}`}>
       {/* Wallet Balance */}
       <Card className={currentTheme.secondary}>
-        <CardBody>
-          <Typography variant="h5" className={`mb-4 ${currentTheme.text}`}>
+        <CardBody className="p-4 sm:p-6">
+          <Typography variant="h5" className={`mb-2 sm:mb-4 text-lg sm:text-xl ${currentTheme.text}`}>
             Wallet Balance
           </Typography>
-          <Typography variant="h3" className={currentTheme.text}>
+          <Typography variant="h3" className={`text-2xl sm:text-3xl md:text-4xl ${currentTheme.text}`}>
             ₹{wallet?.balance || 0}
           </Typography>
         </CardBody>
@@ -56,27 +56,28 @@ const WalletSection = () => {
 
       {/* Transaction History */}
       <Card className={currentTheme.secondary}>
-        <CardBody>
-          <Typography variant="h5" className={`mb-4 ${currentTheme.text}`}>
+        <CardBody className="p-4 sm:p-6">
+          <Typography variant="h5" className={`mb-3 sm:mb-4 text-lg sm:text-xl ${currentTheme.text}`}>
             Transaction History
           </Typography>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {wallet?.transactions?.map((transaction, index) => (
               <div 
                 key={index} 
-                className={`flex justify-between items-center p-4 rounded-lg ${currentTheme.hover} transition-colors duration-200`}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg ${currentTheme.hover} transition-colors duration-200`}
               >
-                <div>
-                  <Typography variant="h6" className={currentTheme.text}>
+                <div className="flex-1 min-w-0">
+                  <Typography variant="h6" className={`${currentTheme.text} text-sm sm:text-base break-words`}>
                     {transaction.description}
                   </Typography>
-                  <Typography className={`text-sm ${currentTheme.textGray}`}>
+                  <Typography className={`text-xs sm:text-sm ${currentTheme.textGray}`}>
                     {new Date(transaction.date).toLocaleDateString()}
                   </Typography>
                 </div>
                 <Chip
                   value={`${getTransactionPrefix(transaction)}₹${Math.abs(transaction.amount)}`}
                   color={getTransactionColor(transaction)}
+                  className="text-xs sm:text-sm h-6 sm:h-7 w-fit"
                 />
               </div>
             ))}
@@ -84,16 +85,18 @@ const WalletSection = () => {
 
           {/* Pagination */}
           {wallet?.transactions?.length > 0 && (
-            <div className="mt-4">
-              <Pagination
-                currentPage={page}
-                totalPages={wallet?.pagination?.totalPages}
-                onPageChange={(newPage) => {
-                  setPage(newPage);
-                  window.scrollTo(0, 0);
-                }}
-                theme={currentTheme}
-              />
+            <div className="mt-4 sm:mt-6 w-full overflow-x-auto">
+              <div className="min-w-[300px] max-w-full mx-auto pb-2">
+                <Pagination
+                  currentPage={page}
+                  totalPages={wallet?.pagination?.totalPages}
+                  onPageChange={(newPage) => {
+                    setPage(newPage);
+                    window.scrollTo(0, 0);
+                  }}
+                  theme={currentTheme}
+                />
+              </div>
             </div>
           )}
         </CardBody>

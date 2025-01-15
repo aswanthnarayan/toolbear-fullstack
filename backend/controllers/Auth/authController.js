@@ -119,7 +119,7 @@ export const postSignIn = async (req, res) => {
 
     // JWT token
     const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "24h",
     });
 
     res.cookie("token", token, {

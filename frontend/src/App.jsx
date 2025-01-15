@@ -38,6 +38,7 @@ import CartPage from "./pages/User/CartPage";
 import CheckoutPage from "./pages/User/CheckoutPage";
 import PurchasePaymentPage from "./pages/User/PurchasePaymentPage";
 import OrderCompletePage from "./pages/User/OrderCompletePage";
+import OrderPaymentFailPage from "./pages/User/OrderPaymentFailPage";
 import AdminOrdersPage from "./pages/Admin/AdminOrdersPage";
 import WishlistPage from "./pages/User/WishlistPage";
 import ReturnedRequestPage from "./components/Admin/ReturnedRequestPage";
@@ -59,6 +60,7 @@ function App() {
   };
 
   return (
+    
     <Routes>
      
       {/* Public and Protected Routes with Navbar */}
@@ -81,6 +83,7 @@ function App() {
         <Route path="/user/checkout" element={<CheckoutPage />} />
         <Route path="/user/checkout/payments" element={<PurchasePaymentPage />} />
         <Route path="/user/checkout/success" element={<OrderCompletePage />} />
+        <Route path="/user/checkout/payment/fail" element={<OrderPaymentFailPage />} />
         <Route path="/user/orders/:orderId" element={<OrderDetailsPage />} />
 
           <Route path="/user/profile" element={<UserProfilePage />}>

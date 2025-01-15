@@ -24,7 +24,7 @@ const baseQueryWithLogout = async (args, api, extraOptions) => {
 export const userApi = createApi({
     reducerPath: 'userApi',
     baseQuery: baseQueryWithLogout,
-    tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet", "Products", "Categories", "Brands"],
+    tagTypes: ["Address", "Cart", "Order", "Profile", "Wishlist", "Coupons", "Wallet", "Products", "Categories", "Brands", "Reviews"],
     endpoints: (builder) => ({
         // Address endpoints
         getAddresses: builder.query({
@@ -225,6 +225,42 @@ export const userApi = createApi({
     }),
     providesTags: ['Products', 'Categories', 'Brands']
   }),
+  // Review endpoints
+  getAllReviews: builder.query({
+    query: ({ productId, page = 1, limit = 10 } = {}) => `/reviews?productId=${productId}&page=${page}&limit=${limit}`,
+    providesTags: ['Reviews']
+  }),
+  checkUserPurchase: builder.query({
+    query: (productId) => `/reviews/check-purchase/${productId}`,
+    providesTags: (result, error, productId) => [{ type: 'Reviews', id: productId }]
+  }),
+  addReview: builder.mutation({
+    query: (data) => ({
+      url: '/reviews/add',
+      method: 'POST',
+      body: data
+    }),
+    invalidatesTags: (result, error, { productId }) => [
+      { type: 'Reviews', id: productId },
+      'Reviews',
+      'Products'
+    ]
+  }),
+  deleteReview: builder.mutation({
+    query: (reviewId) => ({
+      url: `/reviews/${reviewId}`,
+      method: 'DELETE'
+    }),
+    invalidatesTags: ['Reviews', 'Products']
+  }),
+  updateReview: builder.mutation({
+    query: ({ reviewId, ...data }) => ({
+      url: `/reviews/${reviewId}`,
+      method: 'PUT',
+      body: data
+    }),
+    invalidatesTags: ['Reviews', 'Products']
+  }),
 }),
 });
 
@@ -257,5 +293,10 @@ export const {
   useGetProductByCategoryQuery,
   useGetAllCategoriesOfBrandQuery,
   useDownloadInvoiceMutation,
-  useGetTopSellingItemsQuery
+  useGetTopSellingItemsQuery,
+  useGetAllReviewsQuery,
+  useCheckUserPurchaseQuery,
+  useAddReviewMutation,
+  useDeleteReviewMutation,
+  useUpdateReviewMutation
 } = userApi

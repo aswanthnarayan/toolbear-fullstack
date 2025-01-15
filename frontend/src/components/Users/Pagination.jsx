@@ -3,6 +3,7 @@ import { IconButton, Button } from "@material-tailwind/react";
 import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useSelector } from 'react-redux';
 
+
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
   const currentTheme = isDarkMode ? theme.dark : theme.light;

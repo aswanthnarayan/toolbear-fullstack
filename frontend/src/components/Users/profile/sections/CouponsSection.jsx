@@ -26,16 +26,16 @@ const CouponsSection = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
-        <Spinner className="h-8 w-8" />
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card className={`mt-4 ${currentTheme.secondary}`}>
-        <CardBody>
-          <Typography className="text-red-500">
+      <Card className={`${currentTheme.secondary}`}>
+        <CardBody className="p-4">
+          <Typography className="text-red-500 text-sm sm:text-base text-center">
             Failed to load coupons. Please try again later.
           </Typography>
         </CardBody>
@@ -45,28 +45,29 @@ const CouponsSection = () => {
 
   return (
     <div className={`space-y-4 ${currentTheme.primary}`}>
-      <Typography variant="h6" className={`mb-4 ${currentTheme.text}`}>
+      <Typography variant="h6" className={`mb-4 text-lg sm:text-xl ${currentTheme.text}`}>
         Available Coupons
       </Typography>
 
       {data?.coupons?.map((coupon) => (
-        <Card key={coupon._id} className={`mb-4 ${currentTheme.secondary} hover:shadow-lg transition-shadow duration-300`}>
-          <CardBody>
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <Typography variant="h5" className={currentTheme.text}>
+        <Card key={coupon._id} className={`${currentTheme.secondary} hover:shadow-lg transition-shadow duration-300`}>
+          <CardBody className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 mb-3">
+              <div className="flex-1 min-w-0">
+                <Typography variant="h5" className={`${currentTheme.text} text-base sm:text-lg break-all mb-1`}>
                   {coupon.code}
                 </Typography>
-                <Typography className={`text-sm mb-2 ${currentTheme.textGray}`}>
+                <Typography className={`text-xs sm:text-sm ${currentTheme.textGray}`}>
                   {coupon.description}
                 </Typography>
               </div>
               <Chip
                 value={`${coupon.discountType === 'percentage' ? coupon.discountAmount + '%' : '₹' + coupon.discountAmount} OFF`}
                 color="green"
+                className="text-xs sm:text-sm h-6 sm:h-7"
               />
             </div>
-            <div className={`flex justify-between items-center text-sm ${currentTheme.textGray}`}>
+            <div className={`flex flex-col sm:flex-row justify-between gap-1 sm:gap-4 text-xs sm:text-sm ${currentTheme.textGray}`}>
               <div>
                 Min. Purchase: ₹{coupon.minimumPurchase}
               </div>
@@ -80,23 +81,25 @@ const CouponsSection = () => {
 
       {/* Pagination */}
       {data?.coupons?.length > 0 && (
-        <div className="mt-4">
-          <Pagination
-            currentPage={page}
-            totalPages={data?.pagination?.totalPages}
-            onPageChange={(newPage) => {
-              setPage(newPage);
-              window.scrollTo(0, 0);
-            }}
-            theme={currentTheme}
-          />
+        <div className="mt-4 sm:mt-6 w-full overflow-x-auto">
+          <div className="min-w-[300px] max-w-full mx-auto pb-2">
+            <Pagination
+              currentPage={page}
+              totalPages={data?.pagination?.totalPages}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                window.scrollTo(0, 0);
+              }}
+              theme={currentTheme}
+            />
+          </div>
         </div>
       )}
 
       {data?.coupons?.length === 0 && (
         <Card className={currentTheme.secondary}>
-          <CardBody>
-            <Typography className={`text-center ${currentTheme.text}`}>
+          <CardBody className="p-4">
+            <Typography className={`text-center text-sm sm:text-base ${currentTheme.text}`}>
               No coupons available at the moment.
             </Typography>
           </CardBody>
