@@ -440,14 +440,14 @@ export const getTopSellingItems = async (req, res) => {
         // Debug: Check for delivered orders
         const deliveredOrders = await Order.find({ status: 'Delivered' })
             .populate('products.productId', 'name category brand');
-        console.log('Number of delivered orders:', deliveredOrders.length);
+        // console.log('Number of delivered orders:', deliveredOrders.length);
         
-        if (deliveredOrders.length > 0) {
-            console.log('Sample Order Structure:', JSON.stringify({
-                status: deliveredOrders[0].status,
-                products: deliveredOrders[0].products,
-            }, null, 2));
-        }
+        // if (deliveredOrders.length > 0) {
+        //     console.log('Sample Order Structure:', JSON.stringify({
+        //         status: deliveredOrders[0].status,
+        //         products: deliveredOrders[0].products,
+        //     }, null, 2));
+        // }
         
         let pipeline = [
             // Only consider delivered orders

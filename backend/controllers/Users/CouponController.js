@@ -45,7 +45,7 @@ export const validateCoupon = async (req, res) => {
         const { code } = req.body;
         const currentDate = new Date();
 
-        if (!code || typeof code !== 'string') {
+        if (!code || typeof code !== 'string' || code.trim() === '') {
             return res.status(400).json({ 
                 success: false,
                 message: 'Please provide a valid coupon code' 
@@ -54,7 +54,7 @@ export const validateCoupon = async (req, res) => {
 
         // Find the coupon and check if it's valid
         const coupon = await Coupon.findOne({
-            code: code.toUpperCase(),
+            code: code.trim().toUpperCase(),
             expiryDate: { $gt: currentDate }
         });
 
