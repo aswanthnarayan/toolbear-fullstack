@@ -122,12 +122,21 @@ export const postSignIn = async (req, res) => {
       expiresIn: "24h",
     });
 
-    res.cookie("token", token, {
+    // Set cookie options based on environment
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const cookieOptions = {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+      secure: !isDevelopment,  // true in production, false in development
+      sameSite: isDevelopment ? 'Lax' : 'None',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    };
+
+    // Only set domain in production
+    if (!isDevelopment) {
+      cookieOptions.domain = '.toolbear.shop';
+    }
+
+    res.cookie("token", token, cookieOptions);
     res.json({
       user: {
         _id: user._id,
@@ -169,12 +178,21 @@ export const signUpGoogle = async (req,res)=>{
         { expiresIn: '24h' }
       );
       
-      res.cookie("token", token, {
+      // Set cookie options based on environment
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      const cookieOptions = {
         httpOnly: true,
-        secure: false,
-        sameSite: "Lax",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
+        secure: !isDevelopment,  // true in production, false in development
+        sameSite: isDevelopment ? 'Lax' : 'None',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      };
+
+      // Only set domain in production
+      if (!isDevelopment) {
+        cookieOptions.domain = '.toolbear.shop';
+      }
+
+      res.cookie("token", token, cookieOptions);
       
       return res.status(HttpStatusEnum.OK).json({
         user: {
@@ -225,12 +243,21 @@ export const completeGoogleSignup = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     )
-    res.cookie("token", token, {
+    // Set cookie options based on environment
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const cookieOptions = {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+      secure: !isDevelopment,  // true in production, false in development
+      sameSite: isDevelopment ? 'Lax' : 'None',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    };
+
+    // Only set domain in production
+    if (!isDevelopment) {
+      cookieOptions.domain = '.toolbear.shop';
+    }
+
+    res.cookie("token", token, cookieOptions);
 
     res.status(HttpStatusEnum.OK).json({
       message: "Profile completed successfully",
