@@ -41,7 +41,7 @@ function Navbar() {
   const handleSearch = ()=>{
     if(searchQuery.trim() !== "")
     {
-      navigate(`/user/all-prndoducts?search=${searchQuery}`)
+      navigate(`/user/all-products?search=${searchQuery}`)
     }
   }
 
@@ -327,7 +327,7 @@ function Navbar() {
         <div className="w-full max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-8 h-12 text-sm font-medium overflow-x-auto">
             <Link
-              to="user/all-products"
+              to="/user/all-products"
               className="hover:text-blue-400 transition-colors duration-200 whitespace-nowrap"
             >
               ALL PRODUCTS

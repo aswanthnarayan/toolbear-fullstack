@@ -15,11 +15,13 @@ import { useGetAllCategoriesQuery, useGetAllBrandsQuery } from '../../../App/fea
 const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
   const { data: categoriesData } = useGetAllCategoriesQuery({ 
     page: 1, 
-    limit: 100  // Get all categories
+    limit: 100,  // Get all categories
+    isUserView: true  // Only get listed categories
   });
   const { data: brandsData } = useGetAllBrandsQuery({ 
     page: 1, 
-    limit: 100  // Get all brands
+    limit: 100,  // Get all brands
+    isUserView: true  // Only get listed brands
   });
 
   const [selectedFilters, setSelectedFilters] = useState({

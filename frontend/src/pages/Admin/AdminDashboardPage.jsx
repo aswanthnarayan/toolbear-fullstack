@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldFetch, setShouldFetch] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Format date to DD/MM/YYYY for display
   const formatDateForDisplay = (dateStr) => {
@@ -46,12 +47,26 @@ const Dashboard = () => {
     isInitialized && (filterType !== 'custom' || shouldFetch) ? {
       filter: filterType,
       startDate: startDate ? formatDateForAPI(startDate) : '',
-      endDate: endDate ? formatDateForAPI(endDate) : ''
+      endDate: endDate ? formatDateForAPI(endDate) : '',
+      page: currentPage,
+      limit: 10
     } : skipToken
   );
 
   const [downloadPDF, { isLoading: isPdfLoading }] = useDownloadSalesPDFMutation();
   const [downloadExcel, { isLoading: isExcelLoading }] = useDownloadSalesExcelMutation();
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (salesReport?.pagination?.totalPages && currentPage < salesReport.pagination.totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
 
   // Initialize dates on component mount
   useEffect(() => {
@@ -65,7 +80,8 @@ const Dashboard = () => {
   // Handle filter changes
   const handleFilterChange = (value) => {
     setFilterType(value);
-    setShouldFetch(false); // Reset shouldFetch when changing filter type
+    setShouldFetch(false);
+    setCurrentPage(1); // Reset to first page
     
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -74,7 +90,7 @@ const Dashboard = () => {
       case 'daily':
         setStartDate(todayStr);
         setEndDate(todayStr);
-        setShouldFetch(true); // Immediately fetch for non-custom filters
+        setShouldFetch(true);
         break;
       case 'weekly': {
         const weekAgo = new Date(today);
@@ -101,7 +117,6 @@ const Dashboard = () => {
         break;
       }
       case 'custom':
-        // Keep current dates for custom and don't fetch until Apply is clicked
         break;
       default:
         break;
@@ -111,6 +126,7 @@ const Dashboard = () => {
   // Handle apply filter button click
   const handleApplyFilter = () => {
     if (filterType === 'custom') {
+      setCurrentPage(1); // Reset to first page when applying custom filter
       setShouldFetch(true);
     }
   };
@@ -199,6 +215,9 @@ const Dashboard = () => {
         error={error}
         handleDownloadPDF={handleDownloadPDF}
         handleDownloadExcel={handleDownloadExcel}
+        currentPage={currentPage}
+        handlePrevPage={handlePrevPage}
+        handleNextPage={handleNextPage}
         isPdfLoading={isPdfLoading}
         isExcelLoading={isExcelLoading}
       />

@@ -124,7 +124,7 @@ export const createBrand = async (req, res) => {
 export const getAllBrands = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 8;
     const search = req.query.search || "";
     const isUserView = req.query.isUserView === 'true';
 
@@ -146,26 +146,26 @@ export const getAllBrands = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const [brands, totalCount] = await Promise.all([
+    const [brands, total] = await Promise.all([
       Brand.find(query)
-        .select('name desc logo bannerImages offerPercentage isListed createdAt base_color about')
-        .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .select('name desc logo bannerImages offerPercentage isListed createdAt base_color about'),
       Brand.countDocuments(query)
     ]);
-
-    const totalPages = Math.ceil(totalCount / limit);
-
+    
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+    
     res.status(HttpStatusEnum.OK).json({
       brands,
       currentPage: page,
       totalPages,
-      totalCount,
-      hasMore: page < totalPages
+      totalCount: total,
+      hasMore
     });
   } catch (error) {
-    console.error('Error fetching brands:', error);
+    console.error("Error fetching brands:", error);
     res.status(HttpStatusEnum.INTERNAL_SERVER).json({ 
         error: error.message || 'Internal server error' 
     });
