@@ -1,5 +1,8 @@
 # Toolbear: E-commerce Website
 
+## Live Demo
+Check out the live application at [Toolbear Live](https://toolbear.shop).
+
 ## Description
 Developed a full-stack e-commerce platform using the MERN stack featuring user authentication, product catalog, shopping cart functionality, and secure payment integration with Redux state management.
 
@@ -28,9 +31,6 @@ Deployed and maintained the application on Google Cloud Platform (GCP) with cont
 - **exceljs**: For reading and writing Excel files.
 - **crypto**: For cryptographic functions.
 - **datauri**: For converting data to a URI format.
-
-## Live Demo
-Check out the live application at [Toolbear Live](https://toolbear.shop).
 
 ## Installation
 1. Clone the repository:
