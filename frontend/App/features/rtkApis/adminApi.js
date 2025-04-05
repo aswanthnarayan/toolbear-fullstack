@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseQuery = fetchBaseQuery({ 
-    baseUrl: '/api/admin',
+    baseUrl: `${import.meta.env.VITE_API_URL}/api/admin`,
     credentials: 'include',
     prepareHeaders: (headers) => {
         if (headers.get('Content-Type')?.includes('multipart/form-data')) {
