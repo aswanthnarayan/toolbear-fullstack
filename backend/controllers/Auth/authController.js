@@ -132,9 +132,9 @@ export const postSignIn = async (req, res) => {
     };
 
     // Only set domain in production
-    if (!isDevelopment) {
-      cookieOptions.domain = '.toolbear.shop';
-    }
+    // if (!isDevelopment) {
+    //   cookieOptions.domain = '.toolbear.shop';
+    // }
 
     res.cookie("token", token, cookieOptions);
     res.json({
