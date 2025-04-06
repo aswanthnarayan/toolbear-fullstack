@@ -14,7 +14,7 @@ const app = express();
 
 connectDb()
 
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000','https://toolbear-fullstack.onrender.com','https://toolbear.shop','https://toolbear-fullstack-1.onrender.com'];
 
 app.use(cors({
   origin: function (origin, callback) {
