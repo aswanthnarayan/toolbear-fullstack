@@ -41,9 +41,9 @@ export function CategoryTable() {
 
   const handleListToggle = async (id) => {
     try {
-      console.log('Toggling category:', id);
+      // console.log('Toggling category:', id);
       const result = await toggleList(id).unwrap();
-      console.log('Toggle result:', result);
+      // console.log('Toggle result:', result);
       handleModalOpen();
       setSelectedCategory(null);
     } catch (error) {
@@ -52,7 +52,7 @@ export function CategoryTable() {
   };
 
   const handleSwitchClick = (category) => {
-    console.log('Selected category:', category);
+    // console.log('Selected category:', category);
     setSelectedCategory(category);
     handleModalOpen();
   };

@@ -64,9 +64,9 @@ export const createRazorpayOrder = async (req, res) => {
             receipt: "order_" + Date.now(),
         };
 
-        console.log('Creating Razorpay order with options:', options);
+        // console.log('Creating Razorpay order with options:', options);
         const order = await razorpay.orders.create(options);
-        console.log('Razorpay order created:', order);
+        // console.log('Razorpay order created:', order);
         
         res.status(200).json({
             success: true,
@@ -412,7 +412,7 @@ export const downloadInvoice = async (req, res) => {
 
 export const getOrderById = async (req, res) => {
     try {
-        console.log('Fetching order with ID:', req.params.id); // Debug log
+        // console.log('Fetching order with ID:', req.params.id); // Debug log
         const order = await Order.findById(req.params.id).populate('products.productId');
         
         if (!order) {

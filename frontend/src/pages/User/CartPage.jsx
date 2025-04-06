@@ -82,7 +82,7 @@ const CartPage = () => {
   };
 
   const handleOpenAlert = (productId) => {
-    console.log('Opening alert for product:', productId);
+    // console.log('Opening alert for product:', productId);
     setItemToDelete(productId);
     setOpenAlert(true);
   };

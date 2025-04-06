@@ -81,7 +81,7 @@ const AllProductsPage = () => {
   };
 
   const handleApplyFilters = (newFilters) => {
-    console.log('Applying filters:', newFilters);
+    // console.log('Applying filters:', newFilters);
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page when filters change
   };

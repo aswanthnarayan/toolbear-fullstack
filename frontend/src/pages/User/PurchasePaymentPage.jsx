@@ -50,8 +50,8 @@ const PurchasePaymentPage = () => {
     skip: !orderId
   });
   
-  console.log('Order:', order); // Debug order data
-  console.log('Order Error:', orderError); // Debug any errors
+  // console.log('Order:', order); // Debug order data
+  // console.log('Order Error:', orderError); // Debug any errors
 
   const { data: wallet } = useGetWalletQuery({ page: 1, limit: 1 });
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('RAZORPAY'); // Default to Razorpay for pending payments
@@ -109,7 +109,7 @@ const PurchasePaymentPage = () => {
         const razorpayResponse = await createRazorpayOrder({
           amount: order.totalAmount * 100
         }).unwrap();
-        console.log('Razorpay order created:', razorpayResponse);
+        // console.log('Razorpay order created:', razorpayResponse);
 
         if (!window.Razorpay) {
           toast.error('Razorpay not loaded. Please try again.');
@@ -157,7 +157,7 @@ const PurchasePaymentPage = () => {
           }
         };
 
-        console.log('Opening Razorpay with options:', options);
+        // console.log('Opening Razorpay with options:', options);
         const rzp = new window.Razorpay(options);
         rzp.open();
       }

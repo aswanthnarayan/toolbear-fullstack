@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo , useEffect} from 'react';
 import {
   Card,
   Typography,
@@ -47,12 +47,8 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
       brands: [],
       priceRange: null
     });
-    onApplyFilters({
-      categories: [],
-      brands: [],
-      priceRange: null
-    });
   };
+  
 
   const removeFilter = (type, value) => {
     setSelectedFilters(prev => {
@@ -62,7 +58,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
       } else {
         newFilters[type] = prev[type].filter(item => item !== value);
       }
-      onApplyFilters(newFilters);
+      // onApplyFilters(newFilters);
       return newFilters;
     });
   };
@@ -96,6 +92,12 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
     price: false
   });
 
+  useEffect(() => {
+    onApplyFilters(selectedFilters);
+  }, [selectedFilters]);
+  
+
+
   const toggleAccordion = (section) => {
     setOpenAccordions(prev => ({
       ...prev,
@@ -114,7 +116,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
           ? array.filter(item => item !== value)
           : [...array, value];
       }
-      onApplyFilters(newFilters);
+      // onApplyFilters(newFilters);
       return newFilters;
     });
   };
@@ -298,31 +300,7 @@ const FilterSidebar = ({ isOpen, onClose, onApplyFilters }) => {
           </List>
         </div>
       </Card>
-      <style jsx global>{`
-        /* Custom scrollbar styles */
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 4px;
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: ${isDarkMode ? '#1a1a1a' : '#f1f1f1'};
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: ${isDarkMode ? '#4a4a4a' : '#888'};
-          border-radius: 2px;
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: ${isDarkMode ? '#606060' : '#555'};
-        }
-
-        /* Firefox */
-        .scrollbar-thin {
-          scrollbar-width: thin;
-          scrollbar-color: ${isDarkMode ? '#4a4a4a #1a1a1a' : '#888 #f1f1f1'};
-        }
-      `}</style>
+     
     </>
   );
 };

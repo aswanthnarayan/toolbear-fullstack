@@ -81,7 +81,7 @@ const ProductForm = ({ mode = "add", onSubmit: submitForm, isLoading, initialDat
         if (mode === 'add') {
           const validImages = additionalImages.filter(img => img !== null);
           const totalImages = validImages.length;
-          console.log(totalImages);
+          // console.log(totalImages);
           
           if (totalImages < 2) {
             const remaining = 2 - totalImages;

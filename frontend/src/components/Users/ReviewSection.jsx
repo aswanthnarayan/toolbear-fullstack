@@ -66,8 +66,8 @@ const ReviewSection = ({ productId }) => {
   }, [reviewError]);
 
   useEffect(() => {
-    console.log('Current user:', user);
-    console.log('All reviews:', reviews);
+    // console.log('Current user:', user);
+    // console.log('All reviews:', reviews);
   }, [user, reviews]);
 
   const [addReview] = useAddReviewMutation();
@@ -152,8 +152,8 @@ const ReviewSection = ({ productId }) => {
   };
 
   const isReviewOwner = (review) => {
-    console.log('Review:', review);
-    console.log('Current user:', user);
+    // console.log('Review:', review);
+    // console.log('Current user:', user);
     return user && user.name && review.user === user.name;
   };
 

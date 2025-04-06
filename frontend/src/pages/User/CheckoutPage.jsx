@@ -46,7 +46,7 @@ const CheckoutPage = () => {
     limit: 10
   });
   const availableCoupons = couponsData?.coupons || [];
-  console.log('Coupons Data:', couponsData); // Debug log
+  // console.log('Coupons Data:', couponsData); // Debug log
   const { data: validatedCoupon, isLoading: isValidating, refetch: validateCoupon } = useValidateCouponQuery(couponCode, {
     skip: !couponCode // Skip the query if no coupon code
   });

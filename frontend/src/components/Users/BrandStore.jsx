@@ -23,7 +23,7 @@ const BrandStore = () => {
     skip: !id
   });
 
-  console.log(categories);
+  // console.log(categories);
   
 
   useEffect(() => {

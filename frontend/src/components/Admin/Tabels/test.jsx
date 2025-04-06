@@ -119,7 +119,7 @@ const AddCategoryPage = () => {
         submitData.append("image", imageFile);
 
         const result = await createCategory(submitData).unwrap();
-        console.log('Category created:', result);
+        // console.log('Category created:', result);
         navigate("/admin/categories");
       } else {
         // If image is already small enough, use as is
@@ -132,7 +132,7 @@ const AddCategoryPage = () => {
         submitData.append("image", imageFile);
 
         const result = await createCategory(submitData).unwrap();
-        console.log('Category created:', result);
+        // console.log('Category created:', result);
         navigate("/admin/categories");
       }
     } catch (error) {
