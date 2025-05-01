@@ -66,3 +66,4 @@ To run the application:
 - **server**: Uses nodemon to run the backend server with auto-reload.
 - **client**: Runs the frontend development server.
 - **dev**: Runs both the backend and frontend servers concurrently.
+  
