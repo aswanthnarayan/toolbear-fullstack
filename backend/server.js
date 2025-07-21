@@ -14,14 +14,15 @@ const app = express();
 
 connectDb()
 
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000','https://toolbear-fullstack.onrender.com','https://toolbear.shop','https://toolbear-fullstack-1.onrender.com'];
+const allowedOrigins = process.env.FRONTEND_URLS?.split(',') || [];
+
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
