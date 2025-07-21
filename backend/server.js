@@ -37,6 +37,6 @@ app.use('/api/user/', authRoutes);
 app.use('/api/admin/', adminRoutes);
 app.use('/api/user/', userRoutes);
 
-app.listen(port,(req,res)=>{
+app.listen(port,()=>{
     console.log(`Server running on ${port}`)
 })
