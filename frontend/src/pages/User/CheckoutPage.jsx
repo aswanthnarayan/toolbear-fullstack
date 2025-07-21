@@ -7,7 +7,6 @@ import {
   Typography,
   Button,
   Radio,
-  Spinner,
   Input,
   Accordion,
   AccordionHeader,
@@ -25,6 +24,7 @@ import {
 import { Toaster, toast } from 'sonner';
 import AddAddressModal from '../../components/Users/profile/shared/AddAddressModal';
 import AddressCard from '../../components/Users/profile/shared/AddressCard';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -205,9 +205,7 @@ const CheckoutPage = () => {
 
   if (cartLoading || addressLoading || couponsLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Spinner className="h-12 w-12" />
-      </div>
+      <CustomSpinner/>
     );
   }
 

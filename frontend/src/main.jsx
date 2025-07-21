@@ -14,7 +14,6 @@ createRoot(document.getElementById("root")).render(
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           {" "}
-          {/*Loding can repaced by loadingcomponent later...*/}
           <BrowserRouter>
             <App />
           </BrowserRouter>

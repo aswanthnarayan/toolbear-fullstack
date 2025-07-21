@@ -7,7 +7,6 @@ import {
   Typography,
   Radio,
   Button,
-  Spinner,
   List,
   ListItem,
   ListItemPrefix,
@@ -20,6 +19,7 @@ import {
   useGetWalletQuery
 } from '../../../App/features/rtkApis/userApi';
 import { toast } from 'sonner';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -169,9 +169,7 @@ const PurchasePaymentPage = () => {
 
   if (isLoadingOrder) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spinner className="h-12 w-12" />
-      </div>
+     <CustomSpinner/>
     );
   }
 

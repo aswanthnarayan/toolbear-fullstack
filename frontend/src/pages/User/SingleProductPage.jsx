@@ -8,6 +8,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useGetProductByIdQuery } from '../../../App/features/rtkApis/adminApi';
 import { Toaster, toast } from 'sonner';
 import ReviewSection from '../../components/Users/ReviewSection';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const SingleProductPage = () => {
   const wishlistItems = useSelector((state) => state.wishlist.items);
@@ -29,9 +30,7 @@ const SingleProductPage = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen pt-[112px] ${currentTheme.primary} flex items-center justify-center`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+     <CustomSpinner/>
     );
   }
 

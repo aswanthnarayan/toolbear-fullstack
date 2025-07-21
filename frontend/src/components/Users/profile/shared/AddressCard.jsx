@@ -51,7 +51,7 @@ const AddressCard = ({ address, onSetDefault, onDelete, onEdit, theme }) => {
               onClick={() => onEdit(address)}
               className={`${theme.iconButton.bg}`}
             >
-              <PencilSquareIcon className="h-4 w-4" />
+              <PencilSquareIcon className="h-4 w-4 text-black"  />
             </IconButton>
             <IconButton
               size="sm"

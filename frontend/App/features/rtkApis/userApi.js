@@ -2,7 +2,7 @@ import { fetchBaseQuery, createApi } from "@reduxjs/toolkit/query/react";
 import { logout } from "../slices/authSlice";
 
 const baseQuery = fetchBaseQuery({ 
-    baseUrl: `${import.meta.env.VITE_API_URL}/api/user`,
+    baseUrl: '/api/user',
     credentials: 'include',
     prepareHeaders: (headers) => {
         if (headers.get('Content-Type')?.includes('multipart/form-data')) {

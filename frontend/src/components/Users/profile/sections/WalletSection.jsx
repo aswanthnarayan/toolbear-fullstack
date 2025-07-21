@@ -8,6 +8,7 @@ import {
 import { useGetWalletQuery } from '../../../../../App/features/rtkApis/userApi';
 import Pagination from '../../Pagination';
 import { useSelector } from 'react-redux';
+import CustomSpinner from '../../../utils/CustomSpinner';
 
 const WalletSection = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -20,9 +21,7 @@ const WalletSection = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

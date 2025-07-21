@@ -5,7 +5,6 @@ import {
   Typography,
   Button,
   IconButton,
-  Spinner,
 } from "@material-tailwind/react";
 import { useNavigate } from 'react-router-dom';
 import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -17,6 +16,7 @@ import {
   useRemoveFromCartMutation,
   useUpdateCartQuantityMutation,
 } from '../../../App/features/rtkApis/userApi';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -124,9 +124,7 @@ const CartPage = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 
@@ -161,7 +159,7 @@ const CartPage = () => {
                 <p className={`${currentTheme.text} text-xl mb-4`}>Your cart is empty</p>
                 <Button
                   onClick={() => navigate('/user/all-products')}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black"
                 >
                   Continue Shopping
                 </Button>

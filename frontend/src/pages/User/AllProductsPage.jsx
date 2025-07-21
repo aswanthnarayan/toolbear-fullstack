@@ -11,6 +11,7 @@ import {Toaster,toast} from 'sonner'
 import SortSelect from '../../components/SortSelect';
 import Pagination from '../../components/Users/Pagination';
 import { useGetWishlistQuery } from '../../../App/features/rtkApis/userApi';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const AllProductsPage = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -159,9 +160,7 @@ const AllProductsPage = () => {
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center items-center min-h-[400px]">
-                <Spinner className="h-12 w-12" />
-              </div>
+             <CustomSpinner/>
             ) : error ? (
               <div className={`text-center ${currentTheme.text} bg-opacity-50 p-4 rounded-lg mt-4`}>
                 Error loading products. Please try again later.

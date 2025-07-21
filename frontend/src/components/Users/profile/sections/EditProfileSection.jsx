@@ -6,7 +6,6 @@ import {
   Button,
   Typography,
   Avatar,
-  Spinner,
 } from "@material-tailwind/react";
 import { CameraIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -14,6 +13,7 @@ import { useGetUserQuery, useUpdateProfileMutation } from '../../../../../App/fe
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from 'sonner';
 import { useSelector } from 'react-redux';
+import CustomSpinner from '../../../utils/CustomSpinner';
 
 const EditProfileSection = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -97,9 +97,7 @@ const EditProfileSection = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

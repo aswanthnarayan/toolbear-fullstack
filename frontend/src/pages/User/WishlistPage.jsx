@@ -5,7 +5,6 @@ import {
   Typography,
   Button,
   IconButton,
-  Spinner,
 } from "@material-tailwind/react";
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCartIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -17,6 +16,7 @@ import {
   useRemoveFromWishlistMutation,
   useAddToCartMutation,
 } from '../../../App/features/rtkApis/userApi';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const WishlistPage = () => {
   const navigate = useNavigate();
@@ -60,9 +60,7 @@ const WishlistPage = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

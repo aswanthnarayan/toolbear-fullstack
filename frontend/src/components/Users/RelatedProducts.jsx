@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useGetProductByCategoryQuery } from '../../../App/features/rtkApis/userApi';
 import ProductCard from './ProductCard';
 import { Spinner } from '@material-tailwind/react';
+import CustomSpinner from '../utils/CustomSpinner';
 
 const RelatedProducts = ({ category, currentProductId, onToast }) => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -20,9 +21,7 @@ const RelatedProducts = ({ category, currentProductId, onToast }) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center">
-        <Spinner className="h-8 w-8" />
-      </div>
+      <CustomSpinner/>
     );
   }
 

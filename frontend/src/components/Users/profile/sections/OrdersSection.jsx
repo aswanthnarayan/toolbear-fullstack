@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogBody,
   DialogFooter,
-  Spinner,
 } from "@material-tailwind/react";
 import { 
   useGetAllOrdersQuery, 
@@ -22,6 +21,7 @@ import ReturnReasonModal from '../shared/ReturnReasonModal';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Pagination from '../../Pagination';
+import CustomSpinner from '../../../utils/CustomSpinner';
 
 const OrdersSection = () => {
   const navigate = useNavigate();
@@ -150,9 +150,7 @@ const OrdersSection = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-[60vh] flex items-center justify-center  ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

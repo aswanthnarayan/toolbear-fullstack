@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Spinner, Typography } from "@material-tailwind/react";
+import { Button, Typography } from "@material-tailwind/react";
 import AddressCard from '../shared/AddressCard';
 import AddAddressModal from '../shared/AddAddressModal';
 import { 
@@ -8,6 +8,7 @@ import {
   useDeleteAddressMutation 
 } from '../../../../../App/features/rtkApis/userApi';
 import { useSelector } from 'react-redux';
+import CustomSpinner from '../../../utils/CustomSpinner';
 
 const AddressSection = () => {
   const { isDarkMode, theme } = useSelector((state) => state.theme);
@@ -52,9 +53,7 @@ const AddressSection = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-[60vh] flex items-center justify-center ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

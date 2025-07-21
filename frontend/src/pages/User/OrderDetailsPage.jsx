@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { FaFileInvoice } from "react-icons/fa";
 import { useSelector } from 'react-redux';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
@@ -80,9 +81,7 @@ const OrderDetailsPage = () => {
   };
 
   if (isLoading) return (
-    <div className="flex justify-center items-center min-h-screen">
-      <Spinner />
-    </div>
+    <CustomSpinner/>
   );
 
   if (!order) return (

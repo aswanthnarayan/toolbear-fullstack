@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import RelatedProducts from './RelatedProducts';
 import ScrollableContainer from './ScrollableContainer';
+import CustomSpinner from '../utils/CustomSpinner';
 
 const BrandStore = () => {
   const { id } = useParams();
@@ -38,9 +39,7 @@ const BrandStore = () => {
 
   if (brandLoading || categoriesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+     <CustomSpinner/>
     );
   }
 

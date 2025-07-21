@@ -13,6 +13,7 @@ import { Spinner } from "@material-tailwind/react";
 import {Toaster,toast} from 'sonner'
 import SortSelect from '../../components/SortSelect';
 import { useGetWishlistQuery } from '../../../App/features/rtkApis/userApi';
+import CustomSpinner from '../../components/utils/CustomSpinner';
 
 const FilterdCatefgoryOrBrandPage = () => {
   const { id } = useParams();
@@ -149,9 +150,7 @@ const FilterdCatefgoryOrBrandPage = () => {
             </div>
 
             {productsLoading ? (
-              <div className="flex justify-center items-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-              </div>
+             <CustomSpinner/>
             ) : error ? (
               <div className={`text-center ${currentTheme.accent} my-8`}>
                 Error loading products. Please try again later.

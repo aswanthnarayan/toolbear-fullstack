@@ -16,6 +16,7 @@ import { useGetBannersQuery } from '../../../App/features/rtkApis/adminApi';
 import { useSelector } from 'react-redux';
 import PopularContainer from '../../components/Users/PopularContainer';
 import { Toaster } from 'sonner';
+import CustomSpinner from "../../components/utils/CustomSpinner";
 
 const DealsPage = () => {
   const navigate = useNavigate();
@@ -25,9 +26,7 @@ const DealsPage = () => {
 
   if (isLoadingBanners) {
     return (
-      <div className={`min-h-screen flex items-center justify-center pt-[124px] ${currentTheme.primary}`}>
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
+      <CustomSpinner/>
     );
   }
 

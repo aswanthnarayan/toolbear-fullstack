@@ -7,6 +7,7 @@ import BrandCard from './BrandCard';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import CustomSpinner from '../utils/CustomSpinner';
 
 const PopularContainer = () => {
     const scrollContainerRef = useRef(null);
@@ -205,9 +206,7 @@ const PopularContainer = () => {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
-            </div>
+            <CustomSpinner/>
         );
     }
 

@@ -142,7 +142,7 @@ function ProductCard({
                             isInCart ? (
                                 <Button
                                     size="sm"
-                                    className={`flex-1 ${currentTheme.button} ${currentTheme.buttonHover} text-white gap-2 flex items-center justify-center`}
+                                    className={`flex-1 ${currentTheme.button} ${currentTheme.buttonHover} text-black gap-2 flex items-center justify-center`}
                                     onClick={handleGoToCart}
                                 >
                                     <ShoppingCartIcon className="h-4 w-4" />

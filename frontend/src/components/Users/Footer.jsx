@@ -14,10 +14,10 @@ const Footer = () => {
           <div>
             <h3 className={`text-sm font-semibold ${currentTheme.text} uppercase tracking-wider mb-4`}>Company Information</h3>
             <ul className="space-y-3">
-              <li><Link to="/about" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>About ToolBear</Link></li>
-              <li><Link to="/careers" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Careers</Link></li>
-              <li><Link to="/press" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Press Releases</Link></li>
-              <li><Link to="/locations" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Store Locations</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>About ToolBear</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Careers</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Press Releases</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Store Locations</Link></li>
             </ul>
           </div>
 
@@ -25,9 +25,9 @@ const Footer = () => {
           <div>
             <h3 className={`text-sm font-semibold ${currentTheme.text} uppercase tracking-wider mb-4`}>Resources</h3>
             <ul className="space-y-3">
-              <li><Link to="/affiliate" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Affiliate Program</Link></li>
-              <li><Link to="/guides" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Buying Guides</Link></li>
-              <li><Link to="/sitemap" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Site Map</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Affiliate Program</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Buying Guides</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Site Map</Link></li>
             </ul>
           </div>
 
@@ -35,11 +35,11 @@ const Footer = () => {
           <div>
             <h3 className={`text-sm font-semibold ${currentTheme.text} uppercase tracking-wider mb-4`}>Customer Care</h3>
             <ul className="space-y-3">
-              <li><Link to="/service" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Customer Service</Link></li>
-              <li><Link to="/login" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Log In</Link></li>
-              <li><Link to="/orders" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Order Status</Link></li>
-              <li><Link to="/quote" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Request Quote</Link></li>
-              <li><Link to="/faq" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>FAQs</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Customer Service</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Log In</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Order Status</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Request Quote</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>FAQs</Link></li>
             </ul>
           </div>
 
@@ -47,9 +47,9 @@ const Footer = () => {
           <div>
             <h3 className={`text-sm font-semibold ${currentTheme.text} uppercase tracking-wider mb-4`}>Policies</h3>
             <ul className="space-y-3">
-              <li><Link to="/return-policy" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Return Policy</Link></li>
-              <li><Link to="/shipping" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Shipping Policy</Link></li>
-              <li><Link to="/privacy" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Privacy Policy</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Return Policy</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Shipping Policy</Link></li>
+              <li><Link to="#" onClick={(e) => e.preventDefault()} className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} hover:text-yellow-500 text-sm`}>Privacy Policy</Link></li>
             </ul>
           </div>
 
