@@ -8,6 +8,15 @@ import MessageEnum from "../../constants/messages.js";
 
 dotenv.config();
 
+// Define cookie options at the module level
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: !isDevelopment,  // true in production, false in development
+  sameSite: isDevelopment ? 'Lax' : 'None', // 'None' for cross-site, 'Lax' for same-site
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+};
+
 export const verifyEmail = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
@@ -122,20 +131,6 @@ export const postSignIn = async (req, res) => {
       expiresIn: "24h",
     });
 
-    // Set cookie options based on environment
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !isDevelopment,  // true in production, false in development
-      sameSite: isDevelopment ? 'Lax' : 'None',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    };
-
-    // Only set domain in production
-    // if (!isDevelopment) {
-    //   cookieOptions.domain = '.toolbear.shop';
-    // }
-
     res.cookie("token", token, cookieOptions);
     res.json({
       user: {
@@ -178,20 +173,6 @@ export const signUpGoogle = async (req,res)=>{
         { expiresIn: '24h' }
       );
       
-      // Set cookie options based on environment
-      const isDevelopment = process.env.NODE_ENV !== 'production';
-      const cookieOptions = {
-        httpOnly: true,
-        secure: !isDevelopment,  // true in production, false in development
-        sameSite: isDevelopment ? 'Lax' : 'None',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      };
-
-      // Only set domain in production
-      if (!isDevelopment) {
-        cookieOptions.domain = '.toolbear.shop';
-      }
-
       res.cookie("token", token, cookieOptions);
       
       return res.status(HttpStatusEnum.OK).json({
@@ -243,20 +224,6 @@ export const completeGoogleSignup = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     )
-    // Set cookie options based on environment
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const cookieOptions = {
-      httpOnly: true,
-      secure: !isDevelopment,  // true in production, false in development
-      sameSite: isDevelopment ? 'Lax' : 'None',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    };
-
-    // Only set domain in production
-    if (!isDevelopment) {
-      cookieOptions.domain = '.toolbear.shop';
-    }
-
     res.cookie("token", token, cookieOptions);
 
     res.status(HttpStatusEnum.OK).json({
